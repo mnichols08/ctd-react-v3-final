@@ -1,22 +1,26 @@
----
-name: User Story template
-about: User Stories are features supporting user requirements that can be completed
-  in a single sprint
-title: ''
-labels: user_story
-assignees: ''
+## User Story
+As a <type of user>,
+I want <capability>,
+So that <benefit>.
 
----
+### Acceptance Criteria
+- [ ] Criteria 1
+- [ ] Criteria 2
+- [ ] Edge cases considered
 
-**__User Story Description__**
-As a [role]
-I want to [action to be performed]
-So I can [result to be achieved]
+### UX Notes
+- Expected interaction pattern
+- Error states
+- Empty states
 
-**__Steps to Follow (optional)__**
-- [ ] Step #1
-- [ ] Step #2
-- [ ] Additional steps as necessary
+### Data / Logic Notes
+- Fields involved
+- Business rules
+- Defaults & assumptions
 
-**__Additional Considerations__**
-Any supplemental information including unresolved questions, links to external resources, screenshots, etc.
+### Dependencies
+- #<epic>
+- #<task>
+
+### Notes
+<Anything learned during implementation>
