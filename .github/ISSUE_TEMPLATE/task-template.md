@@ -1,17 +1,18 @@
----
-name: Task template
-about: Tasks are small units of work that can be completed in a single sprint
-title: ''
-labels: task
-assignees: ''
+## Task
+<Clear action-oriented description>
 
----
+### Description
+<What needs to be done>
 
-**__Task Description__**
-Describe the task to be completed.
+### Completion Checklist
+- [ ] Code implemented
+- [ ] Tests added (if applicable)
+- [ ] UX verified
+- [ ] Edge cases handled
 
-**__Technical Considerations__**
-Include any technical considerations including architecture (e.g. API), required libraries, etc.
+### Technical Notes
+- Files / components touched
+- APIs or libraries used
 
-**__Additional Considerations__**
-Any supplemental information including unresolved questions, links to external resources, screenshots, etc.
+### Linked Story / Epic
+- #<story>
