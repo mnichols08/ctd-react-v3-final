@@ -1,19 +1,26 @@
----
-name: Epic template
-about: An epic represents functionality that will span multiple sprints
-title: ''
-labels: epic
-assignees: ''
+## Epic
+<Short, outcome-focused title>
 
----
+### Goal
+<What problem this epic solves and why it matters>
 
-**__Feature Description__**
-Describe what the feature is intended to accomplish & why it's important
+### Success Criteria
+- [ ] Clear, measurable outcome
+- [ ] User-visible value delivered
+- [ ] Integrates with existing systems
 
-**__Major User Stories/tasks__**
-- [ ] User Story or Task  #1
-- [ ] User Story or Task #2
-- [ ] Additional User Stories or Tasks as necessary
+### User Value
+<How this improves daily kitchen organization, planning, or waste reduction>
 
-**__Additional Considerations__**
-Include anything else that may be helpful. For example, links to external resources.
+### Included User Stories
+- #<link or placeholder>
+- #<link or placeholder>
+
+### Out of Scope
+- <Explicitly list what this epic will NOT include>
+
+### Dependencies
+- <Other epics, APIs, or design work>
+
+### Notes
+<Anything important for future you>
