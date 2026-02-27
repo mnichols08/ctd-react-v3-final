@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactor ItemCard component to destructure item properties passed from sample data
 - Refactor InventorySection to accept props and streamline rendering
 - Refactor ItemCard and InventorySection to render forms and additional components.
 - Updated App tests to validate componentized rendering (header, navigation, inventory sections, and footer) instead of only a basic smoke check.
