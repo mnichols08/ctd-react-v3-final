@@ -27,6 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added a description to package.json for better project context.
+- Introduced vitest for testing with necessary dependencies.
+- Created vitest.config.js to configure testing environment with jsdom.
 - Remove unused CSS files and assets to clean up the project
 - Update README.md to reflect project details and features for Kitchen Inventory App
 - Adds additional rules to eslint config 
