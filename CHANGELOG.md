@@ -32,3 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adds additional rules to eslint config 
 - Initialize React project using Vite setup
 - Initialize repository
+
+### Changed
+
+- Refactor App component to implement a mock Kitchen Inventory layout and navigation
