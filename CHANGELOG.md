@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Update README.md to reflect project details and features for Kitchen Inventory App
 - Adds additional rules to eslint config 
 - Initialize React project using Vite setup
 - Initialize repository

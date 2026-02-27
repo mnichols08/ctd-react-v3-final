@@ -1,16 +1,77 @@
-# React + Vite
+# Kitchen Inventory App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is the **final project for Code the Dream (Lark Cohort)**.
 
-Currently, two official plugins are available:
+It is a React + Vite web app for organizing kitchen items by storage location and tracking useful details like quantity, notes, and expiration dates.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Purpose
 
-## React Compiler
+The goal of this project is to demonstrate core front-end development skills learned during the cohort, including:
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Building a React application with reusable UI structure
+- Organizing content into clear sections and semantic HTML
+- Managing project scripts and tooling with Vite, ESLint, and Vitest
+- Writing and running basic component tests
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Kitchen sections for:
+  - Fridge
+  - Freezer
+  - Pantry
+  - Shopping List
+- Item cards with details (quantity, expiration, notes, category)
+- Basic page navigation using anchor links
+
+## Tech Stack
+
+- React
+- Vite
+- ESLint
+- Vitest
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js (LTS recommended)
+- npm
+
+### Installation
+
+```bash
+npm install
+```
+
+### Run in Development
+
+```bash
+npm run dev
+```
+
+Starts the Vite development server (with hot reload).
+
+## Available Scripts
+
+- `npm run dev` — Start the local development server
+- `npm run build` — Create a production build in `dist/`
+- `npm run preview` — Preview the production build locally
+- `npm run lint` — Run ESLint checks across the project
+- `npm test` — Run Vitest test suite
+
+## Testing
+
+Tests are written with Vitest and React Testing Library.
+
+Run tests:
+
+```bash
+npm test
+```
+
+## Author
+
+Created by [mnichols08](https://github.com/mnichols08)
+
+- GitHub profile: https://github.com/mnichols08
+- Repository: https://github.com/mnichols08/ctd-react-v3-final
