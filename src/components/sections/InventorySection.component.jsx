@@ -1,8 +1,15 @@
-import ItemCard from "../cards/ItemCard.component";
+import QuickStatsBar from "../ui/QuickStatsBar.component";
 import AddInventoryItemForm from "../forms/AddInventoryItemForm.component";
+import ItemCard from "../cards/ItemCard.component";
+import FilterBar from "../ui/FilterBar.component";
+
 function InventorySection() {
   return (
     <main>
+      <section id="stats">
+        <h2>Quick Stats</h2>
+        <QuickStatsBar />
+      </section>
       <section id="add-item">
         <AddInventoryItemForm />
       </section>
@@ -44,6 +51,10 @@ function InventorySection() {
       <section id="pantry">
         <h2>Pantry</h2>
         <p>Items in the pantry will be listed here.</p>
+      </section>
+      <section id="filter">
+        <h2>Filter & Sort</h2>
+        <FilterBar />
       </section>
       <hr />
       <section id="shopping-list">
