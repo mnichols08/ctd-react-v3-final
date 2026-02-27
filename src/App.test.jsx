@@ -31,7 +31,7 @@ describe("App", () => {
     ).toBeTruthy();
     expect(
       screen.getAllByRole("heading", { name: "Freezer", level: 2 }),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     expect(
       screen.getByRole("heading", { name: "Pantry", level: 2 }),
     ).toBeTruthy();

@@ -1,22 +1,29 @@
-function ItemCard({
-  children,
-  title,
-  quantity,
-  expirationDate,
-  dateFrozen,
-  notes,
-  category,
-}) {
+import AddShoppingListItemForm from "../forms/AddShoppingListItemForm.component";
+function ItemCard({ item, shoppingCart }) {
+  const {
+    id,
+    ItemName: itemName,
+    QtyOnHand: qtyOnHand,
+    QtyUnit: qtyUnit,
+    ExpiresOn: expiresOn,
+    DateFrozen: dateFrozen,
+    Notes: notes,
+    Category: category,
+  } = item;
+
   return (
-    <li>
+    <li id={id}>
       <article>
-        <h2>{title}</h2>
-        <p>Quantity: {quantity}</p>
-        <p>Expiration Date: {expirationDate}</p>
+        <h2>{itemName}</h2>
+        <p>
+          Quantity: {qtyOnHand}
+          {qtyUnit ? ` ${qtyUnit}` : ""}
+        </p>
+        <p>Expiration Date: {expiresOn}</p>
         {dateFrozen && <p>Date Frozen: {dateFrozen}</p>}
         {notes && <p>Notes: {notes}</p>}
-        {category && <p>Category: {category}</p>}
-        {children && <div>{children}</div>}
+        <p>Category: {category}</p>
+        {!shoppingCart && <AddShoppingListItemForm itemId={id} />}
       </article>
     </li>
   );
