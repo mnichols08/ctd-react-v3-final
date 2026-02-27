@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Remove unused CSS files and assets to clean up the project
 - Update README.md to reflect project details and features for Kitchen Inventory App
 - Adds additional rules to eslint config 
 - Initialize React project using Vite setup
