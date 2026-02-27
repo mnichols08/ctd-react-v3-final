@@ -23,10 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.0.1] - 2024-01-01
+## [0.0.1] - 2026-02-27
 
 ### Added
 
+- Add initial test for App component to ensure it loads without console errors
 - Added a description to package.json for better project context.
 - Introduced vitest for testing with necessary dependencies.
 - Created vitest.config.js to configure testing environment with jsdom.
