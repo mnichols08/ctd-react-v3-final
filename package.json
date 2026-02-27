@@ -1,6 +1,6 @@
 {
   "name": "ctd-react-v3-final",
-  "description": "This project is the final project for Code the Dream (Lark Cohort). It is a React + Vite web app for organizing kitchen items by storage location and tracking useful details like quantity, notes, and expiration dates.",
+  "description": "React application designed for the Code The Dream - Lark Cohort - Final Exam. The application should be written using the fundamentals that were taught throughout the curriculum. It will be an inventory tracking application that allows users to take an inventory of their kitchen (pantry, fridge, freezer, etc.) and meal plan / shop to reduce waste",
   "private": true,
   "version": "0.0.0",
   "type": "module",
