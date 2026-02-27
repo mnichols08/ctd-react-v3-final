@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.0.2] - 2026-02-27
+
+### Added
+
+- Add static components: ItemCard, InventorySection, Footer, Header, and NavMenu
+
+---
+
 ## [0.0.1] - 2026-02-27
 
 ### Added
