@@ -21,21 +21,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [0.0.2] - 2026-02-27
+## [0.0.3] - 2026-02-27
 
 ### Added
 
+- Add tests for AddInventoryItemForm, AddShoppingListItemForm, and ItemCard components
+- Implement UtilityComponents tests
 - Add ToolSection and EmptyState components
 - Add MainContainer to organize sections and integrate inventory data
 - Adds a json file containing sample data from Airtable
 - Add forms for inventory and shopping list management
-- Add static components: ItemCard, InventorySection, Footer, Header, NavMenu, QuickStatsBar and FilterBar
+- Add static components: QuickStatsBar and FilterBar
 
 ### Changed
 
 - Refactor ItemCard component to destructure item properties passed from sample data
 - Refactor InventorySection to accept props and streamline rendering
 - Refactor ItemCard and InventorySection to render forms and additional components.
+
+---
+
+## [0.0.2] - 2026-02-27
+
+### Added
+
+- Add static components: ItemCard, InventorySection, Footer, Header, and NavMenu
+
+### Changed
+
 - Updated App tests to validate componentized rendering (header, navigation, inventory sections, and footer) instead of only a basic smoke check.
 
 ---
