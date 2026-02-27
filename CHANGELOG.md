@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add ToolSection and EmptyState components
 - Add MainContainer to organize sections and integrate inventory data
 - Adds a json file containing sample data from Airtable
 - Add forms for inventory and shopping list management

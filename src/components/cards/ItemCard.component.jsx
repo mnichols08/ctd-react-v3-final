@@ -3,20 +3,17 @@ function ItemCard({ item }) {
   const {
     id,
     ItemName: itemName,
-    Item: legacyItemName,
     QtyOnHand: qtyOnHand,
-    Quantity: legacyQuantity,
     QtyUnit: qtyUnit,
-    ExpiresOn: expiresOn,
-    ExpirationDate: legacyExpirationDate,
+    ExpirationDate: expiresOn,
     DateFrozen: dateFrozen,
     Notes: notes,
     Category: category,
   } = item;
 
-  const title = itemName || legacyItemName;
-  const quantity = qtyOnHand || legacyQuantity;
-  const expirationDate = expiresOn || legacyExpirationDate;
+  const title = itemName ;
+  const quantity = qtyOnHand ;
+  const expirationDate = expiresOn;
 
   return (
     <li id={id}>
