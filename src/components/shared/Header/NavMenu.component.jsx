@@ -3,6 +3,9 @@ function NavMenu() {
     <nav>
       <menu>
         <li>
+          <a href="#add-item">Add Item</a>
+        </li>
+        <li>
           <a href="#fridge">Fridge</a>
         </li>
         <li>

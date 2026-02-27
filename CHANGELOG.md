@@ -25,10 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add forms for inventory and shopping list management
 - Add static components: ItemCard, InventorySection, Footer, Header, and NavMenu
 
 ### Changed
 
+- Refactor ItemCard and InventorySection to render forms.
 - Updated App tests to validate componentized rendering (header, navigation, inventory sections, and footer) instead of only a basic smoke check.
 
 ---

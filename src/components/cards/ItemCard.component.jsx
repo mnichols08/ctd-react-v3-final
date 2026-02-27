@@ -1,5 +1,7 @@
+import AddShoppingListItemForm from "../forms/AddShoppingListItemForm.component";
 function ItemCard({
   children,
+  id,
   title,
   quantity,
   expirationDate,
@@ -8,7 +10,7 @@ function ItemCard({
   category,
 }) {
   return (
-    <li>
+    <li id={id}>
       <article>
         <h2>{title}</h2>
         <p>Quantity: {quantity}</p>
@@ -17,6 +19,7 @@ function ItemCard({
         {notes && <p>Notes: {notes}</p>}
         {category && <p>Category: {category}</p>}
         {children && <div>{children}</div>}
+        <AddShoppingListItemForm itemId={{ id }} />
       </article>
     </li>
   );
