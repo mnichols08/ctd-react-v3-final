@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Refactors inventoryData to be more consistent with how Airtable will return data
 - Update AddShoppingListItemForm to use dynamic ID for quantity input
 - Correctly maps ExpiresOn from destructured item within ItemCard and removes title, quantity, expirationDate in favor of their destructured values
 - Fixes mock item in test to pass in ExpiresOn instead of ExpirationDate
