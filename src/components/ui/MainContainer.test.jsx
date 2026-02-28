@@ -17,12 +17,32 @@ vi.mock("../forms/FilterBarForm.component", () => ({
 }));
 
 vi.mock("../sections/InventorySection.component", () => ({
-  default: ({ title, items, shoppingCart = false }) => (
+  default: ({ title, items, shoppingCart = false, addToShoppingList }) => (
     <section>
       <h2>{title}</h2>
       <p>{`count:${items.length}`}</p>
       <p>{shoppingCart ? "shopping:true" : "shopping:false"}</p>
       <p>{items.map((item) => item.ItemName).join("|")}</p>
+      {!shoppingCart && items[0] && (
+        <form
+          aria-label={`mock-form-${title}`}
+          onSubmit={(e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            addToShoppingList?.({
+              itemId: items[0].id,
+              quantity: formData.get("quantity"),
+            });
+          }}
+        >
+          <input
+            aria-label={`mock-qty-${title}`}
+            name="quantity"
+            defaultValue="2"
+          />
+          <button type="submit">{`mock-add-${title}`}</button>
+        </form>
+      )}
     </section>
   ),
 }));
@@ -43,8 +63,7 @@ describe("MainContainer", () => {
       item.Location.includes("Pantry"),
     ).length;
     const expectedShoppingListCount = inventorySampleData.records.filter(
-      (item) =>
-        item.NeedRestock && item.TargetQty > item.QtyOnHand,
+      (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
     ).length;
 
     render(<MainContainer />);
@@ -110,5 +129,35 @@ describe("MainContainer", () => {
       `count:${initialPantryCount + 1}`,
     );
     expect(pantrySection?.textContent).toContain("Test Granola Bars");
+  });
+
+  it("submits add-to-shopping-list form and updates shopping-list state/render", () => {
+    const initialShoppingListCount = inventorySampleData.records.filter(
+      (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
+    ).length;
+
+    const pantryCandidate = inventorySampleData.records.find(
+      (item) => item.Location.includes("Pantry") && !item.NeedRestock,
+    );
+
+    expect(pantryCandidate).toBeTruthy();
+
+    render(<MainContainer />);
+
+    fireEvent.change(screen.getByLabelText("mock-qty-Pantry"), {
+      target: { value: "2" },
+    });
+
+    fireEvent.submit(screen.getByRole("form", { name: "mock-form-Pantry" }));
+
+    const shoppingSection = screen
+      .getByRole("heading", { name: "Shopping List" })
+      .closest("section");
+
+    expect(shoppingSection).toBeTruthy();
+    expect(shoppingSection?.textContent).toContain(
+      `count:${initialShoppingListCount + 1}`,
+    );
+    expect(shoppingSection?.textContent).toContain(pantryCandidate?.ItemName);
   });
 });

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   cleanup,
   createEvent,
@@ -43,7 +43,12 @@ describe("AddInventoryItemForm", () => {
 
 describe("AddShoppingListItemForm", () => {
   it("renders quantity input and submit button", () => {
-    render(<AddShoppingListItemForm itemId={25} />);
+    render(
+      <AddShoppingListItemForm
+        itemId={25}
+        handleAddToShoppingList={() => {}}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", { name: "Add Item to Shopping List" }),
@@ -55,7 +60,12 @@ describe("AddShoppingListItemForm", () => {
   });
 
   it("includes hidden item id and enforces minimum quantity", () => {
-    const { container } = render(<AddShoppingListItemForm itemId={25} />);
+    const { container } = render(
+      <AddShoppingListItemForm
+        itemId={25}
+        handleAddToShoppingList={() => {}}
+      />,
+    );
 
     const hiddenItemId = container.querySelector(
       "input[type='hidden'][name='itemId']",
@@ -66,6 +76,38 @@ describe("AddShoppingListItemForm", () => {
     expect(hiddenItemId?.getAttribute("value")).toBe("25");
     expect(quantityInput.getAttribute("min")).toBe("1");
     expect(quantityInput.required).toBe(true);
+  });
+
+  it("submits expected payload to parent callback", () => {
+    const handleAddToShoppingList = vi.fn();
+
+    const { container } = render(
+      <AddShoppingListItemForm
+        itemId={25}
+        handleAddToShoppingList={handleAddToShoppingList}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Quantity:"), {
+      target: { value: "3" },
+    });
+
+    const form = container.querySelector("form");
+    expect(form).toBeTruthy();
+
+    if (!form) {
+      return;
+    }
+
+    const submitEvent = createEvent.submit(form);
+    fireEvent(form, submitEvent);
+
+    expect(submitEvent.defaultPrevented).toBe(true);
+    expect(handleAddToShoppingList).toHaveBeenCalledTimes(1);
+    expect(handleAddToShoppingList).toHaveBeenCalledWith({
+      itemId: 25,
+      quantity: "3",
+    });
   });
 });
 
@@ -102,7 +144,13 @@ describe("Form submission behavior", () => {
     const formRenderers = [
       () =>
         render(<AddInventoryItemForm addInventoryItem={() => {}} lastId={0} />),
-      () => render(<AddShoppingListItemForm itemId={25} />),
+      () =>
+        render(
+          <AddShoppingListItemForm
+            itemId={25}
+            handleAddToShoppingList={() => {}}
+          />,
+        ),
       () => render(<FilterBarForm />),
     ];
 

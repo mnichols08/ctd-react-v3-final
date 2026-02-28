@@ -30,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement addToShoppingList and removeFromShoppingList functions in MainContainer
 - Add shopping list handlers to InventorySection component
 
+### Changed
+
+- Enhance MainContainer tests to validate add-to-shopping-list functionality
+- Enhance AddShoppingListItemForm tests with payload submission and mock add functionality
+
 ---
 
 ## [0.0.5] - 2026-02-28
