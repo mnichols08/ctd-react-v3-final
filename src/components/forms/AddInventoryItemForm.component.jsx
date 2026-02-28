@@ -1,5 +1,26 @@
-function AddInventoryItemForm() {
-  const handleSubmit = (e) => e.preventDefault();
+function AddInventoryItemForm({ addInventoryItem }) {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const newItem = Object.fromEntries(formData.entries());
+    // Coerce numeric fields from strings to numbers (or null for empty fields)
+    const numericFields = [
+      "QtyOnHand",
+      "TargetQty",
+      "PurchasePrice",
+      "UnitCost",
+    ];
+    numericFields.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(newItem, field)) {
+        const value = newItem[field];
+        newItem[field] = value === "" ? null : Number(value);
+      }
+    });
+    newItem.LastUpdated = new Date().toISOString();
+    newItem.id = new Date().getTime(); // Use timestamp as unique ID for simplicity
+    addInventoryItem(newItem);
+    e.target.reset();
+  };
   return (
     <form onSubmit={handleSubmit}>
       <h2>Add Inventory Item</h2>
@@ -33,7 +54,12 @@ function AddInventoryItemForm() {
         <input type="text" id="SubCategory" name="SubCategory" />
 
         <label htmlFor="Location">Location:</label>
-        <input type="text" id="Location" name="Location" />
+        <select id="Location" name="Location" required>
+          <option value="">Select Location</option>
+          <option value="Fridge">Fridge</option>
+          <option value="Freezer">Freezer</option>
+          <option value="Pantry">Pantry</option>
+        </select>
 
         <label htmlFor="Tags">Tags:</label>
         <input type="text" id="Tags" name="Tags" />
@@ -67,9 +93,6 @@ function AddInventoryItemForm() {
 
         <label htmlFor="DateFrozen">Date Frozen:</label>
         <input type="date" id="DateFrozen" name="DateFrozen" />
-
-        <label htmlFor="LastUpdated">Last Updated:</label>
-        <input type="datetime-local" id="LastUpdated" name="LastUpdated" />
       </fieldset>
 
       <fieldset>

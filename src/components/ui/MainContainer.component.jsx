@@ -49,7 +49,7 @@ function MainContainer() {
         shoppingCart
         items={inventoryItems.filter(
           (item) =>
-            item.NeedRestock === "checked" && item.TargetQty > item.QtyOnHand,
+            item.NeedRestock && item.TargetQty > item.QtyOnHand,
         )}
       />
       <ToolSection id="filter" title="Filter & Sort">
