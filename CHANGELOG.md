@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactor addToShoppingList and removeFromShoppingList to update inventory state in MainContainer
 - Enhance MainContainer tests to validate add-to-shopping-list functionality
 - Enhance AddShoppingListItemForm tests with payload submission and mock add functionality
 

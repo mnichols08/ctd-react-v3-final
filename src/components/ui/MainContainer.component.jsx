@@ -14,28 +14,32 @@ function MainContainer() {
     setInventoryItems((prevItems) => [...prevItems, newItem]);
   };
   const addToShoppingList = ({ itemId, quantity }) => {
-    const item = inventoryItems.find((item) => item.id === itemId);
-    if (!item) return;
-    const updatedItem = {
-      ...item,
-      NeedRestock: true,
-      TargetQty: item.QtyOnHand + parseInt(quantity, 10),
-    };
-    setInventoryItems((prevItems) =>
-      prevItems.map((i) => (i.id === itemId ? updatedItem : i)),
-    );
+    setInventoryItems((prevItems) => {
+      const item = prevItems.find((i) => i.id === itemId);
+      if (!item) {
+        return prevItems;
+      }
+      const updatedItem = {
+        ...item,
+        NeedRestock: true,
+        TargetQty: item.QtyOnHand + parseInt(quantity, 10),
+      };
+      return prevItems.map((i) => (i.id === itemId ? updatedItem : i));
+    });
   };
   const removeFromShoppingList = (itemId) => {
-    const item = inventoryItems.find((item) => item.id === itemId);
-    if (!item) return;
-    const updatedItem = {
-      ...item,
-      NeedRestock: false,
-      TargetQty: item.QtyOnHand,
-    };
-    setInventoryItems((prevItems) =>
-      prevItems.map((item) => (item.id === itemId ? updatedItem : item)),
-    );
+    setInventoryItems((prevItems) => {
+      const item = prevItems.find((i) => i.id === itemId);
+      if (!item) {
+        return prevItems;
+      }
+      const updatedItem = {
+        ...item,
+        NeedRestock: false,
+        TargetQty: item.QtyOnHand,
+      };
+      return prevItems.map((i) => (i.id === itemId ? updatedItem : i));
+    });
   };
   return (
     <main>
