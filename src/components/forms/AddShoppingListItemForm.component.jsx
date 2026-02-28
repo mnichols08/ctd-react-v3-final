@@ -9,9 +9,12 @@ function AddShoppingListItemForm({ itemId, handleAddToShoppingList }) {
       itemId,
       quantity: formData.get("quantity"),
     };
+    if (typeof handleAddToShoppingList !== "function") {
+      return;
+    }
     try {
       handleAddToShoppingList(payload);
-      formRef.current.reset();
+      formRef.current?.reset();
     } catch (error) {
       console.error("Error adding item to shopping list:", error);
     }

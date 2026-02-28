@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add null check for handleAddToShoppingList and use optional chaining for form reset
 - Implement useRef for form reset in AddShoppingListItemForm
 
 ### Changed
