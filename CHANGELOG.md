@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Fix quantity handling in addToShoppingList function
 - Remove TargetQty assignment when updating item restock status
 - Refactor addToShoppingList and removeFromShoppingList to update inventory state in MainContainer
 - Enhance MainContainer tests to validate add-to-shopping-list functionality

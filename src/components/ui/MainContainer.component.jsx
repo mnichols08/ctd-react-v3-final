@@ -19,10 +19,12 @@ function MainContainer() {
       if (!item) {
         return prevItems;
       }
+      const qty = Number(quantity);
+      if (!Number.isFinite(qty)) return;
       const updatedItem = {
         ...item,
         NeedRestock: true,
-        TargetQty: item.QtyOnHand + parseInt(quantity, 10),
+        TargetQty: item.QtyOnHand + qty,
       };
       return prevItems.map((i) => (i.id === itemId ? updatedItem : i));
     });
