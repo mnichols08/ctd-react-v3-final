@@ -46,7 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement UtilityComponents tests
 - Add ToolSection and EmptyState components
 - Add MainContainer to organize sections and integrate inventory data
-- Adds a json file containing sample data from Airtable
+- Add a json file containing sample data from Airtable
 - Add forms for inventory and shopping list management
 - Add static components: QuickStatsBar and FilterBar
 
@@ -94,7 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created vitest.config.js to configure testing environment with jsdom.
 - Remove unused CSS files and assets to clean up the project
 - Update README.md to reflect project details and features for Kitchen Inventory App
-- Adds additional rules to eslint config
+- Add additional rules to eslint config
 - Initialize React project using Vite setup
 - Initialize repository
 
