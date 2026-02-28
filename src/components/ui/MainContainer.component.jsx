@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import inventorySampleData from "../../data/inventoryData.json";
 import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
@@ -7,12 +7,9 @@ import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
 
 function MainContainer() {
-  const inventoryMemo = useMemo(
-    () => inventorySampleData.records.map((item) => (item = { ...item })),
-    [],
+  const [inventoryItems, setInventoryItems] = useState(() =>
+    inventorySampleData.records.map((item) => ({ ...item })),
   );
-
-  const [inventoryItems, setInventoryItems] = useState(inventoryMemo);
   const addInventoryItem = (newItem) => {
     setInventoryItems((prevItems) => [...prevItems, newItem]);
   };
