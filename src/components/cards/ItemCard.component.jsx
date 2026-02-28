@@ -1,5 +1,5 @@
 import AddShoppingListItemForm from "../forms/AddShoppingListItemForm.component";
-function ItemCard({ item }) {
+function ItemCard({ item, shoppingCart }) {
   const {
     id,
     ItemName: itemName,
@@ -10,7 +10,6 @@ function ItemCard({ item }) {
     Notes: notes,
     Category: category,
   } = item;
-
 
   return (
     <li id={id}>
@@ -24,7 +23,7 @@ function ItemCard({ item }) {
         {dateFrozen && <p>Date Frozen: {dateFrozen}</p>}
         {notes && <p>Notes: {notes}</p>}
         <p>Category: {category}</p>
-        <AddShoppingListItemForm itemId={id} />
+        {!shoppingCart && <AddShoppingListItemForm itemId={id} />}
       </article>
     </li>
   );

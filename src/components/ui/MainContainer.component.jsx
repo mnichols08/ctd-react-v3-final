@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import inventorySampleData from "../../data/inventoryData.json";
 import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
@@ -6,6 +7,12 @@ import InventorySection from "../sections/InventorySection.component";
 import FilterBar from "./FilterBar.component";
 
 function MainContainer() {
+  const inventoryItems = useMemo(() => {
+    return inventorySampleData.records.map((item) => ({
+      id: item.id,
+      ...item,
+    }));
+  }, []);
   return (
     <main>
       <ToolSection id="stats" title="Quick Stats">
@@ -17,25 +24,31 @@ function MainContainer() {
       <InventorySection
         id="fridge"
         title="Fridge"
-        items={inventorySampleData.records.filter((item) =>
+        items={inventoryItems.filter((item) =>
           item.Location.includes("Fridge"),
         )}
       />
       <InventorySection
         id="freezer"
         title="Freezer"
-        items={inventorySampleData.records.filter((item) =>
+        items={inventoryItems.filter((item) =>
           item.Location.includes("Freezer"),
         )}
       />
       <InventorySection
         id="pantry"
         title="Pantry"
-        items={inventorySampleData.records.filter((item) =>
+        items={inventoryItems.filter((item) =>
           item.Location.includes("Pantry"),
         )}
       />
-      <InventorySection id="shopping-list" title="Shopping List" />
+      {/* Render Shopping List based upon NeedRestock and TargetQty vs QtyOnHand */}
+      <InventorySection
+        id="shopping-list"
+        title="Shopping List"
+        shoppingCart
+        items={inventoryItems.filter((item) => item.NeedRestock === "checked" && item.TargetQty > item.QtyOnHand)}
+      />
       <ToolSection id="filter" title="Filter & Sort">
         <FilterBar />
       </ToolSection>

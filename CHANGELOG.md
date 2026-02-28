@@ -35,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Memoizes inventory on first pass to avoid unnecessary bundle-size and render-time overhead as the data grows
+- Refactor MainContainer, InventorySection, and ItemCard components to pass in a shoppingCard value to the shoppingList section 
+- Shopping list renders if NeedRestock is checked and QtyOnHand is less than TargetQty
 - Refactor ItemCard component to destructure item properties passed from sample data
 - Refactor InventorySection to accept props and streamline rendering
 - Refactor ItemCard and InventorySection to render forms and additional components.
