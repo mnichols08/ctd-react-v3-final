@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.0.4] - 2026-02-27
+
+### Fixed
+
+- Adds a numerical id to each item in inventoryData
+
+---
+
 ## [0.0.3] - 2026-02-27
 
 ### Added
