@@ -1,6 +1,7 @@
-function FilterBar() {
+function FilterBarForm() {
+  const handleSubmit = (e) => e.preventDefault();
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       <label htmlFor="search">Search:</label>
       <input
         type="text"
@@ -27,4 +28,4 @@ function FilterBar() {
   );
 }
 
-export default FilterBar;
+export default FilterBarForm;

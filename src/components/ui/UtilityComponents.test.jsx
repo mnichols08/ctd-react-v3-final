@@ -2,7 +2,6 @@ import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
 import EmptyState from "./EmptyState.component";
-import FilterBar from "./FilterBar.component";
 import QuickStatsBar from "./QuickStatsBar.component";
 
 afterEach(() => {
@@ -16,34 +15,6 @@ describe("EmptyState", () => {
     expect(
       screen.getByText("Items in the pantry will be listed here."),
     ).toBeTruthy();
-  });
-});
-
-describe("FilterBar", () => {
-  it("renders search, sort, and filter controls", () => {
-    render(<FilterBar />);
-
-    expect(screen.getByLabelText("Search:")).toBeTruthy();
-    expect(screen.getByLabelText("Sort by:")).toBeTruthy();
-    expect(screen.getByLabelText("Filter by:")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Apply Filter" })).toBeTruthy();
-  });
-
-  it("includes expected option sets for sort and filter", () => {
-    render(<FilterBar />);
-
-    const sortOptions = screen
-      .getAllByRole("option")
-      .map((option) => option.textContent);
-
-    expect(sortOptions).toContain("Name");
-    expect(sortOptions).toContain("Expiration Date");
-    expect(sortOptions).toContain("Purchase Date");
-    expect(sortOptions).toContain("Quantity");
-    expect(sortOptions).toContain("All Items");
-    expect(sortOptions).toContain("Expiring Soon");
-    expect(sortOptions).toContain("Low Stock");
-    expect(sortOptions).toContain("Categories");
   });
 });
 

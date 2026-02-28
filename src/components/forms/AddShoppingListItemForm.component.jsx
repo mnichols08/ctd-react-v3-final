@@ -1,7 +1,8 @@
 function AddShoppingListItemForm({ itemId }) {
+  const handleSubmit = (e) => e.preventDefault();
   const shoppingId = `shopping-item-${itemId}`;
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       <h3>Add Item to Shopping List</h3>
       <input type="hidden" name="itemId" value={itemId} />
       <label htmlFor={shoppingId}>Quantity:</label>

@@ -1,6 +1,7 @@
 function AddInventoryItemForm() {
+  const handleSubmit = (e) => e.preventDefault();
   return (
-    <form>
+    <form onSubmit={handleSubmit}>
       <h2>Add Inventory Item</h2>
       <fieldset>
         <legend>Basic Details</legend>

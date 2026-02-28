@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Moves FilterBar component into forms/FilterBarForm and migrates test into FormsAndCard test file
 - Memoizes inventory on first pass to avoid unnecessary bundle-size and render-time overhead as the data grows
 - Refactor MainContainer, InventorySection, and ItemCard components to pass in a shoppingCard value to the shoppingList section 
 - Shopping list renders if NeedRestock is checked and QtyOnHand is less than TargetQty
@@ -44,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Prevent the site from crashing if a form is from submitted
 - In InventorySection, moves EmptyState component outside of the <ul> to keep the DOM semantic/accessible.
 - Refactors inventoryData to be more consistent with how Airtable will return data
 - Update AddShoppingListItemForm to use dynamic ID for quantity input

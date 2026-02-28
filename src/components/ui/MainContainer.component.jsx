@@ -4,7 +4,7 @@ import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
 import AddInventoryItemForm from "../forms/AddInventoryItemForm.component";
 import InventorySection from "../sections/InventorySection.component";
-import FilterBar from "./FilterBar.component";
+import FilterBarForm from "../forms/FilterBarForm.component";
 
 function MainContainer() {
   const inventoryItems = useMemo(() => {
@@ -50,7 +50,7 @@ function MainContainer() {
         items={inventoryItems.filter((item) => item.NeedRestock === "checked" && item.TargetQty > item.QtyOnHand)}
       />
       <ToolSection id="filter" title="Filter & Sort">
-        <FilterBar />
+        <FilterBarForm />
       </ToolSection>
     </main>
   );

@@ -3,6 +3,7 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 
 import AddInventoryItemForm from "./AddInventoryItemForm.component";
 import AddShoppingListItemForm from "./AddShoppingListItemForm.component";
+import FilterBarForm from "./FilterBarForm.component";
 import ItemCard from "../cards/ItemCard.component";
 
 afterEach(() => {
@@ -58,6 +59,34 @@ describe("AddShoppingListItemForm", () => {
     expect(hiddenItemId?.getAttribute("value")).toBe("25");
     expect(quantityInput.getAttribute("min")).toBe("1");
     expect(quantityInput.required).toBe(true);
+  });
+});
+
+describe("FilterBar", () => {
+  it("renders search, sort, and filter controls", () => {
+    render(<FilterBarForm />);
+
+    expect(screen.getByLabelText("Search:")).toBeTruthy();
+    expect(screen.getByLabelText("Sort by:")).toBeTruthy();
+    expect(screen.getByLabelText("Filter by:")).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Apply Filter" })).toBeTruthy();
+  });
+
+  it("includes expected option sets for sort and filter", () => {
+    render(<FilterBarForm />);
+
+    const sortOptions = screen
+      .getAllByRole("option")
+      .map((option) => option.textContent);
+
+    expect(sortOptions).toContain("Name");
+    expect(sortOptions).toContain("Expiration Date");
+    expect(sortOptions).toContain("Purchase Date");
+    expect(sortOptions).toContain("Quantity");
+    expect(sortOptions).toContain("All Items");
+    expect(sortOptions).toContain("Expiring Soon");
+    expect(sortOptions).toContain("Low Stock");
+    expect(sortOptions).toContain("Categories");
   });
 });
 
