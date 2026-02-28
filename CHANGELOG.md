@@ -21,6 +21,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.0.3] - 2026-02-27
+
+### Added
+
+- Add form submission tests to prevent default actions in all forms
+- Add tests for AddInventoryItemForm, AddShoppingListItemForm, and ItemCard components
+- Implement UtilityComponents tests
+- Add ToolSection and EmptyState components
+- Add MainContainer to organize sections and integrate inventory data
+- Adds a json file containing sample data from Airtable
+- Add forms for inventory and shopping list management
+- Add static components: QuickStatsBar and FilterBar
+
+### Changed
+
+- Moves FilterBar component into forms/FilterBarForm and migrates test into FormsAndCard test file
+- Memoizes inventory on first pass to avoid unnecessary bundle-size and render-time overhead as the data grows
+- Refactor MainContainer, InventorySection, and ItemCard components to pass in a shoppingCard value to the shoppingList section 
+- Shopping list renders if NeedRestock is checked and QtyOnHand is less than TargetQty
+- Refactor ItemCard component to destructure item properties passed from sample data
+- Refactor InventorySection to accept props and streamline rendering
+- Refactor ItemCard and InventorySection to render forms and additional components.
+
+### Fixed
+
+- Prevent the site from crashing if a form is from submitted
+- In InventorySection, moves EmptyState component outside of the <ul> to keep the DOM semantic/accessible.
+- Refactors inventoryData to be more consistent with how Airtable will return data
+- Update AddShoppingListItemForm to use dynamic ID for quantity input
+- Correctly maps ExpiresOn from destructured item within ItemCard and removes title, quantity, expirationDate in favor of their destructured values
+- Fixes mock item in test to pass in ExpiresOn instead of ExpirationDate
+
+---
+
 ## [0.0.2] - 2026-02-27
 
 ### Added
