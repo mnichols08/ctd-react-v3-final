@@ -25,8 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-Add lastId prop to AddInventoryItemForm for inventory tracking
+- Add lastId prop to AddInventoryItemForm for inventory tracking
 
+### Changed
+
+- Enhance AddInventoryItemForm to handle form submission and include lastId for new items
 
 ---
 
