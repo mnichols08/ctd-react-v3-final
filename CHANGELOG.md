@@ -25,6 +25,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add test to preserve TargetQty when removing items from shopping list
+- Add remove functionality for shopping list items in tests
+- Add handleAddToShoppingList prop and implement form submission logic in AddShoppingListItemForm
+- Add handlers for adding and removing items in ItemCard component
+- Implement addToShoppingList and removeFromShoppingList functions in MainContainer
+- Add shopping list handlers to InventorySection component
+
+### Changed
+
+- Fix quantity handling in addToShoppingList function
+- Remove TargetQty assignment when updating item restock status
+- Refactor addToShoppingList and removeFromShoppingList to update inventory state in MainContainer
+- Enhance MainContainer tests to validate add-to-shopping-list functionality
+- Enhance AddShoppingListItemForm tests with payload submission and mock add functionality
+
+### Fixed
+
+- Fix conditional rendering for remove button in ItemCard component
+
+---
+
+## [0.0.5] - 2026-02-28
+
+### Added
+
 - Add lastId prop to AddInventoryItemForm for inventory tracking
 
 ### Changed
