@@ -7,9 +7,10 @@ import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
 
 function MainContainer() {
-  const inventoryMemo = useMemo(() => {
-    return inventorySampleData.records.map((item) => (item = { ...item }));
-  }, []);
+  const inventoryMemo = useMemo(
+    () => inventorySampleData.records.map((item) => (item = { ...item })),
+    [],
+  );
 
   const [inventoryItems, setInventoryItems] = useState(inventoryMemo);
   const addInventoryItem = (newItem) => {
