@@ -19,7 +19,7 @@ afterEach(() => {
 
 describe("AddInventoryItemForm", () => {
   it("renders all form sections and submit action", () => {
-    render(<AddInventoryItemForm />);
+    render(<AddInventoryItemForm addInventoryItem={() => {}} lastId={0} />);
 
     expect(
       screen.getByRole("heading", { name: "Add Inventory Item" }),
@@ -34,7 +34,7 @@ describe("AddInventoryItemForm", () => {
   });
 
   it("marks key required fields as required", () => {
-    render(<AddInventoryItemForm />);
+    render(<AddInventoryItemForm addInventoryItem={() => {}} lastId={0} />);
 
     expect(screen.getByLabelText("Item Name:").required).toBe(true);
     expect(screen.getByLabelText("Qty On Hand:").required).toBe(true);
@@ -100,7 +100,8 @@ describe("FilterBar", () => {
 describe("Form submission behavior", () => {
   it("prevents default submit action for all forms", () => {
     const formRenderers = [
-      () => render(<AddInventoryItemForm />),
+      () =>
+        render(<AddInventoryItemForm addInventoryItem={() => {}} lastId={0} />),
       () => render(<AddShoppingListItemForm itemId={25} />),
       () => render(<FilterBarForm />),
     ];

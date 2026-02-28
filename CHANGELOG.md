@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-<!-- ## [Unreleased]
+<!-- ## [Template]
 
 ### Added
 
@@ -20,6 +20,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 --- -->
+
+## [0.0.5] - 2026-02-28
+
+### Added
+
+- Add lastId prop to AddInventoryItemForm for inventory tracking
+
+### Changed
+
+- Coerce numeric fields in AddInventoryItemForm to numbers or null
+- Refactor NeedRestock property to use boolean values for consistency
+- Remove lastId prop from AddInventoryItemForm and use timestamp for unique ID
+- Update AddInventoryItemForm tests to include props and enhance MainContainer test for item submission
+- Enhance AddInventoryItemForm to handle form submission and include lastId for new items
+
+---
+
 
 ## [0.0.4] - 2026-02-27
 

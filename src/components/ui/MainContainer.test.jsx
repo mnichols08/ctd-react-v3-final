@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 import MainContainer from "./MainContainer.component";
 import inventorySampleData from "../../data/inventoryData.json";
@@ -12,16 +12,6 @@ vi.mock("./QuickStatsBar.component", () => ({
   default: () => <div>QuickStatsBar</div>,
 }));
 
-vi.mock("../forms/AddInventoryItemForm.component", () => ({
-  default: ({ addInventoryItem }) => (
-    <div>
-      {typeof addInventoryItem === "function"
-        ? "has-add-handler"
-        : "no-add-handler"}
-    </div>
-  ),
-}));
-
 vi.mock("../forms/FilterBarForm.component", () => ({
   default: () => <div>FilterBarForm</div>,
 }));
@@ -32,6 +22,7 @@ vi.mock("../sections/InventorySection.component", () => ({
       <h2>{title}</h2>
       <p>{`count:${items.length}`}</p>
       <p>{shoppingCart ? "shopping:true" : "shopping:false"}</p>
+      <p>{items.map((item) => item.ItemName).join("|")}</p>
     </section>
   ),
 }));
@@ -53,7 +44,7 @@ describe("MainContainer", () => {
     ).length;
     const expectedShoppingListCount = inventorySampleData.records.filter(
       (item) =>
-        item.NeedRestock === "checked" && item.TargetQty > item.QtyOnHand,
+        item.NeedRestock && item.TargetQty > item.QtyOnHand,
     ).length;
 
     render(<MainContainer />);
@@ -91,8 +82,33 @@ describe("MainContainer", () => {
     expect(shoppingSection?.textContent).toContain("shopping:true");
   });
 
-  it("passes addInventoryItem callback into AddInventoryItemForm", () => {
+  it("submits AddInventoryItemForm and updates state-backed section data", () => {
+    const initialPantryCount = inventorySampleData.records.filter((item) =>
+      item.Location.includes("Pantry"),
+    ).length;
+
     render(<MainContainer />);
-    expect(screen.getByText("has-add-handler")).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Item Name:"), {
+      target: { value: "Test Granola Bars" },
+    });
+    fireEvent.change(screen.getByLabelText("Location:"), {
+      target: { value: "Pantry" },
+    });
+    fireEvent.change(screen.getByLabelText("Qty On Hand:"), {
+      target: { value: "3" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Item" }));
+
+    const pantrySection = screen
+      .getByRole("heading", { name: "Pantry" })
+      .closest("section");
+
+    expect(pantrySection).toBeTruthy();
+    expect(pantrySection?.textContent).toContain(
+      `count:${initialPantryCount + 1}`,
+    );
+    expect(pantrySection?.textContent).toContain("Test Granola Bars");
   });
 });
