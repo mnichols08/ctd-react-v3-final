@@ -39,6 +39,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor InventorySection to accept props and streamline rendering
 - Refactor ItemCard and InventorySection to render forms and additional components.
 
+### Fixed
+- Correctly maps ExpiresOn from destructured item within ItemCard and removes title, quantity, expirationDate in favor of their destructured values
+- Fixes mock item in test to pass in ExpiresOn instead of ExpirationDate
+
 ---
 
 ## [0.0.2] - 2026-02-27

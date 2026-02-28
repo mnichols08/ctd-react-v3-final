@@ -5,25 +5,22 @@ function ItemCard({ item }) {
     ItemName: itemName,
     QtyOnHand: qtyOnHand,
     QtyUnit: qtyUnit,
-    ExpirationDate: expiresOn,
+    ExpiresOn: expiresOn,
     DateFrozen: dateFrozen,
     Notes: notes,
     Category: category,
   } = item;
 
-  const title = itemName ;
-  const quantity = qtyOnHand ;
-  const expirationDate = expiresOn;
 
   return (
     <li id={id}>
       <article>
-        <h2>{title}</h2>
+        <h2>{itemName}</h2>
         <p>
-          Quantity: {quantity}
+          Quantity: {qtyOnHand}
           {qtyUnit ? ` ${qtyUnit}` : ""}
         </p>
-        <p>Expiration Date: {expirationDate}</p>
+        <p>Expiration Date: {expiresOn}</p>
         {dateFrozen && <p>Date Frozen: {dateFrozen}</p>}
         {notes && <p>Notes: {notes}</p>}
         <p>Category: {category}</p>

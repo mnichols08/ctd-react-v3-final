@@ -68,7 +68,7 @@ describe("ItemCard", () => {
       ItemName: "Blueberries",
       QtyOnHand: "2",
       QtyUnit: "bags",
-      ExpirationDate: "2026-04-10",
+      ExpiresOn: "2026-04-10",
       DateFrozen: "2026-03-01",
       Notes: "Use for smoothies",
       Category: "Fruit",
