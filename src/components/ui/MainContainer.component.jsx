@@ -19,7 +19,7 @@ function MainContainer() {
         <QuickStatsBar />
       </ToolSection>
       <ToolSection id="add-item" title="Add Item">
-        <AddInventoryItemForm addInventoryItem={addInventoryItem} />
+        <AddInventoryItemForm addInventoryItem={addInventoryItem} lastId={inventoryItems.length} />
       </ToolSection>
       <InventorySection
         id="fridge"
