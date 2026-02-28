@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Enhance AddShoppingListItemForm tests to validate payload submission, default prevention, and quantity reset on error
+- Enhance AddShoppingListItemForm tests to validate payload submission, default prevention, and quantity after successful submit
 
 ---
 

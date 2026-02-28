@@ -11,10 +11,9 @@ function AddShoppingListItemForm({ itemId, handleAddToShoppingList }) {
     };
     try {
       handleAddToShoppingList(payload);
+      formRef.current.reset();
     } catch (error) {
       console.error("Error adding item to shopping list:", error);
-    } finally {
-      formRef.current.reset();
     }
   };
   const shoppingId = `shopping-item-${itemId}`;
