@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Coerce numeric fields in AddInventoryItemForm to numbers or null
 - Refactor NeedRestock property to use boolean values for consistency
 - Remove lastId prop from AddInventoryItemForm and use timestamp for unique ID
 - Update AddInventoryItemForm tests to include props and enhance MainContainer test for item submission

@@ -3,6 +3,19 @@ function AddInventoryItemForm({ addInventoryItem }) {
     e.preventDefault();
     const formData = new FormData(e.target);
     const newItem = Object.fromEntries(formData.entries());
+    // Coerce numeric fields from strings to numbers (or null for empty fields)
+    const numericFields = [
+      "QtyOnHand",
+      "TargetQty",
+      "PurchasePrice",
+      "UnitCost",
+    ];
+    numericFields.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(newItem, field)) {
+        const value = newItem[field];
+        newItem[field] = value === "" ? null : Number(value);
+      }
+    });
     newItem.LastUpdated = new Date().toISOString();
     newItem.id = new Date().getTime(); // Use timestamp as unique ID for simplicity
     addInventoryItem(newItem);
