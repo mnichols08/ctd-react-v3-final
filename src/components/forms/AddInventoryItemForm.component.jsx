@@ -1,11 +1,10 @@
-function AddInventoryItemForm({ addInventoryItem, lastId }) {
+function AddInventoryItemForm({ addInventoryItem }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const newItem = Object.fromEntries(formData.entries());
     newItem.LastUpdated = new Date().toISOString();
-    newItem.id = lastId + 1;
-    newItem.NeedRestock = formData.get("NeedRestock") === "on" ? "checked" : "";
+    newItem.id = new Date().getTime(); // Use timestamp as unique ID for simplicity
     addInventoryItem(newItem);
     e.target.reset();
   };
