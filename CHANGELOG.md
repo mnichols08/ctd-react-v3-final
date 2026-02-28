@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Refactor MainContainer to remove useMemo and initialize inventory state directly
 - Adds a numerical id to each item in inventoryData
 
 ---
