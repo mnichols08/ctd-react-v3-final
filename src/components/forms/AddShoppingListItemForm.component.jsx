@@ -1,5 +1,13 @@
-function AddShoppingListItemForm({ itemId }) {
-  const handleSubmit = (e) => e.preventDefault();
+function AddShoppingListItemForm({ itemId, handleAddToShoppingList }) {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const payload = {
+      itemId,
+      quantity: formData.get("quantity"),
+    };
+    handleAddToShoppingList?.(payload);
+  };
   const shoppingId = `shopping-item-${itemId}`;
   return (
     <form onSubmit={handleSubmit}>
