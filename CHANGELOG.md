@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.0.7] - 2026-02-28
+
+### Added
+
+- Implement useRef for form reset in AddShoppingListItemForm
+
+---
+
 ## [0.0.6] - 2026-02-28
 
 ### Added

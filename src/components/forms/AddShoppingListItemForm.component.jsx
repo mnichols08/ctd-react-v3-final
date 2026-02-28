@@ -1,4 +1,7 @@
+import { useRef } from "react";
+
 function AddShoppingListItemForm({ itemId, handleAddToShoppingList }) {
+  const formRef = useRef(null);
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -6,11 +9,17 @@ function AddShoppingListItemForm({ itemId, handleAddToShoppingList }) {
       itemId,
       quantity: formData.get("quantity"),
     };
-    handleAddToShoppingList?.(payload);
+    try {
+      handleAddToShoppingList(payload);
+    } catch (error) {
+      console.error("Error adding item to shopping list:", error);
+    } finally {
+      formRef.current.reset();
+    }
   };
   const shoppingId = `shopping-item-${itemId}`;
   return (
-    <form onSubmit={handleSubmit}>
+    <form ref={formRef} onSubmit={handleSubmit}>
       <h3>Add Item to Shopping List</h3>
       <input type="hidden" name="itemId" value={itemId} />
       <label htmlFor={shoppingId}>Quantity:</label>
