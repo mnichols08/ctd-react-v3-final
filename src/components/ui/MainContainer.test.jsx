@@ -44,7 +44,7 @@ describe("MainContainer", () => {
     ).length;
     const expectedShoppingListCount = inventorySampleData.records.filter(
       (item) =>
-        item.NeedRestock === "checked" && item.TargetQty > item.QtyOnHand,
+        item.NeedRestock && item.TargetQty > item.QtyOnHand,
     ).length;
 
     render(<MainContainer />);
