@@ -1,5 +1,10 @@
 import AddShoppingListItemForm from "../forms/AddShoppingListItemForm.component";
-function ItemCard({ item, shoppingCart }) {
+function ItemCard({
+  item,
+  shoppingCart,
+  handleAddToShoppingList,
+  handleRemoveFromShoppingList,
+}) {
   const {
     id,
     ItemName: itemName,
@@ -23,7 +28,17 @@ function ItemCard({ item, shoppingCart }) {
         {dateFrozen && <p>Date Frozen: {dateFrozen}</p>}
         {notes && <p>Notes: {notes}</p>}
         <p>Category: {category}</p>
-        {!shoppingCart && <AddShoppingListItemForm itemId={id} />}
+        {!shoppingCart && (
+          <AddShoppingListItemForm
+            itemId={id}
+            handleAddToShoppingList={handleAddToShoppingList}
+          />
+        )}
+        {shoppingCart && (
+          <button onClick={() => handleRemoveFromShoppingList(id)}>
+            Remove from Shopping List
+          </button>
+        )}
       </article>
     </li>
   );

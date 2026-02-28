@@ -21,6 +21,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [Unreleased]
+
+### Added
+
+- Add handleAddToShoppingList prop and implement form submission logic in AddShoppingListItemForm
+- Add handlers for adding and removing items in ItemCard component
+- Implement addToShoppingList and removeFromShoppingList functions in MainContainer
+- Add shopping list handlers to InventorySection component
+
+---
+
 ## [0.0.5] - 2026-02-28
 
 ### Added

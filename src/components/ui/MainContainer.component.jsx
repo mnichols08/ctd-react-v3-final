@@ -13,6 +13,30 @@ function MainContainer() {
   const addInventoryItem = (newItem) => {
     setInventoryItems((prevItems) => [...prevItems, newItem]);
   };
+  const addToShoppingList = ({ itemId, quantity }) => {
+    const item = inventoryItems.find((item) => item.id === itemId);
+    if (!item) return;
+    const updatedItem = {
+      ...item,
+      NeedRestock: true,
+      TargetQty: item.QtyOnHand + parseInt(quantity, 10),
+    };
+    setInventoryItems((prevItems) =>
+      prevItems.map((i) => (i.id === itemId ? updatedItem : i)),
+    );
+  };
+  const removeFromShoppingList = (itemId) => {
+    const item = inventoryItems.find((item) => item.id === itemId);
+    if (!item) return;
+    const updatedItem = {
+      ...item,
+      NeedRestock: false,
+      TargetQty: item.QtyOnHand,
+    };
+    setInventoryItems((prevItems) =>
+      prevItems.map((item) => (item.id === itemId ? updatedItem : item)),
+    );
+  };
   return (
     <main>
       <ToolSection id="stats" title="Quick Stats">
@@ -24,6 +48,7 @@ function MainContainer() {
       <InventorySection
         id="fridge"
         title="Fridge"
+        addToShoppingList={addToShoppingList}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Fridge"),
         )}
@@ -31,6 +56,7 @@ function MainContainer() {
       <InventorySection
         id="freezer"
         title="Freezer"
+        addToShoppingList={addToShoppingList}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Freezer"),
         )}
@@ -38,6 +64,7 @@ function MainContainer() {
       <InventorySection
         id="pantry"
         title="Pantry"
+        addToShoppingList={addToShoppingList}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Pantry"),
         )}
@@ -46,10 +73,10 @@ function MainContainer() {
       <InventorySection
         id="shopping-list"
         title="Shopping List"
+        removeFromShoppingList={removeFromShoppingList}
         shoppingCart
         items={inventoryItems.filter(
-          (item) =>
-            item.NeedRestock && item.TargetQty > item.QtyOnHand,
+          (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
         )}
       />
       <ToolSection id="filter" title="Filter & Sort">
