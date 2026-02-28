@@ -113,7 +113,7 @@ describe("AddShoppingListItemForm", () => {
     expect(quantityInput.value).toBe("");
   });
 
-  it("resets quantity and does not break submit flow when callback throws", () => {
+  it("keeps quantity and does not break submit flow when callback throws", () => {
     const handleAddToShoppingList = vi.fn(() => {
       throw new Error("submit failure");
     });
@@ -151,7 +151,7 @@ describe("AddShoppingListItemForm", () => {
       itemId: 25,
       quantity: "2",
     });
-    expect(quantityInput.value).toBe("");
+    expect(quantityInput.value).toBe("2");
     expect(consoleErrorSpy).toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore();
