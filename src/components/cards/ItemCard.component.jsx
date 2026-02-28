@@ -34,7 +34,7 @@ function ItemCard({
             handleAddToShoppingList={handleAddToShoppingList}
           />
         )}
-        {shoppingCart && (
+         {shoppingCart && handleRemoveFromShoppingList && (
           <button onClick={() => handleRemoveFromShoppingList(id)}>
             Remove from Shopping List
           </button>

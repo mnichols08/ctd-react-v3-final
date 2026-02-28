@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhance MainContainer tests to validate add-to-shopping-list functionality
 - Enhance AddShoppingListItemForm tests with payload submission and mock add functionality
 
+### Fixed
+
+- Fix conditional rendering for remove button in ItemCard component
 ---
 
 ## [0.0.5] - 2026-02-28
