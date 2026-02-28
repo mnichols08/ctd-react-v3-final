@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.0.4] - 2026-02-27
 
+### Added
+
+- Add tests for MainContainer to verify state initialization and section rendering
+
 ### Changed
 
 - Refactor MainContainer to manage inventory state and pass addInventoryItem to AddInventoryItemForm
