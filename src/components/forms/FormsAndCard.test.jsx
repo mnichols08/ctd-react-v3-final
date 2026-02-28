@@ -1,5 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import {
+  cleanup,
+  createEvent,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 
 import AddInventoryItemForm from "./AddInventoryItemForm.component";
 import AddShoppingListItemForm from "./AddShoppingListItemForm.component";
@@ -87,6 +94,33 @@ describe("FilterBar", () => {
     expect(sortOptions).toContain("Expiring Soon");
     expect(sortOptions).toContain("Low Stock");
     expect(sortOptions).toContain("Categories");
+  });
+});
+
+describe("Form submission behavior", () => {
+  it("prevents default submit action for all forms", () => {
+    const formRenderers = [
+      () => render(<AddInventoryItemForm />),
+      () => render(<AddShoppingListItemForm itemId={25} />),
+      () => render(<FilterBarForm />),
+    ];
+
+    formRenderers.forEach((renderForm) => {
+      const { container, unmount } = renderForm();
+      const form = container.querySelector("form");
+
+      expect(form).toBeTruthy();
+
+      if (!form) {
+        return;
+      }
+
+      const submitEvent = createEvent.submit(form);
+      fireEvent(form, submitEvent);
+
+      expect(submitEvent.defaultPrevented).toBe(true);
+      unmount();
+    });
   });
 });
 

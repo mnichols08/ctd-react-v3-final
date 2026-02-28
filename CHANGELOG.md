@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add form submission tests to prevent default actions in all forms
 - Add tests for AddInventoryItemForm, AddShoppingListItemForm, and ItemCard components
 - Implement UtilityComponents tests
 - Add ToolSection and EmptyState components
