@@ -78,7 +78,7 @@ describe("AddShoppingListItemForm", () => {
     expect(quantityInput.required).toBe(true);
   });
 
-  it("submits expected payload to parent callback", () => {
+  it("submits expected payload, prevents default, and resets quantity", () => {
     const handleAddToShoppingList = vi.fn();
 
     const { container } = render(
@@ -88,7 +88,9 @@ describe("AddShoppingListItemForm", () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText("Quantity:"), {
+    const quantityInput = screen.getByLabelText("Quantity:");
+
+    fireEvent.change(quantityInput, {
       target: { value: "3" },
     });
 
@@ -108,6 +110,51 @@ describe("AddShoppingListItemForm", () => {
       itemId: 25,
       quantity: "3",
     });
+    expect(quantityInput.value).toBe("");
+  });
+
+  it("resets quantity and does not break submit flow when callback throws", () => {
+    const handleAddToShoppingList = vi.fn(() => {
+      throw new Error("submit failure");
+    });
+    const consoleErrorSpy = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
+
+    const { container } = render(
+      <AddShoppingListItemForm
+        itemId={25}
+        handleAddToShoppingList={handleAddToShoppingList}
+      />,
+    );
+
+    const quantityInput = screen.getByLabelText("Quantity:");
+
+    fireEvent.change(quantityInput, {
+      target: { value: "2" },
+    });
+
+    const form = container.querySelector("form");
+    expect(form).toBeTruthy();
+
+    if (!form) {
+      consoleErrorSpy.mockRestore();
+      return;
+    }
+
+    const submitEvent = createEvent.submit(form);
+    fireEvent(form, submitEvent);
+
+    expect(submitEvent.defaultPrevented).toBe(true);
+    expect(handleAddToShoppingList).toHaveBeenCalledTimes(1);
+    expect(handleAddToShoppingList).toHaveBeenCalledWith({
+      itemId: 25,
+      quantity: "2",
+    });
+    expect(quantityInput.value).toBe("");
+    expect(consoleErrorSpy).toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
   });
 });
 

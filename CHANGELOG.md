@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Implement useRef for form reset in AddShoppingListItemForm
 
+### Changed
+
+- Enhance AddShoppingListItemForm tests to validate payload submission, default prevention, and quantity reset on error
+
 ---
 
 ## [0.0.6] - 2026-02-28
