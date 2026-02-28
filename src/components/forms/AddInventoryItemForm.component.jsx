@@ -1,4 +1,9 @@
+import { useRef } from "react";
+
 function AddInventoryItemForm({ addInventoryItem }) {
+  const formRef = useRef(null);
+  const itemNameRef = useRef(null);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -19,15 +24,22 @@ function AddInventoryItemForm({ addInventoryItem }) {
     newItem.LastUpdated = new Date().toISOString();
     newItem.id = new Date().getTime(); // Use timestamp as unique ID for simplicity
     addInventoryItem(newItem);
-    e.target.reset();
+    formRef.current?.reset();
+    itemNameRef.current?.focus();
   };
   return (
-    <form onSubmit={handleSubmit}>
+    <form ref={formRef} onSubmit={handleSubmit}>
       <h2>Add Inventory Item</h2>
       <fieldset>
         <legend>Basic Details</legend>
         <label htmlFor="ItemName">Item Name:</label>
-        <input type="text" id="ItemName" name="ItemName" required />
+        <input
+          ref={itemNameRef}
+          type="text"
+          id="ItemName"
+          name="ItemName"
+          required
+        />
 
         <label htmlFor="ItemDescripton">Item Description:</label>
         <textarea id="ItemDescripton" name="ItemDescripton" />

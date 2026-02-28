@@ -1,5 +1,5 @@
 import { useState } from "react";
-import inventorySampleData from "../../data/inventoryData.json";
+import inventorySampleData from "../../data/inventorySample.json";
 import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
 import AddInventoryItemForm from "../forms/AddInventoryItemForm.component";
@@ -20,7 +20,7 @@ function MainContainer() {
         return prevItems;
       }
       const qty = Number(quantity);
-      if (!Number.isFinite(qty)) return;
+      if (!Number.isFinite(qty)) return prevItems;
       const updatedItem = {
         ...item,
         NeedRestock: true,
