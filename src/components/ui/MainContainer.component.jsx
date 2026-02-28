@@ -36,7 +36,6 @@ function MainContainer() {
       const updatedItem = {
         ...item,
         NeedRestock: false,
-        TargetQty: item.QtyOnHand,
       };
       return prevItems.map((i) => (i.id === itemId ? updatedItem : i));
     });

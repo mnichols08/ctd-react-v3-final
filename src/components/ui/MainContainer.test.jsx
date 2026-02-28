@@ -29,6 +29,13 @@ vi.mock("../sections/InventorySection.component", () => ({
       <p>{`count:${items.length}`}</p>
       <p>{shoppingCart ? "shopping:true" : "shopping:false"}</p>
       <p>{items.map((item) => item.ItemName).join("|")}</p>
+      <p>
+        {items
+          .map(
+            (item) => `${item.ItemName}:${item.TargetQty}:${item.NeedRestock}`,
+          )
+          .join("|")}
+      </p>
       {!shoppingCart && items[0] && (
         <form
           aria-label={`mock-form-${title}`}
@@ -197,6 +204,36 @@ describe("MainContainer", () => {
     );
     expect(shoppingSection?.textContent).not.toContain(
       shoppingItemToRemove?.ItemName,
+    );
+  });
+
+  it("preserves TargetQty when removing from shopping list", () => {
+    const initialShoppingListItems = inventorySampleData.records.filter(
+      (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
+    );
+    const shoppingItemToRemove = initialShoppingListItems[0];
+
+    expect(shoppingItemToRemove).toBeTruthy();
+
+    const sectionTitle = shoppingItemToRemove.Location.includes("Fridge")
+      ? "Fridge"
+      : shoppingItemToRemove.Location.includes("Freezer")
+        ? "Freezer"
+        : "Pantry";
+
+    render(<MainContainer />);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "mock-remove-Shopping List" }),
+    );
+
+    const locationSection = screen
+      .getByRole("heading", { name: sectionTitle })
+      .closest("section");
+
+    expect(locationSection).toBeTruthy();
+    expect(locationSection?.textContent).toContain(
+      `${shoppingItemToRemove.ItemName}:${shoppingItemToRemove.TargetQty}:false`,
     );
   });
 });
