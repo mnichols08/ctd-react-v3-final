@@ -118,6 +118,7 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
           id={`edit-Location-${item.id}`}
           name="Location"
           defaultValue={safe(item.Location)}
+          required
         />
 
         <label htmlFor={`edit-Tags-${item.id}`}>Tags:</label>
@@ -140,7 +141,7 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
       <fieldset>
         <legend>Quantities</legend>
 
-        <label htmlFor={`edit-QtyOnHand-${item.id}`}>Qty On Hand:</label>
+        <label htmlFor={`edit-QtyOnHand-${item.id}`}>Quantity on Hand:</label>
         <input
           type="number"
           id={`edit-QtyOnHand-${item.id}`}
@@ -151,7 +152,7 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
           required
         />
 
-        <label htmlFor={`edit-QtyUnit-${item.id}`}>Qty Unit:</label>
+        <label htmlFor={`edit-QtyUnit-${item.id}`}>Unit:</label>
         <input
           type="text"
           id={`edit-QtyUnit-${item.id}`}

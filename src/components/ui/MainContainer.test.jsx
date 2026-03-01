@@ -1,11 +1,22 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 
 import MainContainer from "./MainContainer.component";
 import inventorySampleData from "../../data/inventorySample.json";
 
 vi.mock("../sections/ToolSection.component", () => ({
-  default: ({ children }) => <section>{children}</section>,
+  default: ({ id, title, children }) => (
+    <section id={id}>
+      <h2>{title}</h2>
+      {children}
+    </section>
+  ),
 }));
 
 vi.mock("./QuickStatsBar.component", () => ({
@@ -119,24 +130,48 @@ describe("MainContainer", () => {
     expect(shoppingSection?.textContent).toContain("shopping:true");
   });
 
-  it("submits AddInventoryItemForm and updates state-backed section data", () => {
+  it("submits an add-item form and updates state-backed section data", () => {
     const initialPantryCount = inventorySampleData.records.filter((item) =>
       item.Location.includes("Pantry"),
     ).length;
 
     render(<MainContainer />);
 
-    fireEvent.change(screen.getByLabelText("Item Name:"), {
+    // Locate the "Add Item" ToolSection, then pick whichever form is present
+    const addItemSection = screen
+      .getByRole("heading", { name: "Add Item" })
+      .closest("section");
+    const forms = within(addItemSection).getAllByRole("form");
+    const addForm = forms[0];
+
+    // Detect which form we found and use the correct labels
+    const isQuickAdd =
+      within(addForm).queryByLabelText("Quantity on Hand:") !== null;
+
+    fireEvent.change(within(addForm).getByLabelText("Item Name:"), {
       target: { value: "Test Granola Bars" },
     });
-    fireEvent.change(screen.getByLabelText("Location:"), {
-      target: { value: "Pantry" },
-    });
-    fireEvent.change(screen.getByLabelText("Qty On Hand:"), {
-      target: { value: "3" },
-    });
 
-    fireEvent.click(screen.getByRole("button", { name: "Add Item" }));
+    if (isQuickAdd) {
+      fireEvent.change(within(addForm).getByLabelText("Category:"), {
+        target: { value: "Snacks" },
+      });
+      fireEvent.change(within(addForm).getByLabelText("Location:"), {
+        target: { value: "Pantry" },
+      });
+      fireEvent.change(within(addForm).getByLabelText("Quantity on Hand:"), {
+        target: { value: "3" },
+      });
+    } else {
+      fireEvent.change(within(addForm).getByLabelText("Location:"), {
+        target: { value: "Pantry" },
+      });
+      fireEvent.change(within(addForm).getByLabelText("Quantity On Hand:"), {
+        target: { value: "3" },
+      });
+    }
+
+    fireEvent.click(within(addForm).getByRole("button", { name: "Add Item" }));
 
     const pantrySection = screen
       .getByRole("heading", { name: "Pantry" })
