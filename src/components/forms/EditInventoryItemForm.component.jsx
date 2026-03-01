@@ -148,7 +148,6 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
           name="QtyOnHand"
           defaultValue={safe(item.QtyOnHand)}
           min="0"
-          step="any"
           required
         />
 

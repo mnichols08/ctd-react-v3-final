@@ -21,6 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.1.5] - 2026-03-01
+
+### Changed
+
+- Remove step attribute from QtyOnHand input in EditInventoryItemForm to maintain consistency with Add Item forms
+
 ## [0.1.4] - 2026-03-01
 
 ### Added
