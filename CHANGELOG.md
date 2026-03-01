@@ -21,11 +21,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.1.3] - 2026-03-01
+
+## Added
+
+- Add aria-label to form for accessibility improvements
+
+---
+
 ## [0.1.2] - 2026-03-01
 
 ### Fixed
 
 - Add required attribute to Location input in EditInventoryItemForm
+
+---
 
 ## [0.1.1] - 2026-03-01
 

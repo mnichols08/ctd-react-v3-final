@@ -28,8 +28,7 @@ function AddInventoryItemForm({ addInventoryItem }) {
     itemNameRef.current?.focus();
   };
   return (
-    <form ref={formRef} onSubmit={handleSubmit}>
-      <h2>Add Inventory Item</h2>
+    <form ref={formRef} onSubmit={handleSubmit} aria-label="Add Inventory Item">
       <fieldset>
         <legend>Basic Details</legend>
         <label htmlFor="ItemName">Item Name:</label>
@@ -142,7 +141,6 @@ function AddInventoryItemForm({ addInventoryItem }) {
         <label htmlFor="Notes">Notes:</label>
         <textarea id="Notes" name="Notes" />
       </fieldset>
-
       <button type="submit">Add Item</button>
     </form>
   );
