@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update quantity labels in AddInventoryItemForm and MainContainer tests for consistency
 - Update quantity labels in AddInventoryItemForm and EditInventoryItemForm for clarity
 - Refactor MainContainer tests to improve form handling and add conditional logic for form submission
 

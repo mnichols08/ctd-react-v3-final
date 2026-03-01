@@ -40,7 +40,7 @@ describe("AddInventoryItemForm", () => {
     render(<AddInventoryItemForm addInventoryItem={() => {}} lastId={0} />);
 
     expect(screen.getByLabelText("Item Name:").required).toBe(true);
-    expect(screen.getByLabelText("Qty On Hand:").required).toBe(true);
+    expect(screen.getByLabelText("Quantity on Hand:").required).toBe(true);
   });
 
   it("clears form and focuses Item Name input after successful submit", () => {
@@ -51,7 +51,7 @@ describe("AddInventoryItemForm", () => {
     );
 
     const itemNameInput = screen.getByLabelText("Item Name:");
-    const qtyInput = screen.getByLabelText("Qty On Hand:");
+    const qtyInput = screen.getByLabelText("Quantity on Hand:");
     const locationSelect = screen.getByLabelText("Location:");
 
     fireEvent.change(itemNameInput, { target: { value: "Test Item" } });
@@ -598,8 +598,8 @@ describe("EditInventoryItemForm", () => {
     expect(screen.getByLabelText("Category:").value).toBe("Fruit");
     expect(screen.getByLabelText("Sub Category:").value).toBe("Berries");
     expect(screen.getByLabelText("Location:").value).toBe("Freezer");
-    expect(screen.getByLabelText("Qty On Hand:").value).toBe("2");
-    expect(screen.getByLabelText("Qty Unit:").value).toBe("bags");
+    expect(screen.getByLabelText("Quantity on Hand:").value).toBe("2");
+    expect(screen.getByLabelText("Unit:").value).toBe("bags");
     expect(screen.getByLabelText("Target Qty:").value).toBe("5");
     expect(screen.getByLabelText("Expires On:").value).toBe("2026-06-01");
     expect(screen.getByLabelText("Date Purchased:").value).toBe("2026-02-15");

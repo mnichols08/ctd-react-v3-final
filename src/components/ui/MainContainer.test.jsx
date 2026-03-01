@@ -166,7 +166,7 @@ describe("MainContainer", () => {
       fireEvent.change(within(addForm).getByLabelText("Location:"), {
         target: { value: "Pantry" },
       });
-      fireEvent.change(within(addForm).getByLabelText("Qty On Hand:"), {
+      fireEvent.change(within(addForm).getByLabelText("Quantity On Hand:"), {
         target: { value: "3" },
       });
     }
