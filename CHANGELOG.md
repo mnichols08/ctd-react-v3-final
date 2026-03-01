@@ -23,9 +23,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.4] - 2026-03-01
 
+### Added
+
+- Add test for toggling between QuickAddForm and AddInventoryItemForm
+
 ### Changed
 
 - Refactor MainContainer to include toggle functionality between Quick Add and Full Form for adding inventory items
+
+---
 
 ## [0.1.3] - 2026-03-01
 

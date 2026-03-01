@@ -272,3 +272,50 @@ describe("MainContainer", () => {
     );
   });
 });
+
+  it("toggles between QuickAddForm and AddInventoryItemForm", () => {
+    render(<MainContainer />);
+
+    // QuickAddForm should be visible by default
+    expect(
+      screen.getByRole("form", { name: "Quick add inventory item" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("form", { name: "Add Inventory Item" }),
+    ).toBeNull();
+
+    // Toggle button should offer to switch to Full Form
+    const toggleBtn = screen.getByRole("button", {
+      name: "Switch to Full Form",
+    });
+    expect(toggleBtn).toBeTruthy();
+
+    // Click toggle to switch to Full Form
+    fireEvent.click(toggleBtn);
+
+    // AddInventoryItemForm should now be visible, QuickAddForm hidden
+    expect(
+      screen.getByRole("form", { name: "Add Inventory Item" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("form", { name: "Quick add inventory item" }),
+    ).toBeNull();
+
+    // Button text should update
+    expect(
+      screen.getByRole("button", { name: "Switch to Quick Add" }),
+    ).toBeTruthy();
+
+    // Click toggle to switch back
+    fireEvent.click(
+      screen.getByRole("button", { name: "Switch to Quick Add" }),
+    );
+
+    // QuickAddForm should be back
+    expect(
+      screen.getByRole("form", { name: "Quick add inventory item" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("form", { name: "Add Inventory Item" }),
+    ).toBeNull();
+  });
