@@ -21,7 +21,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [0.1.0]
+## [0.1.2] - 2026-03-01
+
+### Fixed
+
+- Add required attribute to Location input in EditInventoryItemForm
+
+## [0.1.1] - 2026-03-01
+
+### Added
+
+- Add editing functionality to ItemCard component with EditInventoryItemForm
+- Add EditInventoryItemForm component for editing inventory items
+- Add updateInventoryItem function and integrate into InventorySections
+
+---
+
+## [0.1.0] - 2026-02-29
 
 ### Added
 
