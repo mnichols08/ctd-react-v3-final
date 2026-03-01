@@ -21,6 +21,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.1.6] - 2026-03-01
+
+### Added
+
+- Creates a `dev:server` script to allow running the development server on the local network
+- Adds script `test:watch` for running Vitest tests in watch mode 
+
+### Changed
+
+- Refactor EditInventoryItemForm to use controlled components and improve form handling
+- Refactor QuickAddForm to use controlled components for form data management
+- Refactor FilterBarForm to use controlled components for search input
+- Refactor AddShoppingListItemForm to use controlled components for quantity input
+- Refactor AddInventoryItemForm to use controlled components for form inputs
+
+---
+
 ## [0.1.5] - 2026-03-01
 
 ### Changed
