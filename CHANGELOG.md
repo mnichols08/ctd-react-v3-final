@@ -23,9 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.3] - 2026-03-01
 
-## Added
+### Added
 
 - Add aria-label to form for accessibility improvements
+
+
+### Changed
+
+- Refactor MainContainer tests to improve form handling and add conditional logic for form submission
 
 ---
 
