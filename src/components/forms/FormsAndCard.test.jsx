@@ -39,6 +39,34 @@ describe("AddInventoryItemForm", () => {
     expect(screen.getByLabelText("Item Name:").required).toBe(true);
     expect(screen.getByLabelText("Qty On Hand:").required).toBe(true);
   });
+
+  it("clears form and focuses Item Name input after successful submit", () => {
+    const addInventoryItem = vi.fn();
+
+    const { container } = render(
+      <AddInventoryItemForm addInventoryItem={addInventoryItem} lastId={0} />,
+    );
+
+    const itemNameInput = screen.getByLabelText("Item Name:");
+    const qtyInput = screen.getByLabelText("Qty On Hand:");
+    const locationSelect = screen.getByLabelText("Location:");
+
+    fireEvent.change(itemNameInput, { target: { value: "Test Item" } });
+    fireEvent.change(qtyInput, { target: { value: "5" } });
+    fireEvent.change(locationSelect, { target: { value: "Pantry" } });
+
+    expect(itemNameInput.value).toBe("Test Item");
+    expect(qtyInput.value).toBe("5");
+
+    const form = container.querySelector("form");
+    const submitEvent = createEvent.submit(form);
+    fireEvent(form, submitEvent);
+
+    expect(addInventoryItem).toHaveBeenCalledTimes(1);
+    expect(itemNameInput.value).toBe("");
+    expect(qtyInput.value).toBe("");
+    expect(document.activeElement).toBe(itemNameInput);
+  });
 });
 
 describe("AddShoppingListItemForm", () => {
@@ -238,7 +266,7 @@ describe("ItemCard", () => {
     expect(
       screen.getByRole("heading", { name: "Blueberries", level: 2 }),
     ).toBeTruthy();
-    expect(screen.getByText("Quantity: 2 bags")).toBeTruthy();
+    expect(screen.getByText("Quantity on Hand: 2 bags")).toBeTruthy();
     expect(screen.getByText("Expiration Date: 2026-04-10")).toBeTruthy();
     expect(screen.getByText("Date Frozen: 2026-03-01")).toBeTruthy();
     expect(screen.getByText("Notes: Use for smoothies")).toBeTruthy();
@@ -255,7 +283,7 @@ describe("ItemCard", () => {
       Category: "Dairy",
     };
 
-    render(<ItemCard item={item} />);
+    render(<ItemCard item={item} handleAddToShoppingList={() => {}} />);
 
     expect(screen.queryByText(/Date Frozen:/)).toBeNull();
     expect(screen.queryByText(/Notes:/)).toBeNull();
@@ -264,8 +292,71 @@ describe("ItemCard", () => {
     expect(
       within(listItem).getByRole("heading", { name: "Milk" }),
     ).toBeTruthy();
+
     expect(
       within(listItem).getByRole("button", { name: "Add to Shopping List" }),
     ).toBeTruthy();
+  });
+
+  it("shows remove button and hides add form for shopping cart items", () => {
+    const handleRemove = vi.fn();
+    const item = {
+      id: 3,
+      ItemName: "Sesame Oil",
+      QtyOnHand: 0.1,
+      QtyUnit: "bottle",
+      TargetQty: 1,
+      NeedRestock: true,
+      ExpiresOn: "2026-10-01",
+      Category: "Cooking Essentials",
+    };
+
+    render(
+      <ItemCard
+        item={item}
+        shoppingCart
+        handleRemoveFromShoppingList={handleRemove}
+      />,
+    );
+
+    const removeButton = screen.getByRole("button", {
+      name: "Remove from Shopping List",
+    });
+    expect(removeButton).toBeTruthy();
+
+    expect(
+      screen.queryByRole("button", { name: "Add to Shopping List" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("heading", { name: "Add Item to Shopping List" }),
+    ).toBeNull();
+
+    fireEvent.click(removeButton);
+    expect(handleRemove).toHaveBeenCalledWith(3);
+  });
+
+  it("hides add form when item is already in the shopping list", () => {
+    const item = {
+      id: 4,
+      ItemName: "Pearl Couscous",
+      QtyOnHand: 1,
+      QtyUnit: "container",
+      TargetQty: 3,
+      NeedRestock: true,
+      ExpiresOn: "2027-03-12",
+      Category: "Dry",
+    };
+
+    render(<ItemCard item={item} handleAddToShoppingList={() => {}} />);
+
+    expect(
+      screen.queryByRole("button", { name: "Add to Shopping List" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("heading", { name: "Add Item to Shopping List" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Remove from Shopping List" }),
+    ).toBeNull();
   });
 });

@@ -21,6 +21,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.0.8] - 2026-02-28
+
+### Added
+
+- Add tests for ItemCard component to handle shopping list interactions
+- Add test for clearing form and focusing input after successful submit in AddInventoryItemForm
+
+### Changed
+
+- Refactor ItemCard component to enhance readability and improve conditional rendering of AddShoppingListItemForm
+- Enhance AddInventoryItemForm to use refs for form reset and input focus
+- Reduce number of inventory items by introducing a sample file instead of the full inventory data
+
+### Fixed
+
+- Refactor ItemCard component to improve shopping list logic and enhance readability
+- In MainContainer, avoid setting state to undefined by returning prevItems when `!Number.isFinite(qty)`
+- Update ItemCard test to reflect quantity label change and adjust MainContainer test data import
+
+---
+
 ## [0.0.7] - 2026-02-28
 
 ### Added
@@ -79,7 +100,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-
 ## [0.0.4] - 2026-02-27
 
 ### Added
@@ -114,7 +134,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Moves FilterBar component into forms/FilterBarForm and migrates test into FormsAndCard test file
 - Memoizes inventory on first pass to avoid unnecessary bundle-size and render-time overhead as the data grows
-- Refactor MainContainer, InventorySection, and ItemCard components to pass in a shoppingCard value to the shoppingList section 
+- Refactor MainContainer, InventorySection, and ItemCard components to pass in a shoppingCart value to the shoppingList section
 - Shopping list renders if NeedRestock is checked and QtyOnHand is less than TargetQty
 - Refactor ItemCard component to destructure item properties passed from sample data
 - Refactor InventorySection to accept props and streamline rendering
