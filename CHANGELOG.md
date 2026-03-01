@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add EditInventoryItemForm component for editing inventory items
 - Add updateInventoryItem function and integrate into InventorySections
 
 ---
