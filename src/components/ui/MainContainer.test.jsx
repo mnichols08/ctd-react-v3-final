@@ -271,8 +271,6 @@ describe("MainContainer", () => {
       `${shoppingItemToRemove.ItemName}:${shoppingItemToRemove.TargetQty}:false`,
     );
   });
-});
-
   it("toggles between QuickAddForm and AddInventoryItemForm", () => {
     render(<MainContainer />);
 
@@ -319,3 +317,4 @@ describe("MainContainer", () => {
       screen.queryByRole("form", { name: "Add Inventory Item" }),
     ).toBeNull();
   });
+});
