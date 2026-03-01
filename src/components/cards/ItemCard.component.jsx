@@ -19,6 +19,10 @@ function ItemCard({
     Notes: notes,
     Category: category,
   } = item;
+  // Determine if the item is already on the shopping list using the same
+  // criteria as MainContainer: NeedRestock is truthy AND TargetQty > QtyOnHand
+  const isInShoppingList = needRestock && targetQty > qtyOnHand;
+
   // Render the item card with conditional buttons/forms based on shopping cart status and restock needs
   return (
     <li id={id}>
@@ -38,9 +42,10 @@ function ItemCard({
             Remove from Shopping List
           </button>
         ) : (
-          // If the item is not in the shopping cart and an add handler is provided, show the add form if restock is needed and target quantity is greater than quantity on hand
-          !needRestock &&
-          targetQty >= qtyOnHand && (
+          // Else If the item is not in the shopping cart and not already on the shopping list, show the add form
+          !shoppingCart &&
+          !isInShoppingList &&
+          handleAddToShoppingList && (
             <AddShoppingListItemForm
               itemId={id}
               handleAddToShoppingList={handleAddToShoppingList}

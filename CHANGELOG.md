@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Refactor ItemCard component to improve shopping list logic and enhance readability
 - In MainComtainer, avoid setting state to undefined by returning prevItems when `!Number.isFinite(qty)`
 
 ---
