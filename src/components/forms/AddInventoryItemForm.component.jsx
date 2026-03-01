@@ -81,10 +81,10 @@ function AddInventoryItemForm({ addInventoryItem }) {
 
       <fieldset>
         <legend>Quantities</legend>
-        <label htmlFor="QtyOnHand">Qty On Hand:</label>
+        <label htmlFor="QtyOnHand">Quantity on Hand:</label>
         <input type="number" id="QtyOnHand" name="QtyOnHand" min="0" required />
 
-        <label htmlFor="QtyUnit">Qty Unit:</label>
+        <label htmlFor="QtyUnit">Unit:</label>
         <input type="text" id="QtyUnit" name="QtyUnit" />
 
         <label htmlFor="TargetQty">Target Qty:</label>
