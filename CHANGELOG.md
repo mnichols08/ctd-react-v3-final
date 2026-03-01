@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [Unreleased]
+
+### Changed
+
+- Enhance AddInventoryItemForm to use refs for form reset and input focus
+
+---
+
 ## [0.0.7] - 2026-02-28
 
 ### Added
