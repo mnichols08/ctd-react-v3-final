@@ -2,6 +2,7 @@ import { useState } from "react";
 import inventorySampleData from "../../data/inventorySample.json";
 import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
+import AddInventoryItemForm from "../forms/AddInventoryItemForm.component";
 import QuickAddForm from "../forms/QuickAddForm.component";
 import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
@@ -48,7 +49,8 @@ function MainContainer() {
         <QuickStatsBar />
       </ToolSection>
       <ToolSection id="add-item" title="Add Item">
-        <QuickAddForm addInventoryItem={addInventoryItem} />
+        <AddInventoryItemForm addInventoryItem={addInventoryItem}/>
+        {/* <QuickAddForm addInventoryItem={addInventoryItem} /> */}
       </ToolSection>
       <InventorySection
         id="fridge"
