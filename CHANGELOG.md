@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Enhance AddInventoryItemForm to use refs for form reset and input focus
+- Reduce number of inventory items by introducing a sample file instead of the full inventory data
 
 ---
 
@@ -87,7 +88,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-
 ## [0.0.4] - 2026-02-27
 
 ### Added
@@ -122,7 +122,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Moves FilterBar component into forms/FilterBarForm and migrates test into FormsAndCard test file
 - Memoizes inventory on first pass to avoid unnecessary bundle-size and render-time overhead as the data grows
-- Refactor MainContainer, InventorySection, and ItemCard components to pass in a shoppingCard value to the shoppingList section 
+- Refactor MainContainer, InventorySection, and ItemCard components to pass in a shoppingCard value to the shoppingList section
 - Shopping list renders if NeedRestock is checked and QtyOnHand is less than TargetQty
 - Refactor ItemCard component to destructure item properties passed from sample data
 - Refactor InventorySection to accept props and streamline rendering

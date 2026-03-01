@@ -21,7 +21,7 @@ function ItemCard({
       <article>
         <h2>{itemName}</h2>
         <p>
-          Quantity: {qtyOnHand}
+          Quantity on Hand: {qtyOnHand}
           {qtyUnit ? ` ${qtyUnit}` : ""}
         </p>
         <p>Expiration Date: {expiresOn}</p>

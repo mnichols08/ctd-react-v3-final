@@ -1,5 +1,5 @@
 import { useState } from "react";
-import inventorySampleData from "../../data/inventoryData.json";
+import inventorySampleData from "../../data/inventorySample.json";
 import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
 import AddInventoryItemForm from "../forms/AddInventoryItemForm.component";
