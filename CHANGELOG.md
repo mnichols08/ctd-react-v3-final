@@ -21,6 +21,71 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.1.5] - 2026-03-01
+
+### Changed
+
+- Remove step attribute from QtyOnHand input in EditInventoryItemForm to maintain consistency with Add Item forms
+
+### Fixed
+
+- Fix add item test by identifying QuickAddForm using aria-label instead of ambiguous field label
+
+---
+
+## [0.1.4] - 2026-03-01
+
+### Added
+
+- Add test for toggling between QuickAddForm and AddInventoryItemForm
+
+### Changed
+
+- Refactor MainContainer to include toggle functionality between Quick Add and Full Form for adding inventory items
+
+---
+
+## [0.1.3] - 2026-03-01
+
+### Added
+
+- Add unit tests for QuickAddForm and EditInventoryItemForm components
+- Add aria-label to form for accessibility improvements
+
+### Changed
+
+- Update quantity labels in AddInventoryItemForm and MainContainer tests for consistency
+- Update quantity labels in AddInventoryItemForm and EditInventoryItemForm for clarity
+- Refactor MainContainer tests to improve form handling and add conditional logic for form submission
+
+---
+
+## [0.1.2] - 2026-03-01
+
+### Fixed
+
+- Add required attribute to Location input in EditInventoryItemForm
+
+---
+
+## [0.1.1] - 2026-03-01
+
+### Added
+
+- Add editing functionality to ItemCard component with EditInventoryItemForm
+- Add EditInventoryItemForm component for editing inventory items
+- Add updateInventoryItem function and integrate into InventorySections
+
+---
+
+## [0.1.0] - 2026-02-29
+
+### Added
+
+- Add QuickAddForm component for streamlined item addition
+
+---
+
 ## [0.0.8] - 2026-02-28
 
 ### Added

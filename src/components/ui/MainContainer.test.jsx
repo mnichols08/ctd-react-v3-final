@@ -1,11 +1,22 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from "@testing-library/react";
 
 import MainContainer from "./MainContainer.component";
 import inventorySampleData from "../../data/inventorySample.json";
 
 vi.mock("../sections/ToolSection.component", () => ({
-  default: ({ children }) => <section>{children}</section>,
+  default: ({ id, title, children }) => (
+    <section id={id}>
+      <h2>{title}</h2>
+      {children}
+    </section>
+  ),
 }));
 
 vi.mock("./QuickStatsBar.component", () => ({
@@ -119,24 +130,35 @@ describe("MainContainer", () => {
     expect(shoppingSection?.textContent).toContain("shopping:true");
   });
 
-  it("submits AddInventoryItemForm and updates state-backed section data", () => {
+  it("submits an add-item form and updates state-backed section data", () => {
     const initialPantryCount = inventorySampleData.records.filter((item) =>
       item.Location.includes("Pantry"),
     ).length;
 
     render(<MainContainer />);
 
-    fireEvent.change(screen.getByLabelText("Item Name:"), {
+    // Locate the "Add Item" ToolSection and the default QuickAddForm by its accessible name
+    const addItemSection = screen
+      .getByRole("heading", { name: "Add Item" })
+      .closest("section");
+    const addForm = within(addItemSection).getByRole("form", {
+      name: "Quick add inventory item",
+    });
+
+    fireEvent.change(within(addForm).getByLabelText("Item Name:"), {
       target: { value: "Test Granola Bars" },
     });
-    fireEvent.change(screen.getByLabelText("Location:"), {
+    fireEvent.change(within(addForm).getByLabelText("Category:"), {
+      target: { value: "Snacks" },
+    });
+    fireEvent.change(within(addForm).getByLabelText("Location:"), {
       target: { value: "Pantry" },
     });
-    fireEvent.change(screen.getByLabelText("Qty On Hand:"), {
+    fireEvent.change(within(addForm).getByLabelText("Quantity on Hand:"), {
       target: { value: "3" },
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Add Item" }));
+    fireEvent.click(within(addForm).getByRole("button", { name: "Add Item" }));
 
     const pantrySection = screen
       .getByRole("heading", { name: "Pantry" })
@@ -235,5 +257,51 @@ describe("MainContainer", () => {
     expect(locationSection?.textContent).toContain(
       `${shoppingItemToRemove.ItemName}:${shoppingItemToRemove.TargetQty}:false`,
     );
+  });
+  it("toggles between QuickAddForm and AddInventoryItemForm", () => {
+    render(<MainContainer />);
+
+    // QuickAddForm should be visible by default
+    expect(
+      screen.getByRole("form", { name: "Quick add inventory item" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("form", { name: "Add Inventory Item" }),
+    ).toBeNull();
+
+    // Toggle button should offer to switch to Full Form
+    const toggleBtn = screen.getByRole("button", {
+      name: "Switch to Full Form",
+    });
+    expect(toggleBtn).toBeTruthy();
+
+    // Click toggle to switch to Full Form
+    fireEvent.click(toggleBtn);
+
+    // AddInventoryItemForm should now be visible, QuickAddForm hidden
+    expect(
+      screen.getByRole("form", { name: "Add Inventory Item" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("form", { name: "Quick add inventory item" }),
+    ).toBeNull();
+
+    // Button text should update
+    expect(
+      screen.getByRole("button", { name: "Switch to Quick Add" }),
+    ).toBeTruthy();
+
+    // Click toggle to switch back
+    fireEvent.click(
+      screen.getByRole("button", { name: "Switch to Quick Add" }),
+    );
+
+    // QuickAddForm should be back
+    expect(
+      screen.getByRole("form", { name: "Quick add inventory item" }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole("form", { name: "Add Inventory Item" }),
+    ).toBeNull();
   });
 });
