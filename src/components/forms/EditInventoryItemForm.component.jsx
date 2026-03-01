@@ -118,6 +118,7 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
           id={`edit-Location-${item.id}`}
           name="Location"
           defaultValue={safe(item.Location)}
+          required
         />
 
         <label htmlFor={`edit-Tags-${item.id}`}>Tags:</label>
