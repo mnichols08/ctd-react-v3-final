@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Remove step attribute from QtyOnHand input in EditInventoryItemForm to maintain consistency with Add Item forms
 
+### Fixed
+
+- Fix add item test by identifying QuickAddForm using aria-label instead of ambiguous field label
+
+---
+
 ## [0.1.4] - 2026-03-01
 
 ### Added

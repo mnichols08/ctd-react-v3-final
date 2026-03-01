@@ -137,39 +137,26 @@ describe("MainContainer", () => {
 
     render(<MainContainer />);
 
-    // Locate the "Add Item" ToolSection, then pick whichever form is present
+    // Locate the "Add Item" ToolSection and the default QuickAddForm by its accessible name
     const addItemSection = screen
       .getByRole("heading", { name: "Add Item" })
       .closest("section");
-    const forms = within(addItemSection).getAllByRole("form");
-    const addForm = forms[0];
-
-    // Detect which form we found and use the correct labels
-    const isQuickAdd =
-      within(addForm).queryByLabelText("Quantity on Hand:") !== null;
+    const addForm = within(addItemSection).getByRole("form", {
+      name: "Quick add inventory item",
+    });
 
     fireEvent.change(within(addForm).getByLabelText("Item Name:"), {
       target: { value: "Test Granola Bars" },
     });
-
-    if (isQuickAdd) {
-      fireEvent.change(within(addForm).getByLabelText("Category:"), {
-        target: { value: "Snacks" },
-      });
-      fireEvent.change(within(addForm).getByLabelText("Location:"), {
-        target: { value: "Pantry" },
-      });
-      fireEvent.change(within(addForm).getByLabelText("Quantity on Hand:"), {
-        target: { value: "3" },
-      });
-    } else {
-      fireEvent.change(within(addForm).getByLabelText("Location:"), {
-        target: { value: "Pantry" },
-      });
-      fireEvent.change(within(addForm).getByLabelText("Quantity On Hand:"), {
-        target: { value: "3" },
-      });
-    }
+    fireEvent.change(within(addForm).getByLabelText("Category:"), {
+      target: { value: "Snacks" },
+    });
+    fireEvent.change(within(addForm).getByLabelText("Location:"), {
+      target: { value: "Pantry" },
+    });
+    fireEvent.change(within(addForm).getByLabelText("Quantity on Hand:"), {
+      target: { value: "3" },
+    });
 
     fireEvent.click(within(addForm).getByRole("button", { name: "Add Item" }));
 
