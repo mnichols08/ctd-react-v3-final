@@ -39,6 +39,34 @@ describe("AddInventoryItemForm", () => {
     expect(screen.getByLabelText("Item Name:").required).toBe(true);
     expect(screen.getByLabelText("Qty On Hand:").required).toBe(true);
   });
+
+  it("clears form and focuses Item Name input after successful submit", () => {
+    const addInventoryItem = vi.fn();
+
+    const { container } = render(
+      <AddInventoryItemForm addInventoryItem={addInventoryItem} lastId={0} />,
+    );
+
+    const itemNameInput = screen.getByLabelText("Item Name:");
+    const qtyInput = screen.getByLabelText("Qty On Hand:");
+    const locationSelect = screen.getByLabelText("Location:");
+
+    fireEvent.change(itemNameInput, { target: { value: "Test Item" } });
+    fireEvent.change(qtyInput, { target: { value: "5" } });
+    fireEvent.change(locationSelect, { target: { value: "Pantry" } });
+
+    expect(itemNameInput.value).toBe("Test Item");
+    expect(qtyInput.value).toBe("5");
+
+    const form = container.querySelector("form");
+    const submitEvent = createEvent.submit(form);
+    fireEvent(form, submitEvent);
+
+    expect(addInventoryItem).toHaveBeenCalledTimes(1);
+    expect(itemNameInput.value).toBe("");
+    expect(qtyInput.value).toBe("");
+    expect(document.activeElement).toBe(itemNameInput);
+  });
 });
 
 describe("AddShoppingListItemForm", () => {

@@ -23,6 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add test for clearing form and focusing input after successful submit in AddInventoryItemForm
+
 ### Changed
 
 - Refactor ItemCard component to enhance readability and improve conditional rendering of AddShoppingListItemForm
