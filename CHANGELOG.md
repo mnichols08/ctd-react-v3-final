@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhance AddInventoryItemForm to use refs for form reset and input focus
 - Reduce number of inventory items by introducing a sample file instead of the full inventory data
 
+### Fixed
+
+- In MainComtainer, avoid setting state to undefined by returning prevItems when `!Number.isFinite(qty)`
+
 ---
 
 ## [0.0.7] - 2026-02-28

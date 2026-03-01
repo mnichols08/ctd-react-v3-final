@@ -20,7 +20,7 @@ function MainContainer() {
         return prevItems;
       }
       const qty = Number(quantity);
-      if (!Number.isFinite(qty)) return;
+      if (!Number.isFinite(qty)) return prevItems;
       const updatedItem = {
         ...item,
         NeedRestock: true,
