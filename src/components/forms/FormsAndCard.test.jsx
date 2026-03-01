@@ -238,7 +238,7 @@ describe("ItemCard", () => {
     expect(
       screen.getByRole("heading", { name: "Blueberries", level: 2 }),
     ).toBeTruthy();
-    expect(screen.getByText("Quantity: 2 bags")).toBeTruthy();
+    expect(screen.getByText("Quantity on Hand: 2 bags")).toBeTruthy();
     expect(screen.getByText("Expiration Date: 2026-04-10")).toBeTruthy();
     expect(screen.getByText("Date Frozen: 2026-03-01")).toBeTruthy();
     expect(screen.getByText("Notes: Use for smoothies")).toBeTruthy();
@@ -255,7 +255,7 @@ describe("ItemCard", () => {
       Category: "Dairy",
     };
 
-    render(<ItemCard item={item} />);
+    render(<ItemCard item={item} handleAddToShoppingList={() => {}} />);
 
     expect(screen.queryByText(/Date Frozen:/)).toBeNull();
     expect(screen.queryByText(/Notes:/)).toBeNull();
@@ -264,6 +264,7 @@ describe("ItemCard", () => {
     expect(
       within(listItem).getByRole("heading", { name: "Milk" }),
     ).toBeTruthy();
+
     expect(
       within(listItem).getByRole("button", { name: "Add to Shopping List" }),
     ).toBeTruthy();

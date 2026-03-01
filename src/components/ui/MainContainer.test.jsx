@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 import MainContainer from "./MainContainer.component";
-import inventorySampleData from "../../data/inventoryData.json";
+import inventorySampleData from "../../data/inventorySample.json";
 
 vi.mock("../sections/ToolSection.component", () => ({
   default: ({ children }) => <section>{children}</section>,
