@@ -43,19 +43,25 @@ function MainContainer() {
       return prevItems.map((i) => (i.id === itemId ? updatedItem : i));
     });
   };
+  const updateInventoryItem = (updatedItem) => {
+    setInventoryItems((prevItems) =>
+      prevItems.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
+    );
+  };
   return (
     <main>
       <ToolSection id="stats" title="Quick Stats">
         <QuickStatsBar />
       </ToolSection>
       <ToolSection id="add-item" title="Add Item">
-        <AddInventoryItemForm addInventoryItem={addInventoryItem}/>
+        <AddInventoryItemForm addInventoryItem={addInventoryItem} />
         {/* <QuickAddForm addInventoryItem={addInventoryItem} /> */}
       </ToolSection>
       <InventorySection
         id="fridge"
         title="Fridge"
         addToShoppingList={addToShoppingList}
+        updateItem={updateInventoryItem}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Fridge"),
         )}
@@ -64,6 +70,7 @@ function MainContainer() {
         id="freezer"
         title="Freezer"
         addToShoppingList={addToShoppingList}
+        updateItem={updateInventoryItem}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Freezer"),
         )}
@@ -72,6 +79,7 @@ function MainContainer() {
         id="pantry"
         title="Pantry"
         addToShoppingList={addToShoppingList}
+        updateItem={updateInventoryItem}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Pantry"),
         )}
