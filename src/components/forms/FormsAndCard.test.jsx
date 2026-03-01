@@ -297,4 +297,66 @@ describe("ItemCard", () => {
       within(listItem).getByRole("button", { name: "Add to Shopping List" }),
     ).toBeTruthy();
   });
+
+  it("shows remove button and hides add form for shopping cart items", () => {
+    const handleRemove = vi.fn();
+    const item = {
+      id: 3,
+      ItemName: "Sesame Oil",
+      QtyOnHand: 0.1,
+      QtyUnit: "bottle",
+      TargetQty: 1,
+      NeedRestock: true,
+      ExpiresOn: "2026-10-01",
+      Category: "Cooking Essentials",
+    };
+
+    render(
+      <ItemCard
+        item={item}
+        shoppingCart
+        handleRemoveFromShoppingList={handleRemove}
+      />,
+    );
+
+    const removeButton = screen.getByRole("button", {
+      name: "Remove from Shopping List",
+    });
+    expect(removeButton).toBeTruthy();
+
+    expect(
+      screen.queryByRole("button", { name: "Add to Shopping List" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("heading", { name: "Add Item to Shopping List" }),
+    ).toBeNull();
+
+    fireEvent.click(removeButton);
+    expect(handleRemove).toHaveBeenCalledWith(3);
+  });
+
+  it("hides add form when item is already in the shopping list", () => {
+    const item = {
+      id: 4,
+      ItemName: "Pearl Couscous",
+      QtyOnHand: 1,
+      QtyUnit: "container",
+      TargetQty: 3,
+      NeedRestock: true,
+      ExpiresOn: "2027-03-12",
+      Category: "Dry",
+    };
+
+    render(<ItemCard item={item} handleAddToShoppingList={() => {}} />);
+
+    expect(
+      screen.queryByRole("button", { name: "Add to Shopping List" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("heading", { name: "Add Item to Shopping List" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: "Remove from Shopping List" }),
+    ).toBeNull();
+  });
 });

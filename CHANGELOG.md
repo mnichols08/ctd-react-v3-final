@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
+- Add tests for ItemCard component to handle shopping list interactions
 - Add test for clearing form and focusing input after successful submit in AddInventoryItemForm
 
 ### Changed
@@ -35,7 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Refactor ItemCard component to improve shopping list logic and enhance readability
-- In MainComtainer, avoid setting state to undefined by returning prevItems when `!Number.isFinite(qty)`
+- In MainContainer, avoid setting state to undefined by returning prevItems when `!Number.isFinite(qty)`
 - Update ItemCard test to reflect quantity label change and adjust MainContainer test data import
 
 ---
