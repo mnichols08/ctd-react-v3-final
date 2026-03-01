@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactor ItemCard component to enhance readability and improve conditional rendering of AddShoppingListItemForm
 - Enhance AddInventoryItemForm to use refs for form reset and input focus
 - Reduce number of inventory items by introducing a sample file instead of the full inventory data
 
