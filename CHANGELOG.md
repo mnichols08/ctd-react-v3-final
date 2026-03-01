@@ -25,6 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add QuickAddForm component for streamlined item addition
+
+---
+
+## [0.0.8] - 2026-02-28
+
+### Added
+
 - Add tests for ItemCard component to handle shopping list interactions
 - Add test for clearing form and focusing input after successful submit in AddInventoryItemForm
 
