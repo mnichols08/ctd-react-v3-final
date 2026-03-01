@@ -22,7 +22,7 @@ function QuickAddForm({ addInventoryItem }) {
       Brand: null,
       PackageSize: null,
       UPC: null,
-      Category,
+      Category: Category,
       SubCategory: null,
       Location,
       QtyOnHand: Number(QtyOnHand),
@@ -58,7 +58,7 @@ function QuickAddForm({ addInventoryItem }) {
         <legend>Quick Add Item</legend>
 
         <p>
-          <label htmlFor="quick-ItemName">Item Name:</label>
+          <label htmlFor="quick-ItemName">Item Name: </label>
           <input
             ref={itemNameRef}
             type="text"
@@ -69,7 +69,7 @@ function QuickAddForm({ addInventoryItem }) {
         </p>
 
         <p>
-          <label htmlFor="quick-Category">Category:</label>
+          <label htmlFor="quick-Category">Category: </label>
           <select id="quick-Category" name="Category" required>
             <option value="">Select Category</option>
             <option value="Drinks">Drinks</option>
@@ -85,7 +85,7 @@ function QuickAddForm({ addInventoryItem }) {
         </p>
 
         <p>
-          <label htmlFor="quick-Location">Location:</label>
+          <label htmlFor="quick-Location">Location: </label>
           <select id="quick-Location" name="Location" required>
             <option value="">Select Location</option>
             <option value="Fridge">Fridge</option>
@@ -95,7 +95,7 @@ function QuickAddForm({ addInventoryItem }) {
         </p>
 
         <p>
-          <label htmlFor="quick-QtyOnHand">Qty On Hand:</label>
+          <label htmlFor="quick-QtyOnHand">Quantity on Hand: </label>
           <input
             type="number"
             id="quick-QtyOnHand"
@@ -106,7 +106,7 @@ function QuickAddForm({ addInventoryItem }) {
         </p>
 
         <p>
-          <label htmlFor="quick-QtyUnit">Qty Unit:</label>
+          <label htmlFor="quick-QtyUnit">Unit: </label>
           <input
             type="text"
             id="quick-QtyUnit"

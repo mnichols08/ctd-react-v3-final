@@ -27,10 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add QuickAddForm component for streamlined item addition
 
-### Changed
-
-- Replace AddInventoryItemForm with QuickAddForm in MainContainer
-
 ---
 
 ## [0.0.8] - 2026-02-28
