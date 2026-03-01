@@ -368,7 +368,7 @@ describe("ItemCard", () => {
 // QuickAddForm – unit tests
 // ---------------------------------------------------------------------------
 describe("QuickAddForm", () => {
-  it("renders all 5 required input fields", () => {
+  it("renders all 5 input fields", () => {
     render(<QuickAddForm addInventoryItem={() => {}} />);
 
     expect(screen.getByLabelText("Item Name:")).toBeTruthy();
