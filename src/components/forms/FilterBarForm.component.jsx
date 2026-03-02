@@ -1,9 +1,19 @@
+import { useState } from "react";
+
 function FilterBarForm() {
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
   const handleSubmit = (e) => e.preventDefault();
   return (
     <form onSubmit={handleSubmit}>
       <label htmlFor="search">Search:</label>
       <input
+        value={searchTerm}
+        onChange={handleSearchChange}
         type="text"
         id="search"
         name="search"
