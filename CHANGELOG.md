@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactor EditInventoryItemForm to use controlled components and improve form handling
 - Refactor QuickAddForm to use controlled components for form data management
 - Refactor FilterBarForm to use controlled components for search input
 - Refactor AddShoppingListItemForm to use controlled components for quantity input

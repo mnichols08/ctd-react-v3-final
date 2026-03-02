@@ -1,36 +1,42 @@
-import { useRef, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 function EditInventoryItemForm({ item, onSave, onCancel }) {
+  // Destructure item properties for easier access and initialize form state with existing item data
+
+  // Initialize form state with existing item data, converting null/undefined to empty strings for controlled inputs
+  const [formData, setFormData] = useState({
+    ItemName: item.ItemName || "",
+    ItemDescripton: item.ItemDescripton || "",
+    Brand: item.Brand || "",
+    PackageSize: item.PackageSize || "",
+    UPC: item.UPC || "",
+    Category: item.Category || "",
+    SubCategory: item.SubCategory || "",
+    Location: item.Location || "",
+    QtyOnHand: item.QtyOnHand != null ? String(item.QtyOnHand) : "",
+    QtyUnit: item.QtyUnit || "",
+    TargetQty: item.TargetQty != null ? String(item.TargetQty) : "",
+    NeedRestock: item.NeedRestock || false,
+    ExpiresOn: item.ExpiresOn ? item.ExpiresOn.split("T")[0] : "",
+    DatePurchased: item.DatePurchased ? item.DatePurchased.split("T")[0] : "",
+    DateFrozen: item.DateFrozen ? item.DateFrozen.split("T")[0] : "",
+    PurchasePrice: item.PurchasePrice != null ? String(item.PurchasePrice) : "",
+    Store: item.Store || "",
+    UnitCost: item.UnitCost != null ? String(item.UnitCost) : "",
+    Notes: item.Notes || "",
+    Tags: item.Tags || "",
+    Allergens: item.Allergens || "",
+    ImageRef: item.ImageRef || "",
+    Status: item.Status || "",
+    ProductUrl: item.ProductUrl || "",
+  });
+
+  // Ref for the first input field to focus when the form opens
   const firstFieldRef = useRef(null);
-
-  // Focus the first input when the form opens
-  useEffect(() => {
-    firstFieldRef.current?.focus();
-  }, []);
-
-  // Helper: convert null/undefined to empty string for controlled-like defaultValue
-  const safe = (value) => (value == null ? "" : value);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const changes = Object.fromEntries(formData.entries());
-
-    // Coerce numeric fields from strings to numbers (or null for empty)
-    const numericFields = ["QtyOnHand", "TargetQty", "PurchasePrice"];
-    numericFields.forEach((field) => {
-      if (Object.prototype.hasOwnProperty.call(changes, field)) {
-        const value = changes[field];
-        changes[field] = value === "" ? null : Number(value);
-      }
-    });
-
-    // Convert empty strings back to null for optional text fields
-    Object.keys(changes).forEach((key) => {
-      if (changes[key] === "" && !["ItemName"].includes(key)) {
-        changes[key] = null;
-      }
-    });
+    const changes = { ...formData };
 
     // Merge original item with changes, auto-set LastUpdated
     const updatedItem = {
@@ -42,191 +48,271 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
     onSave(updatedItem);
   };
 
+  // Handle input changes for controlled components, updating the formData state accordingly
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  // Focus the first input when the form opens
+  useEffect(() => {
+    firstFieldRef.current?.focus();
+  }, []);
   return (
     <form onSubmit={handleSubmit} aria-label="Edit Inventory Item">
-      <h3>Edit Item</h3>
-
       <fieldset>
         <legend>Basic Details</legend>
-
-        <label htmlFor={`edit-ItemName-${item.id}`}>Item Name:</label>
+        <label htmlFor="ItemName">Item Name:</label>
         <input
           ref={firstFieldRef}
+          value={formData.ItemName}
+          onChange={handleChange}
           type="text"
-          id={`edit-ItemName-${item.id}`}
+          id="ItemName"
           name="ItemName"
-          defaultValue={safe(item.ItemName)}
           required
         />
 
-        <label htmlFor={`edit-ItemDescripton-${item.id}`}>
-          Item Description:
-        </label>
+        <label htmlFor="ItemDescripton">Item Description:</label>
         <textarea
-          id={`edit-ItemDescripton-${item.id}`}
+          value={formData.ItemDescripton}
+          onChange={handleChange}
+          id="ItemDescripton"
           name="ItemDescripton"
-          defaultValue={safe(item.ItemDescripton)}
         />
 
-        <label htmlFor={`edit-Brand-${item.id}`}>Brand:</label>
+        <label htmlFor="Brand">Brand:</label>
         <input
+          value={formData.Brand}
+          onChange={handleChange}
           type="text"
-          id={`edit-Brand-${item.id}`}
+          id="Brand"
           name="Brand"
-          defaultValue={safe(item.Brand)}
         />
 
-        <label htmlFor={`edit-PackageSize-${item.id}`}>Package Size:</label>
+        <label htmlFor="PackageSize">Package Size:</label>
         <input
+          value={formData.PackageSize}
+          onChange={handleChange}
           type="text"
-          id={`edit-PackageSize-${item.id}`}
+          id="PackageSize"
           name="PackageSize"
-          defaultValue={safe(item.PackageSize)}
         />
 
-        <label htmlFor={`edit-UPC-${item.id}`}>UPC:</label>
+        <label htmlFor="UPC">UPC:</label>
         <input
+          value={formData.UPC}
+          onChange={handleChange}
           type="text"
-          id={`edit-UPC-${item.id}`}
+          id="UPC"
           name="UPC"
-          defaultValue={safe(item.UPC)}
+        />
+
+        <label htmlFor="Status">Status:</label>
+        <input
+          value={formData.Status}
+          onChange={handleChange}
+          type="text"
+          id="Status"
+          name="Status"
         />
       </fieldset>
 
       <fieldset>
         <legend>Classification & Storage</legend>
-
-        <label htmlFor={`edit-Category-${item.id}`}>Category:</label>
+        <label htmlFor="Category">Category:</label>
         <input
+          value={formData.Category}
+          onChange={handleChange}
           type="text"
-          id={`edit-Category-${item.id}`}
+          id="Category"
           name="Category"
-          defaultValue={safe(item.Category)}
         />
 
-        <label htmlFor={`edit-SubCategory-${item.id}`}>Sub Category:</label>
+        <label htmlFor="SubCategory">Sub Category:</label>
         <input
+          value={formData.SubCategory}
+          onChange={handleChange}
           type="text"
-          id={`edit-SubCategory-${item.id}`}
+          id="SubCategory"
           name="SubCategory"
-          defaultValue={safe(item.SubCategory)}
         />
 
-        <label htmlFor={`edit-Location-${item.id}`}>Location:</label>
-        <input
-          type="text"
-          id={`edit-Location-${item.id}`}
+        <label htmlFor="Location">Location:</label>
+        <select
+          defaultValue={formData.Location}
+          onChange={handleChange}
+          id="Location"
           name="Location"
-          defaultValue={safe(item.Location)}
           required
-        />
+        >
+          <option value="" disabled>
+            Select Location
+          </option>
+          <option value="Fridge">Fridge</option>
+          <option value="Freezer">Freezer</option>
+          <option value="Pantry">Pantry</option>
+        </select>
 
-        <label htmlFor={`edit-Tags-${item.id}`}>Tags:</label>
+        <label htmlFor="Tags">Tags:</label>
         <input
+          value={formData.Tags}
+          onChange={handleChange}
           type="text"
-          id={`edit-Tags-${item.id}`}
+          id="Tags"
           name="Tags"
-          defaultValue={safe(item.Tags)}
         />
 
-        <label htmlFor={`edit-Allergens-${item.id}`}>Allergens:</label>
+        <label htmlFor="Allergens">Allergens:</label>
         <input
+          value={formData.Allergens}
+          onChange={handleChange}
           type="text"
-          id={`edit-Allergens-${item.id}`}
+          id="Allergens"
           name="Allergens"
-          defaultValue={safe(item.Allergens)}
         />
       </fieldset>
 
       <fieldset>
         <legend>Quantities</legend>
-
-        <label htmlFor={`edit-QtyOnHand-${item.id}`}>Quantity on Hand:</label>
+        <label htmlFor="QtyOnHand">Quantity on Hand:</label>
         <input
+          value={formData.QtyOnHand}
+          onChange={handleChange}
           type="number"
-          id={`edit-QtyOnHand-${item.id}`}
+          id="QtyOnHand"
           name="QtyOnHand"
-          defaultValue={safe(item.QtyOnHand)}
           min="0"
+          step="any"
           required
         />
 
-        <label htmlFor={`edit-QtyUnit-${item.id}`}>Unit:</label>
+        <label htmlFor="QtyUnit">Unit:</label>
         <input
+          value={formData.QtyUnit}
+          onChange={handleChange}
           type="text"
-          id={`edit-QtyUnit-${item.id}`}
+          id="QtyUnit"
           name="QtyUnit"
-          defaultValue={safe(item.QtyUnit)}
         />
 
-        <label htmlFor={`edit-TargetQty-${item.id}`}>Target Qty:</label>
+        <label htmlFor="TargetQty">Target Qty:</label>
         <input
+          value={formData.TargetQty}
+          onChange={handleChange}
           type="number"
-          id={`edit-TargetQty-${item.id}`}
+          id="TargetQty"
           name="TargetQty"
-          defaultValue={safe(item.TargetQty)}
           min="0"
-          step="any"
+        />
+
+        <label htmlFor="NeedRestock">Need Restock:</label>
+        <input
+          type="checkbox"
+          id="NeedRestock"
+          name="NeedRestock"
+          checked={formData.NeedRestock}
+          onChange={handleChange}
         />
       </fieldset>
 
       <fieldset>
         <legend>Dates</legend>
-
-        <label htmlFor={`edit-ExpiresOn-${item.id}`}>Expires On:</label>
+        <label htmlFor="ExpiresOn">Expires On:</label>
         <input
+          value={formData.ExpiresOn}
+          onChange={handleChange}
           type="date"
-          id={`edit-ExpiresOn-${item.id}`}
+          id="ExpiresOn"
           name="ExpiresOn"
-          defaultValue={safe(item.ExpiresOn)}
         />
 
-        <label htmlFor={`edit-DatePurchased-${item.id}`}>Date Purchased:</label>
+        <label htmlFor="DatePurchased">Date Purchased:</label>
         <input
+          value={formData.DatePurchased}
+          onChange={handleChange}
           type="date"
-          id={`edit-DatePurchased-${item.id}`}
+          id="DatePurchased"
           name="DatePurchased"
-          defaultValue={safe(item.DatePurchased)}
+        />
+
+        <label htmlFor="DateFrozen">Date Frozen:</label>
+        <input
+          value={formData.DateFrozen}
+          onChange={handleChange}
+          type="date"
+          id="DateFrozen"
+          name="DateFrozen"
         />
       </fieldset>
 
       <fieldset>
         <legend>Pricing & Purchase</legend>
-
-        <label htmlFor={`edit-PurchasePrice-${item.id}`}>Purchase Price:</label>
+        <label htmlFor="PurchasePrice">Purchase Price:</label>
         <input
+          value={formData.PurchasePrice}
+          onChange={handleChange}
           type="number"
-          id={`edit-PurchasePrice-${item.id}`}
+          id="PurchasePrice"
           name="PurchasePrice"
-          defaultValue={safe(item.PurchasePrice)}
           min="0"
           step="0.01"
         />
 
-        <label htmlFor={`edit-Store-${item.id}`}>Store:</label>
+        <label htmlFor="UnitCost">Unit Cost:</label>
         <input
+          value={formData.UnitCost}
+          onChange={handleChange}
+          type="number"
+          id="UnitCost"
+          name="UnitCost"
+          min="0"
+          step="0.01"
+        />
+
+        <label htmlFor="Store">Store:</label>
+        <input
+          value={formData.Store}
+          onChange={handleChange}
           type="text"
-          id={`edit-Store-${item.id}`}
+          id="Store"
           name="Store"
-          defaultValue={safe(item.Store)}
         />
       </fieldset>
 
       <fieldset>
-        <legend>Notes</legend>
+        <legend>References & Notes</legend>
+        <label htmlFor="ProductUrl">Product URL:</label>
+        <input
+          value={formData.ProductUrl}
+          onChange={handleChange}
+          type="url"
+          id="ProductUrl"
+          name="ProductUrl"
+        />
 
-        <label htmlFor={`edit-Notes-${item.id}`}>Notes:</label>
+        <label htmlFor="ImageRef">Image Reference:</label>
+        <input
+          value={formData.ImageRef}
+          onChange={handleChange}
+          type="text"
+          id="ImageRef"
+          name="ImageRef"
+        />
+
+        <label htmlFor="Notes">Notes:</label>
         <textarea
-          id={`edit-Notes-${item.id}`}
+          value={formData.Notes}
+          onChange={handleChange}
+          id="Notes"
           name="Notes"
-          defaultValue={safe(item.Notes)}
         />
       </fieldset>
-
       <button type="submit">Save</button>
-      <button type="button" onClick={onCancel}>
-        Cancel
-      </button>
+      <button type="button" onClick={onCancel}>Cancel</button>
     </form>
   );
 }
