@@ -1,13 +1,50 @@
-import { useRef } from "react";
+import { useState, useRef } from "react";
 
 function AddInventoryItemForm({ addInventoryItem }) {
-  const formRef = useRef(null);
+  // Initial form state with all fields set to empty or default values
+  const initialFormState = {
+    ItemName: "",
+    ItemDescripton: "",
+    Brand: "",
+    PackageSize: "",
+    UPC: "",
+    Category: "",
+    SubCategory: "",
+    Location: "",
+    QtyOnHand: "",
+    QtyUnit: "",
+    TargetQty: "",
+    NeedRestock: false,
+    ExpiresOn: "",
+    DatePurchased: "",
+    DateFrozen: "",
+    PurchasePrice: "",
+    Store: "",
+    UnitCost: "",
+    Notes: "",
+    Tags: "",
+    Allergens: "",
+    ImageRef: "",
+    Status: "",
+    ProductUrl: "",
+  };
+
+  // Form state to manage controlled inputs
+  const [formData, setFormData] = useState(initialFormState);
   const itemNameRef = useRef(null);
+
+  // Handle input changes for all form fields
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const newItem = Object.fromEntries(formData.entries());
+    const newItem = { ...formData };
     // Coerce numeric fields from strings to numbers (or null for empty fields)
     const numericFields = [
       "QtyOnHand",
@@ -24,16 +61,18 @@ function AddInventoryItemForm({ addInventoryItem }) {
     newItem.LastUpdated = new Date().toISOString();
     newItem.id = new Date().getTime(); // Use timestamp as unique ID for simplicity
     addInventoryItem(newItem);
-    formRef.current?.reset();
+    setFormData(initialFormState); // Reset form after submission
     itemNameRef.current?.focus();
   };
   return (
-    <form ref={formRef} onSubmit={handleSubmit} aria-label="Add Inventory Item">
+    <form onSubmit={handleSubmit} aria-label="Add Inventory Item">
       <fieldset>
         <legend>Basic Details</legend>
         <label htmlFor="ItemName">Item Name:</label>
         <input
           ref={itemNameRef}
+          value={formData.ItemName}
+          onChange={handleChange}
           type="text"
           id="ItemName"
           name="ItemName"
@@ -41,31 +80,78 @@ function AddInventoryItemForm({ addInventoryItem }) {
         />
 
         <label htmlFor="ItemDescripton">Item Description:</label>
-        <textarea id="ItemDescripton" name="ItemDescripton" />
+        <textarea
+          value={formData.ItemDescripton}
+          onChange={handleChange}
+          id="ItemDescripton"
+          name="ItemDescripton"
+        />
 
         <label htmlFor="Brand">Brand:</label>
-        <input type="text" id="Brand" name="Brand" />
+        <input
+          value={formData.Brand}
+          onChange={handleChange}
+          type="text"
+          id="Brand"
+          name="Brand"
+        />
 
         <label htmlFor="PackageSize">Package Size:</label>
-        <input type="text" id="PackageSize" name="PackageSize" />
+        <input
+          value={formData.PackageSize}
+          onChange={handleChange}
+          type="text"
+          id="PackageSize"
+          name="PackageSize"
+        />
 
         <label htmlFor="UPC">UPC:</label>
-        <input type="text" id="UPC" name="UPC" />
+        <input
+          value={formData.UPC}
+          onChange={handleChange}
+          type="text"
+          id="UPC"
+          name="UPC"
+        />
 
         <label htmlFor="Status">Status:</label>
-        <input type="text" id="Status" name="Status" />
+        <input
+          value={formData.Status}
+          onChange={handleChange}
+          type="text"
+          id="Status"
+          name="Status"
+        />
       </fieldset>
 
       <fieldset>
         <legend>Classification & Storage</legend>
         <label htmlFor="Category">Category:</label>
-        <input type="text" id="Category" name="Category" />
+        <input
+          value={formData.Category}
+          onChange={handleChange}
+          type="text"
+          id="Category"
+          name="Category"
+        />
 
         <label htmlFor="SubCategory">Sub Category:</label>
-        <input type="text" id="SubCategory" name="SubCategory" />
+        <input
+          value={formData.SubCategory}
+          onChange={handleChange}
+          type="text"
+          id="SubCategory"
+          name="SubCategory"
+        />
 
         <label htmlFor="Location">Location:</label>
-        <select id="Location" name="Location" required>
+        <select
+          value={formData.Location}
+          onChange={handleChange}
+          id="Location"
+          name="Location"
+          required
+        >
           <option value="">Select Location</option>
           <option value="Fridge">Fridge</option>
           <option value="Freezer">Freezer</option>
@@ -73,43 +159,103 @@ function AddInventoryItemForm({ addInventoryItem }) {
         </select>
 
         <label htmlFor="Tags">Tags:</label>
-        <input type="text" id="Tags" name="Tags" />
+        <input
+          value={formData.Tags}
+          onChange={handleChange}
+          type="text"
+          id="Tags"
+          name="Tags"
+        />
 
         <label htmlFor="Allergens">Allergens:</label>
-        <input type="text" id="Allergens" name="Allergens" />
+        <input
+          value={formData.Allergens}
+          onChange={handleChange}
+          type="text"
+          id="Allergens"
+          name="Allergens"
+        />
       </fieldset>
 
       <fieldset>
         <legend>Quantities</legend>
         <label htmlFor="QtyOnHand">Quantity on Hand:</label>
-        <input type="number" id="QtyOnHand" name="QtyOnHand" min="0" required />
+        <input
+          value={formData.QtyOnHand}
+          onChange={handleChange}
+          type="number"
+          id="QtyOnHand"
+          name="QtyOnHand"
+          min="0"
+          step="any"
+          required
+        />
 
         <label htmlFor="QtyUnit">Unit:</label>
-        <input type="text" id="QtyUnit" name="QtyUnit" />
+        <input
+          value={formData.QtyUnit}
+          onChange={handleChange}
+          type="text"
+          id="QtyUnit"
+          name="QtyUnit"
+        />
 
         <label htmlFor="TargetQty">Target Qty:</label>
-        <input type="number" id="TargetQty" name="TargetQty" min="0" />
+        <input
+          value={formData.TargetQty}
+          onChange={handleChange}
+          type="number"
+          id="TargetQty"
+          name="TargetQty"
+          min="0"
+        />
 
         <label htmlFor="NeedRestock">Need Restock:</label>
-        <input type="checkbox" id="NeedRestock" name="NeedRestock" />
+        <input
+          type="checkbox"
+          id="NeedRestock"
+          name="NeedRestock"
+          checked={formData.NeedRestock}
+          onChange={handleChange}
+        />
       </fieldset>
 
       <fieldset>
         <legend>Dates</legend>
         <label htmlFor="ExpiresOn">Expires On:</label>
-        <input type="date" id="ExpiresOn" name="ExpiresOn" />
+        <input
+          value={formData.ExpiresOn}
+          onChange={handleChange}
+          type="date"
+          id="ExpiresOn"
+          name="ExpiresOn"
+        />
 
         <label htmlFor="DatePurchased">Date Purchased:</label>
-        <input type="date" id="DatePurchased" name="DatePurchased" />
+        <input
+          value={formData.DatePurchased}
+          onChange={handleChange}
+          type="date"
+          id="DatePurchased"
+          name="DatePurchased"
+        />
 
         <label htmlFor="DateFrozen">Date Frozen:</label>
-        <input type="date" id="DateFrozen" name="DateFrozen" />
+        <input
+          value={formData.DateFrozen}
+          onChange={handleChange}
+          type="date"
+          id="DateFrozen"
+          name="DateFrozen"
+        />
       </fieldset>
 
       <fieldset>
         <legend>Pricing & Purchase</legend>
         <label htmlFor="PurchasePrice">Purchase Price:</label>
         <input
+          value={formData.PurchasePrice}
+          onChange={handleChange}
           type="number"
           id="PurchasePrice"
           name="PurchasePrice"
@@ -119,6 +265,8 @@ function AddInventoryItemForm({ addInventoryItem }) {
 
         <label htmlFor="UnitCost">Unit Cost:</label>
         <input
+          value={formData.UnitCost}
+          onChange={handleChange}
           type="number"
           id="UnitCost"
           name="UnitCost"
@@ -127,19 +275,42 @@ function AddInventoryItemForm({ addInventoryItem }) {
         />
 
         <label htmlFor="Store">Store:</label>
-        <input type="text" id="Store" name="Store" />
+        <input
+          value={formData.Store}
+          onChange={handleChange}
+          type="text"
+          id="Store"
+          name="Store"
+        />
       </fieldset>
 
       <fieldset>
         <legend>References & Notes</legend>
         <label htmlFor="ProductUrl">Product URL:</label>
-        <input type="url" id="ProductUrl" name="ProductUrl" />
+        <input
+          value={formData.ProductUrl}
+          onChange={handleChange}
+          type="url"
+          id="ProductUrl"
+          name="ProductUrl"
+        />
 
         <label htmlFor="ImageRef">Image Reference:</label>
-        <input type="text" id="ImageRef" name="ImageRef" />
+        <input
+          value={formData.ImageRef}
+          onChange={handleChange}
+          type="text"
+          id="ImageRef"
+          name="ImageRef"
+        />
 
         <label htmlFor="Notes">Notes:</label>
-        <textarea id="Notes" name="Notes" />
+        <textarea
+          value={formData.Notes}
+          onChange={handleChange}
+          id="Notes"
+          name="Notes"
+        />
       </fieldset>
       <button type="submit">Add Item</button>
     </form>

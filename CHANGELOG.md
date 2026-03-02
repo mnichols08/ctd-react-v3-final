@@ -21,6 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [Unreleased] - 2026-03-01
+
+### Changed
+
+- Refactor FilterBarForm to use controlled components for search input
+- Refactor AddShoppingListItemForm to use controlled components for quantity input
+- Refactor AddInventoryItemForm to use controlled components for form inputs
+
+---
+
 ## [0.1.5] - 2026-03-01
 
 ### Changed
