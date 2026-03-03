@@ -27,14 +27,20 @@ function App() {
     setVisibleFields(new Set(DEFAULT_VISIBLE_FIELDS));
   };
 
+  // State to track whether archived items exist in the inventory, passed down to Header for conditional nav link rendering
+  const [archivedItemsExist, setArchivedItemsExist] = useState(false);
   return (
     <>
       <Header
         visibleFields={visibleFields}
         onToggleField={toggleField}
         onResetFields={resetFields}
+        archivedItemsExist={archivedItemsExist}
       />
-      <MainContainer visibleFields={visibleFields} />
+      <MainContainer
+        visibleFields={visibleFields}
+        setArchivedItemsExist={setArchivedItemsExist}
+      />
       <Footer />
     </>
   );

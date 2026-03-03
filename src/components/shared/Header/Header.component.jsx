@@ -1,6 +1,6 @@
 import NavMenu from "./NavMenu.component";
 
-function Header({ visibleFields, onToggleField, onResetFields }) {
+function Header({ visibleFields, onToggleField, onResetFields, archivedItemsExist }) {
   return (
     <header>
       <h1>Kitchen Inventory</h1>
@@ -9,6 +9,7 @@ function Header({ visibleFields, onToggleField, onResetFields }) {
         visibleFields={visibleFields}
         onToggleField={onToggleField}
         onResetFields={onResetFields}
+        archivedItemsExist={archivedItemsExist}
       />
     </header>
   );

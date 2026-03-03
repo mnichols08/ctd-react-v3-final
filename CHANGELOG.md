@@ -21,6 +21,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.2.4] - 2026-03-03
+
+### Added
+
+- Add null check for handleArchiveItem before rendering Archive button
+- Add archived item "Bacon & Velveeta Scrambler" to inventory sample
+- Add inventoryItems prop to QuickStatsBar and display statistics
+- Conditionally renders a link to Archived Items in NavMenu if they exist
+- Add archive and unarchive functionality to MainContainer and update App state
+- Add archivedItemsExist prop to Header and NavMenu components
+- Add archive and unarchive functionality to ItemCard component
+
+### Changed
+
+- Refactor expiringSoon calculation for clarity and accuracy
+- Refactor QuickStatsBar test to calculate stats based on active items
+- Filter out archived items from inventory counts in MainContainer tests
+- Refactor QuickStatsBar to display active items and conditionally render archived items count
+- Enhance QuickStatsBar test to include archived items and other inventory statistics
+- Refactor InventorySection to support archiving and unarchiving items in local state
+
+---
+
 ## [0.2.3]  - 2026-03-03
 
 ### Added

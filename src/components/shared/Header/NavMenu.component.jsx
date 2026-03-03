@@ -1,7 +1,7 @@
 import { useState } from "react";
 import FieldSelector from "../../cards/FieldSelector.component";
 
-function NavMenu({ visibleFields, onToggleField, onResetFields }) {
+function NavMenu({ visibleFields, onToggleField, onResetFields, archivedItemsExist }) {
   const [showFieldSelector, setShowFieldSelector] = useState(false);
 
   return (
@@ -32,6 +32,11 @@ function NavMenu({ visibleFields, onToggleField, onResetFields }) {
             Edit Visible Fields
           </a>
         </li>
+        {archivedItemsExist && (
+          <li>
+            <a href="#archived">Archived Items</a>
+          </li>
+        )}
       </menu>
 
       {showFieldSelector && (
