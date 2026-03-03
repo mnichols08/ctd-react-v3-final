@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Implement collapsible functionality in InventorySection component
 
+## Changed
+
+- Update App tests to use regex for heading names
+
 ---
 
 ## [0.2.2] - 2026-03-03
