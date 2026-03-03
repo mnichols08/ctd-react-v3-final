@@ -7,7 +7,7 @@ import QuickAddForm from "../forms/QuickAddForm.component";
 import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
 
-function MainContainer() {
+function MainContainer({ visibleFields }) {
   // Initialize inventory items from sample data, ensuring we have a fresh copy of each item
   const [inventoryItems, setInventoryItems] = useState(() =>
     inventorySampleData.records.map((item) => ({ ...item })),
@@ -84,6 +84,7 @@ function MainContainer() {
         addToShoppingList={addToShoppingList}
         updateItemQuantity={updateItemQuantity}
         updateItem={updateInventoryItem}
+        visibleFields={visibleFields}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Fridge"),
         )}
@@ -94,6 +95,7 @@ function MainContainer() {
         addToShoppingList={addToShoppingList}
         updateItemQuantity={updateItemQuantity}
         updateItem={updateInventoryItem}
+        visibleFields={visibleFields}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Freezer"),
         )}
@@ -104,6 +106,7 @@ function MainContainer() {
         addToShoppingList={addToShoppingList}
         updateItemQuantity={updateItemQuantity}
         updateItem={updateInventoryItem}
+        visibleFields={visibleFields}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Pantry"),
         )}
@@ -113,6 +116,7 @@ function MainContainer() {
         id="shopping-list"
         title="Shopping List"
         updateItemQuantity={updateItemQuantity}
+        visibleFields={visibleFields}
         items={inventoryItems.filter(
           (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
         )}

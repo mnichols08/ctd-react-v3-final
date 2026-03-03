@@ -8,6 +8,7 @@ function InventorySection({
   addToShoppingList,
   updateItemQuantity,
   updateItem,
+  visibleFields,
 }) {
   return (
     <section id={id}>
@@ -21,6 +22,7 @@ function InventorySection({
               handleAddToShoppingList={addToShoppingList}
               handleUpdateItemQuantity={updateItemQuantity}
               handleUpdateItem={updateItem}
+              visibleFields={visibleFields}
             />
           ))}
         </ul>

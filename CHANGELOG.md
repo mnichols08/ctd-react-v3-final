@@ -21,12 +21,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.2.2] - 2026-03-02
+
+### Added
+
+- Add field visibility management and configuration
+- Add FieldSelector component and integrate with Header and NavMenu for managing visible fields
+
+### Changed
+
+- Improves accessibility in FieldSelector component by properly declaring as a modal and labelling it by the heading
+- Update ItemCard tests to use visibleFields and adjust field labels
+
+---
+
 ## [0.2.1] - 2026-03-02
-
-### Fixed
-
-- Refactor ShoppingListControl and ItemCard components to remove unused prop and adjust heading condition
-- Refactor ShoppingListControl component to improve quantity handling and update button logic
 
 ### Changed
 
@@ -39,7 +48,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Prevents form erros by adding step attribute to TargetQty input to allow decimal values
+- Refactor ShoppingListControl and ItemCard components to remove unused prop and adjust heading condition
+- Refactor ShoppingListControl component to improve quantity handling and update button logic
+- Prevents form errors by adding step attribute to TargetQty input to allow decimal values
 
 ---
 

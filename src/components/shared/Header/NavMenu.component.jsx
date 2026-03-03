@@ -1,4 +1,9 @@
-function NavMenu() {
+import { useState } from "react";
+import FieldSelector from "../../cards/FieldSelector.component";
+
+function NavMenu({ visibleFields, onToggleField, onResetFields }) {
+  const [showFieldSelector, setShowFieldSelector] = useState(false);
+
   return (
     <nav>
       <menu>
@@ -17,7 +22,26 @@ function NavMenu() {
         <li>
           <a href="#shopping-list">Shopping List</a>
         </li>
+        <li>
+          <a
+            href="#field-selector"
+            onClick={() => setShowFieldSelector((prev) => !prev)}
+            aria-label="Select visible fields"
+            title="Select visible fields"
+          >
+            Edit Visible Fields
+          </a>
+        </li>
       </menu>
+
+      {showFieldSelector && (
+        <FieldSelector
+          visibleFields={visibleFields}
+          onToggleField={onToggleField}
+          onResetFields={onResetFields}
+          onClose={() => setShowFieldSelector(false)}
+        />
+      )}
     </nav>
   );
 }

@@ -1,6 +1,16 @@
 import { useState } from "react";
 import ShoppingListControl from "../forms/ShoppingListControl.component";
 import EditInventoryItemForm from "../forms/EditInventoryItemForm.component";
+import { ALL_FIELDS, DEFAULT_VISIBLE_FIELDS } from "../../data/fieldConfig";
+
+// Declares a module level constant for the default visible fields as a Set for efficient lookups
+const DEFAULT_VISIBLE_FIELDS_SET = new Set(DEFAULT_VISIBLE_FIELDS);
+
+// Helper function to format field values for display (e.g., convert booleans to "Yes"/"No")
+function formatValue(value) {
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  return String(value);
+}
 
 // The ItemCard component represents an individual inventory item and conditionally renders forms/buttons based on its state and shopping cart status
 function ItemCard({
@@ -8,20 +18,9 @@ function ItemCard({
   handleAddToShoppingList,
   handleUpdateItemQuantity,
   handleUpdateItem,
+  visibleFields = DEFAULT_VISIBLE_FIELDS_SET,
 }) {
   const [isEditing, setIsEditing] = useState(false);
-
-  // Destructure item properties for easier access
-  const {
-    id,
-    ItemName: itemName,
-    QtyOnHand: qtyOnHand,
-    QtyUnit: qtyUnit,
-    ExpiresOn: expiresOn,
-    DateFrozen: dateFrozen,
-    Notes: notes,
-    Category: category,
-  } = item;
 
   const handleSave = (updatedItem) => {
     handleUpdateItem(updatedItem);
@@ -32,9 +31,19 @@ function ItemCard({
     setIsEditing(false);
   };
 
+  // Build the list of dynamic fields to render (excluding ItemName, which is always the heading)
+  const fieldsToRender = ALL_FIELDS.filter(
+    ({ key }) =>
+      key !== "ItemName" &&
+      visibleFields.has(key) &&
+      item[key] !== null &&
+      item[key] !== undefined &&
+      item[key] !== "",
+  );
+
   // Render the item card with conditional buttons/forms based on shopping cart status and restock needs
   return (
-    <li id={id}>
+    <li id={item.id}>
       <article>
         {isEditing ? (
           <EditInventoryItemForm
@@ -44,18 +53,18 @@ function ItemCard({
           />
         ) : (
           <>
-            <h2>{itemName}</h2>
-            <p>
-              Quantity on Hand: {qtyOnHand}
-              {qtyUnit ? ` ${qtyUnit}` : ""}
-            </p>
-            {expiresOn && <p>Expiration Date: {expiresOn}</p>}
-            {dateFrozen && <p>Date Frozen: {dateFrozen}</p>}
-            {notes && <p>Notes: {notes}</p>}
-            {category && <p>Category: {category}</p>}
+            <h2>{item.ItemName}</h2>
+
+            {fieldsToRender.map(({ key, label }) => (
+              <p key={key}>
+                {label}: {formatValue(item[key])}
+              </p>
+            ))}
+
             {handleUpdateItem && (
               <button onClick={() => setIsEditing(true)}>Edit</button>
             )}
+
             {(handleAddToShoppingList || handleUpdateItemQuantity) && (
               <ShoppingListControl
                 item={item}
