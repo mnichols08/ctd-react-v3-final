@@ -3,8 +3,11 @@ import ShoppingListControl from "../forms/ShoppingListControl.component";
 import EditInventoryItemForm from "../forms/EditInventoryItemForm.component";
 import { ALL_FIELDS, DEFAULT_VISIBLE_FIELDS } from "../../data/fieldConfig";
 
+// Declares a module level constant for the default visible fields as a Set for efficient lookups
+const DEFAULT_VISIBLE_FIELDS_SET = new Set(DEFAULT_VISIBLE_FIELDS);
+
 // Helper function to format field values for display (e.g., convert booleans to "Yes"/"No")
-function formatValue(key, value) {
+function formatValue(value) {
   if (typeof value === "boolean") return value ? "Yes" : "No";
   return String(value);
 }
@@ -15,7 +18,7 @@ function ItemCard({
   handleAddToShoppingList,
   handleUpdateItemQuantity,
   handleUpdateItem,
-  visibleFields = new Set(DEFAULT_VISIBLE_FIELDS),
+  visibleFields = DEFAULT_VISIBLE_FIELDS_SET,
 }) {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -54,7 +57,7 @@ function ItemCard({
 
             {fieldsToRender.map(({ key, label }) => (
               <p key={key}>
-                {label}: {formatValue(key, item[key])}
+                {label}: {formatValue(item[key])}
               </p>
             ))}
 
