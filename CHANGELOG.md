@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 
+- Add handleUpdateItem prop to ItemCard component in tests
 - Implement collapsible functionality in InventorySection component
 
 ## Changed
