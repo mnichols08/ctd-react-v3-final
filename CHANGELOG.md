@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.2.1] - 2026-03-02
+
+## Changed
+
+- Renames AddShoppingListItemForm to ShoppingListControl component for enhanced item management in shopping list
+
+---
+
 ## [0.2.0] - 2026-03-01
 
 ### Added
