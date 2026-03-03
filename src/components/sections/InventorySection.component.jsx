@@ -23,7 +23,7 @@ function InventorySection({
   // Handler for toggling the collapsed state
   const handleClick = (e) => {
     e.preventDefault();
-    setIsCollapsed(!isCollapsed);
+    setIsCollapsed((prevIsCollapsed) => !prevIsCollapsed);
   };
   return (
     <section id={id}>
