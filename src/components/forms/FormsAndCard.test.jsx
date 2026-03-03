@@ -244,7 +244,13 @@ describe("ItemCard", () => {
       Category: "Fruit",
     };
 
-    render(<ItemCard item={item} visibleFields={allTestFields} />);
+    render(
+      <ItemCard
+        item={item}
+        visibleFields={allTestFields}
+        handleUpdateItem={() => {}}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", { name: "Blueberries", level: 2 }),

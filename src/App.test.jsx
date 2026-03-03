@@ -27,16 +27,16 @@ describe("App", () => {
     expect(screen.getByRole("link", { name: "Shopping List" })).toBeTruthy();
 
     expect(
-      screen.getByRole("heading", { name: "Fridge", level: 2 }),
+      screen.getByRole("heading", { name: /Fridge/, level: 2 }),
     ).toBeTruthy();
     expect(
-      screen.getAllByRole("heading", { name: "Freezer", level: 2 }),
+      screen.getAllByRole("heading", { name: /Freezer/, level: 2 }),
     ).toHaveLength(1);
     expect(
-      screen.getByRole("heading", { name: "Pantry", level: 2 }),
+      screen.getByRole("heading", { name: /Pantry/, level: 2 }),
     ).toBeTruthy();
     expect(
-      screen.getByRole("heading", { name: "Shopping List", level: 2 }),
+      screen.getByRole("heading", { name: /Shopping List/, level: 2 }),
     ).toBeTruthy();
   });
 

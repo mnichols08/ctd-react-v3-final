@@ -29,8 +29,10 @@ function ShoppingListControl({
     if (typeof handleUpdateItemQuantity !== "function") return;
     handleUpdateItemQuantity(id, targetQty + 1);
   };
-  const componentHeading = handleAddToShoppingList && (
+  const componentHeading = handleAddToShoppingList ? (
     <h3>Shopping List Controls</h3>
+  ) : (
+    <p>Qty on Hand: {qtyOnHand}</p>
   );
   if (isInShoppingList) {
     const willRemove = targetQty - 1 <= qtyOnHand;
