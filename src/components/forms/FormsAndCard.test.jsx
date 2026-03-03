@@ -15,6 +15,7 @@ import FilterBarForm from "./FilterBarForm.component";
 import QuickAddForm from "./QuickAddForm.component";
 import ItemCard from "../cards/ItemCard.component";
 import ToolSection from "../sections/ToolSection.component";
+import { DEFAULT_VISIBLE_FIELDS } from "../../data/fieldConfig";
 
 afterEach(() => {
   cleanup();
@@ -224,6 +225,13 @@ describe("Form submission behavior", () => {
 });
 
 describe("ItemCard", () => {
+  // A visibleFields set that includes every field the old tests relied on
+  const allTestFields = new Set([
+    ...DEFAULT_VISIBLE_FIELDS,
+    "DateFrozen",
+    "Notes",
+  ]);
+
   it("renders mapped inventory fields", () => {
     const item = {
       id: 1,
@@ -236,13 +244,14 @@ describe("ItemCard", () => {
       Category: "Fruit",
     };
 
-    render(<ItemCard item={item} />);
+    render(<ItemCard item={item} visibleFields={allTestFields} />);
 
     expect(
       screen.getByRole("heading", { name: "Blueberries", level: 2 }),
     ).toBeTruthy();
-    expect(screen.getByText("Quantity on Hand: 2 bags")).toBeTruthy();
-    expect(screen.getByText("Expiration Date: 2026-04-10")).toBeTruthy();
+    expect(screen.getByText("Qty on Hand: 2")).toBeTruthy();
+    expect(screen.getByText("Qty Unit: bags")).toBeTruthy();
+    expect(screen.getByText("Expires On: 2026-04-10")).toBeTruthy();
     expect(screen.getByText("Date Frozen: 2026-03-01")).toBeTruthy();
     expect(screen.getByText("Notes: Use for smoothies")).toBeTruthy();
     expect(screen.getByText("Category: Fruit")).toBeTruthy();
@@ -258,7 +267,13 @@ describe("ItemCard", () => {
       Category: "Dairy",
     };
 
-    render(<ItemCard item={item} handleAddToShoppingList={() => {}} />);
+    render(
+      <ItemCard
+        item={item}
+        handleAddToShoppingList={() => {}}
+        visibleFields={allTestFields}
+      />,
+    );
 
     expect(screen.queryByText(/Date Frozen:/)).toBeNull();
     expect(screen.queryByText(/Notes:/)).toBeNull();
