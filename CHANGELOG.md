@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor ItemCard to replace AddShoppingListItemForm with ShoppingListControl and streamline shopping list handling
 - Renames AddShoppingListItemForm to ShoppingListControl component for enhanced item management in shopping list
 
+## Fixed
+
+- Prevents form erros by adding step attribute to TargetQty input to allow decimal values
+
 ---
 
 ## [0.2.0] - 2026-03-01
