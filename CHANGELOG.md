@@ -23,12 +23,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]  - 2026-03-03
 
-## Added
+### Added
 
 - Add handleUpdateItem prop to ItemCard component in tests
 - Implement collapsible functionality in InventorySection component
 
-## Changed
+### Changed
 
 - Refactor ItemCard to conditionally render fields and Edit button together
 - In ShoppingListControl conditionally renders the qtyOnHand only in the Shopping List category

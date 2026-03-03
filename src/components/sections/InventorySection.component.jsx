@@ -30,7 +30,10 @@ function InventorySection({
       <h2
         id={`${id}-heading`}
         onClick={handleClick}
-        style={{ cursor: itemCount > 0 ? "pointer" : "text", display: "inline-block" }}
+        style={{
+          cursor: itemCount > 0 ? "pointer" : "text",
+          display: "inline-block",
+        }}
       >
         {title} ({itemCount}){" "}
       </h2>{" "}
@@ -39,26 +42,27 @@ function InventorySection({
         aria-expanded={!isCollapsed}
         aria-controls={contentId}
         onClick={handleClick}
-        aria-hidden="true"
       >
         {itemCount > 0 && (isCollapsed ? "Show Collapsed" : "Collapse")}
       </a>
       <div id={contentId} role="region" aria-labelledby={`${id}-heading`}>
-        {itemCount > 0 && isCollapsed && <p>Collapsed</p> ? (
-          <p>Collapsed</p>
-        ) : itemCount > 0 && !isCollapsed && items.length > 0 ? (
-          <ul>
-            {items.map((item) => (
-              <ItemCard
-                key={item.id}
-                item={item}
-                handleAddToShoppingList={addToShoppingList}
-                handleUpdateItemQuantity={updateItemQuantity}
-                handleUpdateItem={updateItem}
-                visibleFields={visibleFields}
-              />
-            ))}
-          </ul>
+        {itemCount > 0 && items && items.length > 0 ? (
+          isCollapsed ? (
+            <p>Collapsed</p>
+          ) : (
+            <ul>
+              {items.map((item) => (
+                <ItemCard
+                  key={item.id}
+                  item={item}
+                  handleAddToShoppingList={addToShoppingList}
+                  handleUpdateItemQuantity={updateItemQuantity}
+                  handleUpdateItem={updateItem}
+                  visibleFields={visibleFields}
+                />
+              ))}
+            </ul>
+          )
         ) : (
           <EmptyState title={title.toLowerCase()} />
         )}
