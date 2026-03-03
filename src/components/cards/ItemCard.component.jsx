@@ -55,14 +55,15 @@ function ItemCard({
           <>
             <h2>{item.ItemName}</h2>
 
-            {fieldsToRender.map(({ key, label }) => (
-              <p key={key}>
-                {label}: {formatValue(item[key])}
-              </p>
-            ))}
-
             {handleUpdateItem && (
-              <button onClick={() => setIsEditing(true)}>Edit</button>
+              <>
+                {fieldsToRender.map(({ key, label }) => (
+                  <p key={key}>
+                    {label}: {formatValue(item[key])}
+                  </p>
+                ))}
+                <button onClick={() => setIsEditing(true)}>Edit</button>
+              </>
             )}
 
             {(handleAddToShoppingList || handleUpdateItemQuantity) && (
