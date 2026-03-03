@@ -71,7 +71,7 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
           value={formData.ItemName}
           onChange={handleChange}
           type="text"
-          id={`ItemName-${item.id}`} 
+          id={`ItemName-${item.id}`}
           name="ItemName"
           required
         />
@@ -142,20 +142,13 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
         />
 
         <label htmlFor={`Location-${item.id}`}>Location:</label>
-        <select
+        <input
           defaultValue={formData.Location}
           onChange={handleChange}
           id={`Location-${item.id}`}
           name="Location"
           required
-        >
-          <option value="" disabled>
-            Select Location
-          </option>
-          <option value="Fridge">Fridge</option>
-          <option value="Freezer">Freezer</option>
-          <option value="Pantry">Pantry</option>
-        </select>
+        />
 
         <label htmlFor={`Tags-${item.id}`}>Tags:</label>
         <input
@@ -307,13 +300,14 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
         <textarea
           value={formData.Notes}
           onChange={handleChange}
-          id={`Notes-${item.id}`} 
-
+          id={`Notes-${item.id}`}
           name="Notes"
         />
       </fieldset>
       <button type="submit">Save</button>
-      <button type="button" onClick={onCancel}>Cancel</button>
+      <button type="button" onClick={onCancel}>
+        Cancel
+      </button>
     </form>
   );
 }

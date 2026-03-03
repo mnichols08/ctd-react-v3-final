@@ -25,7 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Adds a `--host` flag to dev server, to test on local networks
+- Creates a `dev:server` script to allow running the development server on the local network
+- Adds script `test:watch` for running Vitest tests in watch mode 
 
 ### Changed
 
