@@ -11,10 +11,11 @@ function FieldSelector({
       <div
         onClick={(e) => e.stopPropagation()}
         role="dialog"
-        aria-label="Select visible fields"
+        aria-labelledby="field-selector-title"
+        aria-modal="true"
       >
         <div id="field-selector">
-          <h3>Visible Fields</h3>
+          <h3 id="field-selector-title">Select Visible Fields</h3>
           <button onClick={onClose} aria-label="Close field selector">
             x
           </button>

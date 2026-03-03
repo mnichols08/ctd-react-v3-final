@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Improves accessibility in FieldSelector component by properly declaring as a modal and labelling it by the heading
 - Update ItemCard tests to use visibleFields and adjust field labels
 
 ---
