@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Refactor ShoppingListControl and ItemCard components to remove unused prop and adjust heading condition
 - Refactor ShoppingListControl component to improve quantity handling and update button logic
 
 ### Changed

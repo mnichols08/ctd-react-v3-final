@@ -5,7 +5,6 @@ function ShoppingListControl({
   item,
   handleAddToShoppingList,
   handleUpdateItemQuantity,
-  isRenderedInShoppingCart,
 }) {
   const {
     id,
@@ -30,7 +29,7 @@ function ShoppingListControl({
     if (typeof handleUpdateItemQuantity !== "function") return;
     handleUpdateItemQuantity(id, targetQty + 1);
   };
-  const componentHeading = isRenderedInShoppingCart && (
+  const componentHeading = handleAddToShoppingList && (
     <h3>Shopping List Controls</h3>
   );
   if (isInShoppingList) {
@@ -38,6 +37,7 @@ function ShoppingListControl({
     return (
       <div>
         {componentHeading}
+        <span>Qty in Cart: </span>
         <button
           onClick={handleDecrement}
           aria-label={`${willRemove ? "Remove from" : "Decrease quantity for"} ${itemName}`}

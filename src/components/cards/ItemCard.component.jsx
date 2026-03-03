@@ -61,7 +61,6 @@ function ItemCard({
                 item={item}
                 handleAddToShoppingList={handleAddToShoppingList}
                 handleUpdateItemQuantity={handleUpdateItemQuantity}
-                isRenderedInShoppingCart={handleUpdateItem}
               />
             )}
           </>
