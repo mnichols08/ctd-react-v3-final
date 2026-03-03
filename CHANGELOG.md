@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add field visibility management and configuration
 - Add FieldSelector component and integrate with Header and NavMenu for managing visible fields
 
 ---
