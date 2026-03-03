@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Changed
 
+- In ShoppingListControl conditionally renders the qtyOnHand only in the Shopping List category
 - Update App tests to use regex for heading names
 
 ---
