@@ -34,14 +34,15 @@ function ShoppingListControl({
     <h3>Shopping List Controls</h3>
   );
   if (isInShoppingList) {
+    const willRemove = targetQty - 1 <= qtyOnHand;
     return (
       <div>
         {componentHeading}
         <button
           onClick={handleDecrement}
-          aria-label={`${targetQty === qtyOnHand + 1 ? "Remove from" : "Decrease quantity for"} ${itemName}`}
+          aria-label={`${willRemove ? "Remove from" : "Decrease quantity for"} ${itemName}`}
         >
-          {targetQty === qtyOnHand + 1 ? "Remove" : "−"}
+          {willRemove ? "Remove" : "-"}
         </button>{" "}
         {targetQty}{" "}
         <button

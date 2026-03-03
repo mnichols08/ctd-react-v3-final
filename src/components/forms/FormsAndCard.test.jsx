@@ -288,14 +288,14 @@ describe("ItemCard", () => {
 
     render(<ItemCard item={item} handleUpdateItemQuantity={handleUpdateQty} />);
 
-    // Stepper buttons should be present
-    const decrementBtn = screen.getByRole("button", {
-      name: /decrease quantity/i,
+    // With TargetQty 1 and QtyOnHand 0.1, decrementing would remove from list
+    const removeBtn = screen.getByRole("button", {
+      name: /remove from/i,
     });
     const incrementBtn = screen.getByRole("button", {
       name: /increase quantity/i,
     });
-    expect(decrementBtn).toBeTruthy();
+    expect(removeBtn).toBeTruthy();
     expect(incrementBtn).toBeTruthy();
 
     // Current TargetQty should be displayed
@@ -310,8 +310,8 @@ describe("ItemCard", () => {
     fireEvent.click(incrementBtn);
     expect(handleUpdateQty).toHaveBeenCalledWith(3, 2);
 
-    // Clicking - should call handler with decremented qty
-    fireEvent.click(decrementBtn);
+    // Clicking Remove should call handler with decremented qty (triggers removal)
+    fireEvent.click(removeBtn);
     expect(handleUpdateQty).toHaveBeenCalledWith(3, 0);
   });
 
