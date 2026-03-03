@@ -21,7 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [0.2.2] - 2026-03-02
+## [Unreleased]  - 2026-03-03
+
+## Added
+
+- Implement collapsible functionality in InventorySection component
+
+---
+
+## [0.2.2] - 2026-03-03
 
 ### Added
 
