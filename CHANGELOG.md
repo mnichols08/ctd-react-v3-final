@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Changed
 
+- Refactor shopping list form tests to use ShoppingListControl component
 - Refactor InventorySection mock to remove shoppingCart prop and update button logic
 - Refactor updateItemQuantity handler to manage shopping list item quantities and remove items when necessary
 - Refactor InventorySection to remove unused props and streamline item handling
