@@ -21,7 +21,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [0.1.6] - 2026-03-01
+## [0.2.1] - 2026-03-02
+
+### Fixed
+
+- Refactor ShoppingListControl and ItemCard components to remove unused prop and adjust heading condition
+- Refactor ShoppingListControl component to improve quantity handling and update button logic
+
+### Changed
+
+- Refactor shopping list form tests to use ShoppingListControl component
+- Refactor InventorySection mock to remove shoppingCart prop and update button logic
+- Refactor updateItemQuantity handler to manage shopping list item quantities and remove items when necessary
+- Refactor InventorySection to remove unused props and streamline item handling
+- Refactor ItemCard to replace AddShoppingListItemForm with ShoppingListControl and streamline shopping list handling
+- Renames AddShoppingListItemForm to ShoppingListControl component for enhanced item management in shopping list
+
+### Fixed
+
+- Prevents form erros by adding step attribute to TargetQty input to allow decimal values
+
+---
+
+## [0.2.0] - 2026-03-01
 
 ### Added
 

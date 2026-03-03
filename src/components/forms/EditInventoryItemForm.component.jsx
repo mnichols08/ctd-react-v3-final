@@ -199,6 +199,7 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
           type="number"
           id={`TargetQty-${item.id}`}
           name="TargetQty"
+          step="any"
           min="0"
         />
 

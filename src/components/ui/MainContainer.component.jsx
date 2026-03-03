@@ -35,18 +35,25 @@ function MainContainer() {
       return prevItems.map((i) => (i.id === itemId ? updatedItem : i));
     });
   };
-  // Handler to remove an item from the shopping list (mark as not NeedRestock)
-  const removeFromShoppingList = (itemId) => {
+  // Handler to update the TargetQty for a shopping-list item.
+  // Automatically removes from shopping list when newTargetQty <= QtyOnHand.
+  const updateItemQuantity = (itemId, newTargetQty) => {
     setInventoryItems((prevItems) => {
       const item = prevItems.find((i) => i.id === itemId);
-      if (!item) {
-        return prevItems;
+      if (!item) return prevItems;
+      const qty = Number(newTargetQty);
+      if (!Number.isFinite(qty)) return prevItems;
+      // If the new target is at or below what's on hand, remove from list
+      if (qty <= item.QtyOnHand) {
+        return prevItems.map((i) =>
+          i.id === itemId
+            ? { ...i, NeedRestock: false, TargetQty: i.QtyOnHand }
+            : i,
+        );
       }
-      const updatedItem = {
-        ...item,
-        NeedRestock: false,
-      };
-      return prevItems.map((i) => (i.id === itemId ? updatedItem : i));
+      return prevItems.map((i) =>
+        i.id === itemId ? { ...i, TargetQty: qty } : i,
+      );
     });
   };
   // Handler to update an existing inventory item
@@ -75,6 +82,7 @@ function MainContainer() {
         id="fridge"
         title="Fridge"
         addToShoppingList={addToShoppingList}
+        updateItemQuantity={updateItemQuantity}
         updateItem={updateInventoryItem}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Fridge"),
@@ -84,6 +92,7 @@ function MainContainer() {
         id="freezer"
         title="Freezer"
         addToShoppingList={addToShoppingList}
+        updateItemQuantity={updateItemQuantity}
         updateItem={updateInventoryItem}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Freezer"),
@@ -93,6 +102,7 @@ function MainContainer() {
         id="pantry"
         title="Pantry"
         addToShoppingList={addToShoppingList}
+        updateItemQuantity={updateItemQuantity}
         updateItem={updateInventoryItem}
         items={inventoryItems.filter((item) =>
           item.Location.includes("Pantry"),
@@ -102,8 +112,7 @@ function MainContainer() {
       <InventorySection
         id="shopping-list"
         title="Shopping List"
-        removeFromShoppingList={removeFromShoppingList}
-        shoppingCart
+        updateItemQuantity={updateItemQuantity}
         items={inventoryItems.filter(
           (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
         )}

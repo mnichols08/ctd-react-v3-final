@@ -5,9 +5,8 @@ function InventorySection({
   id,
   title,
   items,
-  shoppingCart = false,
   addToShoppingList,
-  removeFromShoppingList,
+  updateItemQuantity,
   updateItem,
 }) {
   return (
@@ -19,9 +18,8 @@ function InventorySection({
             <ItemCard
               key={item.id}
               item={item}
-              shoppingCart={shoppingCart}
               handleAddToShoppingList={addToShoppingList}
-              handleRemoveFromShoppingList={removeFromShoppingList}
+              handleUpdateItemQuantity={updateItemQuantity}
               handleUpdateItem={updateItem}
             />
           ))}
