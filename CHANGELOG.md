@@ -21,7 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [Unreleased] - 2026-03-01
+## [0.1.6] - 2026-03-01
+
+### Added
+
+- Adds a `--host` flag to dev server, to test on local networks
 
 ### Changed
 

@@ -65,87 +65,87 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
     <form onSubmit={handleSubmit} aria-label="Edit Inventory Item">
       <fieldset>
         <legend>Basic Details</legend>
-        <label htmlFor="ItemName">Item Name:</label>
+        <label htmlFor={`ItemName-${item.id}`}>Item Name:</label>
         <input
           ref={firstFieldRef}
           value={formData.ItemName}
           onChange={handleChange}
           type="text"
-          id="ItemName"
+          id={`ItemName-${item.id}`} 
           name="ItemName"
           required
         />
 
-        <label htmlFor="ItemDescripton">Item Description:</label>
+        <label htmlFor={`ItemDescripton-${item.id}`}>Item Description:</label>
         <textarea
           value={formData.ItemDescripton}
           onChange={handleChange}
-          id="ItemDescripton"
+          id={`ItemDescripton-${item.id}`}
           name="ItemDescripton"
         />
 
-        <label htmlFor="Brand">Brand:</label>
+        <label htmlFor={`Brand-${item.id}`}>Brand:</label>
         <input
           value={formData.Brand}
           onChange={handleChange}
           type="text"
-          id="Brand"
+          id={`Brand-${item.id}`}
           name="Brand"
         />
 
-        <label htmlFor="PackageSize">Package Size:</label>
+        <label htmlFor={`PackageSize-${item.id}`}>Package Size:</label>
         <input
           value={formData.PackageSize}
           onChange={handleChange}
           type="text"
-          id="PackageSize"
+          id={`PackageSize-${item.id}`}
           name="PackageSize"
         />
 
-        <label htmlFor="UPC">UPC:</label>
+        <label htmlFor={`UPC-${item.id}`}>UPC:</label>
         <input
           value={formData.UPC}
           onChange={handleChange}
           type="text"
-          id="UPC"
+          id={`UPC-${item.id}`}
           name="UPC"
         />
 
-        <label htmlFor="Status">Status:</label>
+        <label htmlFor={`Status-${item.id}`}>Status:</label>
         <input
           value={formData.Status}
           onChange={handleChange}
           type="text"
-          id="Status"
+          id={`Status-${item.id}`}
           name="Status"
         />
       </fieldset>
 
       <fieldset>
         <legend>Classification & Storage</legend>
-        <label htmlFor="Category">Category:</label>
+        <label htmlFor={`Category-${item.id}`}>Category:</label>
         <input
           value={formData.Category}
           onChange={handleChange}
           type="text"
-          id="Category"
+          id={`Category-${item.id}`}
           name="Category"
         />
 
-        <label htmlFor="SubCategory">Sub Category:</label>
+        <label htmlFor={`SubCategory-${item.id}`}>Sub Category:</label>
         <input
           value={formData.SubCategory}
           onChange={handleChange}
           type="text"
-          id="SubCategory"
+          id={`SubCategory-${item.id}`}
           name="SubCategory"
         />
 
-        <label htmlFor="Location">Location:</label>
+        <label htmlFor={`Location-${item.id}`}>Location:</label>
         <select
           defaultValue={formData.Location}
           onChange={handleChange}
-          id="Location"
+          id={`Location-${item.id}`}
           name="Location"
           required
         >
@@ -157,62 +157,62 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
           <option value="Pantry">Pantry</option>
         </select>
 
-        <label htmlFor="Tags">Tags:</label>
+        <label htmlFor={`Tags-${item.id}`}>Tags:</label>
         <input
           value={formData.Tags}
           onChange={handleChange}
           type="text"
-          id="Tags"
+          id={`Tags-${item.id}`}
           name="Tags"
         />
 
-        <label htmlFor="Allergens">Allergens:</label>
+        <label htmlFor={`Allergens-${item.id}`}>Allergens:</label>
         <input
           value={formData.Allergens}
           onChange={handleChange}
           type="text"
-          id="Allergens"
+          id={`Allergens-${item.id}`}
           name="Allergens"
         />
       </fieldset>
 
       <fieldset>
         <legend>Quantities</legend>
-        <label htmlFor="QtyOnHand">Quantity on Hand:</label>
+        <label htmlFor={`QtyOnHand-${item.id}`}>Quantity on Hand:</label>
         <input
           value={formData.QtyOnHand}
           onChange={handleChange}
           type="number"
-          id="QtyOnHand"
+          id={`QtyOnHand-${item.id}`}
           name="QtyOnHand"
           min="0"
           step="any"
           required
         />
 
-        <label htmlFor="QtyUnit">Unit:</label>
+        <label htmlFor={`QtyUnit-${item.id}`}>Unit:</label>
         <input
           value={formData.QtyUnit}
           onChange={handleChange}
           type="text"
-          id="QtyUnit"
+          id={`QtyUnit-${item.id}`}
           name="QtyUnit"
         />
 
-        <label htmlFor="TargetQty">Target Qty:</label>
+        <label htmlFor={`TargetQty-${item.id}`}>Target Qty:</label>
         <input
           value={formData.TargetQty}
           onChange={handleChange}
           type="number"
-          id="TargetQty"
+          id={`TargetQty-${item.id}`}
           name="TargetQty"
           min="0"
         />
 
-        <label htmlFor="NeedRestock">Need Restock:</label>
+        <label htmlFor={`NeedRestock-${item.id}`}>Need Restock:</label>
         <input
           type="checkbox"
-          id="NeedRestock"
+          id={`NeedRestock-${item.id}`}
           name="NeedRestock"
           checked={formData.NeedRestock}
           onChange={handleChange}
@@ -221,93 +221,94 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
 
       <fieldset>
         <legend>Dates</legend>
-        <label htmlFor="ExpiresOn">Expires On:</label>
+        <label htmlFor={`ExpiresOn-${item.id}`}>Expires On:</label>
         <input
           value={formData.ExpiresOn}
           onChange={handleChange}
           type="date"
-          id="ExpiresOn"
+          id={`ExpiresOn-${item.id}`}
           name="ExpiresOn"
         />
 
-        <label htmlFor="DatePurchased">Date Purchased:</label>
+        <label htmlFor={`DatePurchased-${item.id}`}>Date Purchased:</label>
         <input
           value={formData.DatePurchased}
           onChange={handleChange}
           type="date"
-          id="DatePurchased"
+          id={`DatePurchased-${item.id}`}
           name="DatePurchased"
         />
 
-        <label htmlFor="DateFrozen">Date Frozen:</label>
+        <label htmlFor={`DateFrozen-${item.id}`}>Date Frozen:</label>
         <input
           value={formData.DateFrozen}
           onChange={handleChange}
           type="date"
-          id="DateFrozen"
+          id={`DateFrozen-${item.id}`}
           name="DateFrozen"
         />
       </fieldset>
 
       <fieldset>
         <legend>Pricing & Purchase</legend>
-        <label htmlFor="PurchasePrice">Purchase Price:</label>
+        <label htmlFor={`PurchasePrice-${item.id}`}>Purchase Price:</label>
         <input
           value={formData.PurchasePrice}
           onChange={handleChange}
           type="number"
-          id="PurchasePrice"
+          id={`PurchasePrice-${item.id}`}
           name="PurchasePrice"
           min="0"
           step="0.01"
         />
 
-        <label htmlFor="UnitCost">Unit Cost:</label>
+        <label htmlFor={`UnitCost-${item.id}`}>Unit Cost:</label>
         <input
           value={formData.UnitCost}
           onChange={handleChange}
           type="number"
-          id="UnitCost"
+          id={`UnitCost-${item.id}`}
           name="UnitCost"
           min="0"
           step="0.01"
         />
 
-        <label htmlFor="Store">Store:</label>
+        <label htmlFor={`Store-${item.id}`}>Store:</label>
         <input
           value={formData.Store}
           onChange={handleChange}
           type="text"
-          id="Store"
+          id={`Store-${item.id}`}
           name="Store"
         />
       </fieldset>
 
       <fieldset>
         <legend>References & Notes</legend>
-        <label htmlFor="ProductUrl">Product URL:</label>
+        <label htmlFor={`ProductUrl-${item.id}`}>Product URL:</label>
         <input
           value={formData.ProductUrl}
           onChange={handleChange}
           type="url"
-          id="ProductUrl"
+          id={`ProductUrl-${item.id}`}
           name="ProductUrl"
         />
 
-        <label htmlFor="ImageRef">Image Reference:</label>
+        <label htmlFor={`ImageRef-${item.id}`}>Image Reference:</label>
         <input
           value={formData.ImageRef}
           onChange={handleChange}
           type="text"
-          id="ImageRef"
+          id={`ImageRef-${item.id}`}
           name="ImageRef"
         />
 
-        <label htmlFor="Notes">Notes:</label>
+        <label htmlFor={`Notes-${item.id}`}>Notes:</label>
         <textarea
           value={formData.Notes}
           onChange={handleChange}
-          id="Notes"
+          id={`Notes-${item.id}`} 
+
           name="Notes"
         />
       </fieldset>
