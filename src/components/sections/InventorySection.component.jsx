@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import ItemCard from "../cards/ItemCard.component";
 import EmptyState from "../ui/EmptyState.component";
@@ -11,9 +11,12 @@ function InventorySection({
   updateItemQuantity,
   updateItem,
   visibleFields,
+  archiveItem,
+  unarchiveItem,
 }) {
   // State to track whether the section is collapsed or expanded
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const isArchivedSection = id === "archived" && window.location.hash !== "#archived";
+  const [isCollapsed, setIsCollapsed] = useState(isArchivedSection);
 
   // Calculate the item count for display
   const itemCount = items ? items.length : 0;
@@ -25,6 +28,7 @@ function InventorySection({
     e.preventDefault();
     setIsCollapsed((prevIsCollapsed) => !prevIsCollapsed);
   };
+
   return (
     <section id={id}>
       <h2
@@ -59,6 +63,8 @@ function InventorySection({
                   handleUpdateItemQuantity={updateItemQuantity}
                   handleUpdateItem={updateItem}
                   visibleFields={visibleFields}
+                  handleArchiveItem={archiveItem}
+                  handleUnarchiveItem={unarchiveItem}
                 />
               ))}
             </ul>

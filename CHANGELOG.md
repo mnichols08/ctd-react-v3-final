@@ -27,6 +27,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add archive and unarchive functionality to ItemCard component
 
+### Changed
+
+- Refactor InventorySection to support archiving and unarchiving items in local state
+
+---
+
 ## [0.2.3]  - 2026-03-03
 
 ### Added
