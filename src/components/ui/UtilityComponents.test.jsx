@@ -22,16 +22,18 @@ describe("EmptyState", () => {
 describe("QuickStatsBar", () => {
   it("renders quick stat labels and values", () => {
     const inventoryItems = inventorySampleData.records;
-    const expectedTotalItems = inventoryItems.length;
-    const expectedExpiringSoon = inventoryItems.filter(
+    const activeItems = inventoryItems.filter(
+      (item) => item.Status !== "archived",
+    );
+    const expectedTotalItems = activeItems.length;
+    const expectedExpiringSoon = activeItems.filter(
       (item) => new Date(item.ExpiresOn) - new Date() < 7 * 24 * 60 * 60 * 1000,
     ).length;
-    const expectedLowStock = inventoryItems.filter(
+    const expectedLowStock = activeItems.filter(
       (item) => item.QtyOnHand < 5,
     ).length;
-    const expectedCategories = new Set(
-      inventoryItems.map((item) => item.Category),
-    ).size;
+    const expectedCategories = new Set(activeItems.map((item) => item.Category))
+      .size;
     const expectedArchivedItems = inventoryItems.filter(
       (item) => item.Status === "archived",
     ).length;
@@ -39,7 +41,7 @@ describe("QuickStatsBar", () => {
     render(<QuickStatsBar inventoryItems={inventoryItems} />);
 
     const totalHeading = screen.getByRole("heading", {
-      name: "Total Items",
+      name: "Active Items",
       level: 3,
     });
     const expiringHeading = screen.getByRole("heading", {

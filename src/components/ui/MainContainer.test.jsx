@@ -77,14 +77,14 @@ afterEach(() => {
 
 describe("MainContainer", () => {
   it("initializes state from sample data and passes filtered section items", () => {
-    const expectedFridgeCount = inventorySampleData.records.filter((item) =>
-      item.Location.includes("Fridge"),
+    const expectedFridgeCount = inventorySampleData.records.filter(
+      (item) => item.Location.includes("Fridge") && item.Status !== "archived",
     ).length;
-    const expectedFreezerCount = inventorySampleData.records.filter((item) =>
-      item.Location.includes("Freezer"),
+    const expectedFreezerCount = inventorySampleData.records.filter(
+      (item) => item.Location.includes("Freezer") && item.Status !== "archived",
     ).length;
-    const expectedPantryCount = inventorySampleData.records.filter((item) =>
-      item.Location.includes("Pantry"),
+    const expectedPantryCount = inventorySampleData.records.filter(
+      (item) => item.Location.includes("Pantry") && item.Status !== "archived",
     ).length;
     const expectedShoppingListCount = inventorySampleData.records.filter(
       (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
@@ -125,8 +125,8 @@ describe("MainContainer", () => {
   });
 
   it("submits an add-item form and updates state-backed section data", () => {
-    const initialPantryCount = inventorySampleData.records.filter((item) =>
-      item.Location.includes("Pantry"),
+    const initialPantryCount = inventorySampleData.records.filter(
+      (item) => item.Location.includes("Pantry") && item.Status !== "archived",
     ).length;
 
     render(<MainContainer />);
