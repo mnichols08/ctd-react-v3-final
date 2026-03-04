@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.2.7] - 2026-03-04
 
+### Changed
+
+- Enhance QuickStatsBar tests with fake timers and improve expiration logic
+
 ### Removed
 
 - Remove unnecessary visibleFields prop from ShoppingList component
