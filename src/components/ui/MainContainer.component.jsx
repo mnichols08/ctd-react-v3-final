@@ -102,7 +102,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   return (
     <main>
       <ToolSection id="stats" title="Quick Stats">
-        <QuickStatsBar />
+        <QuickStatsBar inventoryItems={inventoryItems} />
       </ToolSection>
       <ToolSection id="add-item" title="Add Item">
         {/*  Toggle between Quick Add and Full Form */}
