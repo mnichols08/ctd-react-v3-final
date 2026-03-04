@@ -144,79 +144,71 @@ describe("App – archive behavior", () => {
 // ---------------------------------------------------------------------------
 describe("App – delete behavior", () => {
   it("clicking Delete + confirming removes item from section", () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
-
-    render(<App />);
-
-    const fridgeSection = screen
-      .getByRole("heading", { name: /Fridge/i, level: 2 })
-      .closest("section");
-    expect(within(fridgeSection).getByText("Apple Sauce")).toBeTruthy();
-
-    const article = within(fridgeSection)
-      .getByRole("heading", { name: "Apple Sauce", level: 2 })
-      .closest("article");
-    fireEvent.click(within(article).getByRole("button", { name: "Delete" }));
-
-    expect(window.confirm).toHaveBeenCalled();
-    expect(within(fridgeSection).queryByText("Apple Sauce")).toBeNull();
-
-    window.confirm.mockRestore();
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    try {
+      render(<App />);
+      const fridgeSection = screen
+        .getByRole("heading", { name: /Fridge/i, level: 2 })
+        .closest("section");
+      expect(within(fridgeSection).getByText("Apple Sauce")).toBeTruthy();
+      const article = within(fridgeSection)
+        .getByRole("heading", { name: "Apple Sauce", level: 2 })
+        .closest("article");
+      fireEvent.click(within(article).getByRole("button", { name: "Delete" }));
+      expect(window.confirm).toHaveBeenCalled();
+      expect(within(fridgeSection).queryByText("Apple Sauce")).toBeNull();
+    } finally {
+      confirmSpy.mockRestore();
+    }
   });
-
   it("clicking Delete + cancelling keeps item in section", () => {
-    vi.spyOn(window, "confirm").mockReturnValue(false);
-
-    render(<App />);
-
-    const fridgeSection = screen
-      .getByRole("heading", { name: /Fridge/i, level: 2 })
-      .closest("section");
-    const article = within(fridgeSection)
-      .getByRole("heading", { name: "Apple Sauce", level: 2 })
-      .closest("article");
-    fireEvent.click(within(article).getByRole("button", { name: "Delete" }));
-
-    expect(window.confirm).toHaveBeenCalled();
-    // Item should still be there
-    expect(within(fridgeSection).getByText("Apple Sauce")).toBeTruthy();
-
-    window.confirm.mockRestore();
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
+    try {
+      render(<App />);
+      const fridgeSection = screen
+        .getByRole("heading", { name: /Fridge/i, level: 2 })
+        .closest("section");
+      const article = within(fridgeSection)
+        .getByRole("heading", { name: "Apple Sauce", level: 2 })
+        .closest("article");
+      fireEvent.click(within(article).getByRole("button", { name: "Delete" }));
+      expect(window.confirm).toHaveBeenCalled();
+      // Item should still be there
+      expect(within(fridgeSection).getByText("Apple Sauce")).toBeTruthy();
+    } finally {
+      confirmSpy.mockRestore();
+    }
   });
-
   it("deleting all items in a section shows EmptyState", () => {
-    vi.spyOn(window, "confirm").mockReturnValue(true);
-
-    render(<App />);
-
-    const fridgeSection = screen
-      .getByRole("heading", { name: /Fridge/i, level: 2 })
-      .closest("section");
-
-    // Fridge has 2 items: Low Fat Vanilla Yogurt and Apple Sauce
-    // Delete both
-    const yogurtArticle = within(fridgeSection)
-      .getByRole("heading", { name: "Low Fat Vanilla Yogurt", level: 2 })
-      .closest("article");
-    fireEvent.click(
-      within(yogurtArticle).getByRole("button", { name: "Delete" }),
-    );
-
-    const appleArticle = within(fridgeSection)
-      .getByRole("heading", { name: "Apple Sauce", level: 2 })
-      .closest("article");
-    fireEvent.click(
-      within(appleArticle).getByRole("button", { name: "Delete" }),
-    );
-
-    // EmptyState should now render for fridge
-    expect(
-      within(fridgeSection).getByText(
-        "Items in the fridge will be listed here.",
-      ),
-    ).toBeTruthy();
-
-    window.confirm.mockRestore();
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
+    try {
+      render(<App />);
+      const fridgeSection = screen
+        .getByRole("heading", { name: /Fridge/i, level: 2 })
+        .closest("section");
+      // Fridge has 2 items: Low Fat Vanilla Yogurt and Apple Sauce
+      // Delete both
+      const yogurtArticle = within(fridgeSection)
+        .getByRole("heading", { name: "Low Fat Vanilla Yogurt", level: 2 })
+        .closest("article");
+      fireEvent.click(
+        within(yogurtArticle).getByRole("button", { name: "Delete" }),
+      );
+      const appleArticle = within(fridgeSection)
+        .getByRole("heading", { name: "Apple Sauce", level: 2 })
+        .closest("article");
+      fireEvent.click(
+        within(appleArticle).getByRole("button", { name: "Delete" }),
+      );
+      // EmptyState should now render for fridge
+      expect(
+        within(fridgeSection).getByText(
+          "Items in the fridge will be listed here.",
+        ),
+      ).toBeTruthy();
+    } finally {
+      confirmSpy.mockRestore();
+    }
   });
 });
 
