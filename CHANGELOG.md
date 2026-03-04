@@ -25,7 +25,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add delete functionality to permanently remove inventory items
+- Add delete functionality to permanently remove inventory 
+
+### Changed
+
+- Update expiration threshold to 14 days for expiring items
 
 ---
 
