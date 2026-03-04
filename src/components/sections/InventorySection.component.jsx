@@ -13,6 +13,7 @@ function InventorySection({
   visibleFields,
   archiveItem,
   unarchiveItem,
+  deleteItem
 }) {
   // State to track whether the section is collapsed or expanded
   const isArchivedSection = id === "archived";
@@ -65,6 +66,7 @@ function InventorySection({
                   visibleFields={visibleFields}
                   handleArchiveItem={archiveItem}
                   handleUnarchiveItem={unarchiveItem}
+                  handleDeleteItem={deleteItem}
                 />
               ))}
             </ul>

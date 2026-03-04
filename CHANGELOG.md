@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [Unreleased]
+
+### Added
+
+- Add delete functionality to permanently remove inventory items
+
+---
+
 ## [0.2.4] - 2026-03-03
 
 ### Added
