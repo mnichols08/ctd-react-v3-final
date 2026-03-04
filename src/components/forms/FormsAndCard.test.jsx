@@ -156,7 +156,7 @@ describe("ShoppingListControl", () => {
       screen.queryByRole("button", { name: "Add to Shopping List" }),
     ).toBeNull();
 
-    expect(screen.getByText("3")).toBeTruthy();
+    expect(screen.getByText("2")).toBeTruthy();
 
     const decBtn = screen.getByRole("button", { name: /decrease quantity/i });
     const incBtn = screen.getByRole("button", { name: /increase quantity/i });
@@ -362,8 +362,8 @@ describe("ItemCard", () => {
       screen.queryByRole("button", { name: "Add to Shopping List" }),
     ).toBeNull();
 
-    // Stepper should be shown with current TargetQty
-    expect(screen.getByText("3")).toBeTruthy();
+    // Stepper should be shown with current Qty in Cart
+    expect(screen.getByText("2")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: /decrease quantity/i }),
     ).toBeTruthy();
