@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactor QuickStatsBar to display active items and conditionally render archived items count
 - Enhance QuickStatsBar test to include archived items and other inventory statistics
 - Refactor InventorySection to support archiving and unarchiving items in local state
 

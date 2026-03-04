@@ -1,11 +1,13 @@
 function QuickStatsBar({ inventoryItems }) {
-  const totalItems = inventoryItems.length;
-  const expiringSoon = inventoryItems.filter(
-    (item) =>
-      new Date(item.ExpiresOn) - new Date() < 7 * 24 * 60 * 60 * 1000,
+  const activeItems = inventoryItems.filter(
+    (item) => item.Status !== "archived",
+  );
+  const totalItems = activeItems.length;
+  const expiringSoon = activeItems.filter(
+    (item) => new Date(item.ExpiresOn) - new Date() < 7 * 24 * 60 * 60 * 1000,
   ).length;
-  const lowStock = inventoryItems.filter((item) => item.QtyOnHand < 5).length;
-  const categories = [...new Set(inventoryItems.map((item) => item.Category))]
+  const lowStock = activeItems.filter((item) => item.QtyOnHand < 5).length;
+  const categories = [...new Set(activeItems.map((item) => item.Category))]
     .length;
   const archivedItems = inventoryItems.filter(
     (item) => item.Status === "archived",
@@ -14,7 +16,7 @@ function QuickStatsBar({ inventoryItems }) {
   return (
     <>
       <div>
-        <h3>Total Items</h3>
+        <h3>Active Items</h3>
         <p>{totalItems}</p>
       </div>
       <div>
@@ -29,10 +31,12 @@ function QuickStatsBar({ inventoryItems }) {
         <h3>Categories</h3>
         <p>{categories}</p>
       </div>
-      <div>
-        <h3>Archived Items</h3>
-        <p>{archivedItems}</p>
-      </div>
+      {archivedItems > 0 && (
+        <div>
+          <h3>Archived Items</h3>
+          <p>{archivedItems}</p>
+        </div>
+      )}
     </>
   );
 }
