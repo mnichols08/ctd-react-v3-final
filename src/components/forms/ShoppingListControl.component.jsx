@@ -4,6 +4,7 @@
 function ShoppingListControl({
   item,
   handleAddToShoppingList,
+  handleRemoveFromShoppingList,
   handleUpdateItemQuantity,
 }) {
   const {
@@ -13,6 +14,7 @@ function ShoppingListControl({
     TargetQty: targetQty,
     NeedRestock: needRestock,
   } = item;
+
   const isInShoppingList = needRestock && targetQty > qtyOnHand;
 
   const handleAdd = () => {
@@ -34,7 +36,8 @@ function ShoppingListControl({
   ) : (
     <p>Qty on Hand: {qtyOnHand}</p>
   );
-  if (isInShoppingList) {
+  // Case 1: On shopping list AND has stepper handler → render stepper
+  if (isInShoppingList && typeof handleUpdateItemQuantity === "function") {
     const willRemove = targetQty - 1 <= qtyOnHand;
     return (
       <div>
@@ -46,7 +49,7 @@ function ShoppingListControl({
         >
           {willRemove ? "Remove" : "-"}
         </button>{" "}
-        {targetQty}{" "}
+        {Math.ceil(targetQty - qtyOnHand)}{" "}
         <button
           onClick={handleIncrement}
           aria-label={`Increase quantity for ${itemName}`}
@@ -57,6 +60,22 @@ function ShoppingListControl({
     );
   }
 
+  // Case 2: Already on shopping list but no stepper (location sections) → hide the button
+  if (isInShoppingList) {
+    return (
+      <div>
+        {componentHeading}
+        <button
+          onClick={() => handleRemoveFromShoppingList(id)}
+          aria-label={`Remove ${itemName} from shopping list`}
+        >
+          Remove from Shopping List
+        </button>
+      </div>
+    );
+  }
+
+  // Case 3: Not on shopping list → show "Add" button
   return (
     <div>
       {componentHeading}
