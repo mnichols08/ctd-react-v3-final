@@ -31,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update expiration threshold to 14 days for expiring items
 
+### Fixed
+
+- Fixes expiring soon in `QuickStatsBar` by refactoring handleSubmit to parse numeric fields and handle null values for date fields
+
 ---
 
 ## [0.2.4] - 2026-03-03
