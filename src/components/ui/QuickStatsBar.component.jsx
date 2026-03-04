@@ -3,9 +3,21 @@ function QuickStatsBar({ inventoryItems }) {
     (item) => item.Status !== "archived",
   );
   const totalItems = activeItems.length;
-  const expiringSoon = activeItems.filter(
-    (item) => new Date(item.ExpiresOn) - new Date() < 7 * 24 * 60 * 60 * 1000,
-  ).length;
+  const expirationThresholdMs = 7 * 24 * 60 * 60 * 1000;
+  const now = new Date();
+  const expiringSoon = inventoryItems.filter((item) => {
+    if (!item.ExpiresOn) {
+      return false;
+    }
+    const expiresAt = new Date(item.ExpiresOn);
+    const timeUntilExpiration = expiresAt.getTime() - now.getTime();
+    if (Number.isNaN(timeUntilExpiration)) {
+      return false;
+    }
+    return (
+      timeUntilExpiration >= 0 && timeUntilExpiration < expirationThresholdMs
+    );
+  }).length;
   const lowStock = activeItems.filter((item) => item.QtyOnHand < 5).length;
   const categories = [...new Set(activeItems.map((item) => item.Category))]
     .length;

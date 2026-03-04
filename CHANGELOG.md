@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactor expiringSoon calculation for clarity and accuracy
 - Refactor QuickStatsBar test to calculate stats based on active items
 - Filter out archived items from inventory counts in MainContainer tests
 - Refactor QuickStatsBar to display active items and conditionally render archived items count
