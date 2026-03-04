@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Conditionally renders a link to Archived Items in NavMenu if they exist
+- Add archive and unarchive functionality to MainContainer and update App state
+- Add archivedItemsExist prop to Header and NavMenu components
 - Add archive and unarchive functionality to ItemCard component
 
 ### Changed

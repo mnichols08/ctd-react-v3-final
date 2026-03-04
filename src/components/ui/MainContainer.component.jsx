@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import inventorySampleData from "../../data/inventorySample.json";
 import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
@@ -7,7 +7,7 @@ import QuickAddForm from "../forms/QuickAddForm.component";
 import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
 
-function MainContainer({ visibleFields }) {
+function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Initialize inventory items from sample data, ensuring we have a fresh copy of each item
   const [inventoryItems, setInventoryItems] = useState(() =>
     inventorySampleData.records.map((item) => ({ ...item })),
@@ -62,6 +62,43 @@ function MainContainer({ visibleFields }) {
       prevItems.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
     );
   };
+
+  // Handler to archive an item (mark as Status: "archived" and remove from shopping list)
+  const archiveItem = (itemId) => {
+    setInventoryItems((prevItems) =>
+      prevItems.map((item) => {
+        if (item.id !== itemId || item.Status === "archived") return item;
+        return {
+          ...item,
+          Status: "archived",
+          NeedRestock: false,
+          LastUpdated: new Date().toISOString(),
+        };
+      }),
+    );
+  };
+
+  // Handler to unarchive an item (mark as Status: "active")
+  const unarchiveItem = (itemId) => {
+    setInventoryItems((prevItems) =>
+      prevItems.map((item) => {
+        if (item.id !== itemId || item.Status !== "archived") return item;
+        return {
+          ...item,
+          Status: "active",
+          LastUpdated: new Date().toISOString(),
+        };
+      }),
+    );
+  };
+
+  // Effect to check for archived items whenever the inventory changes and update the state in App accordingly
+  useEffect(() => {
+    setArchivedItemsExist(
+      inventoryItems.some((item) => item.Status === "archived"),
+    );
+  }, [inventoryItems, setArchivedItemsExist]);
+
   return (
     <main>
       <ToolSection id="stats" title="Quick Stats">
@@ -85,9 +122,11 @@ function MainContainer({ visibleFields }) {
         updateItemQuantity={updateItemQuantity}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={inventoryItems.filter((item) =>
-          item.Location.includes("Fridge"),
+        items={inventoryItems.filter(
+          (item) =>
+            item.Location.includes("Fridge") && item.Status !== "archived",
         )}
+        archiveItem={archiveItem}
       />
       <InventorySection
         id="freezer"
@@ -96,9 +135,11 @@ function MainContainer({ visibleFields }) {
         updateItemQuantity={updateItemQuantity}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={inventoryItems.filter((item) =>
-          item.Location.includes("Freezer"),
+        items={inventoryItems.filter(
+          (item) =>
+            item.Location.includes("Freezer") && item.Status !== "archived",
         )}
+        archiveItem={archiveItem}
       />
       <InventorySection
         id="pantry"
@@ -107,9 +148,11 @@ function MainContainer({ visibleFields }) {
         updateItemQuantity={updateItemQuantity}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={inventoryItems.filter((item) =>
-          item.Location.includes("Pantry"),
+        items={inventoryItems.filter(
+          (item) =>
+            item.Location.includes("Pantry") && item.Status !== "archived",
         )}
+        archiveItem={archiveItem}
       />
       {/* Render Shopping List based upon NeedRestock and TargetQty vs QtyOnHand */}
       <InventorySection
@@ -121,6 +164,15 @@ function MainContainer({ visibleFields }) {
           (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
         )}
       />
+      {/* Archived Items Section */}
+      {inventoryItems.some((item) => item.Status === "archived") && (
+        <InventorySection
+          id="archived"
+          title="Archived Items"
+          items={inventoryItems.filter((item) => item.Status === "archived")}
+          unarchiveItem={unarchiveItem}
+        />
+      )}
       <ToolSection id="filter" title="Filter & Sort">
         <FilterBarForm />
       </ToolSection>
