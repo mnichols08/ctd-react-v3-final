@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.2.7] - 2026-03-04
+
+### Removed
+
+- Remove unnecessary visibleFields prop from ShoppingList component
+
+---
+
 ## [0.2.6] - 2026-03-04
 
 ### Added
