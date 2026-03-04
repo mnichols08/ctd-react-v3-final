@@ -15,7 +15,7 @@ function InventorySection({
   unarchiveItem,
 }) {
   // State to track whether the section is collapsed or expanded
-  const isArchivedSection = id === "archived" && window.location.hash !== "#archived";
+  const isArchivedSection = id === "archived";
   const [isCollapsed, setIsCollapsed] = useState(isArchivedSection);
 
   // Calculate the item count for display
