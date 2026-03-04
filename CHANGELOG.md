@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add archived item "Bacon & Velveeta Scrambler" to inventory sample
 - Add inventoryItems prop to QuickStatsBar and display statistics
 - Conditionally renders a link to Archived Items in NavMenu if they exist
 - Add archive and unarchive functionality to MainContainer and update App state
