@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add tests for InventorySection collapsible behavior
 - Add tests for controlled forms in QuickAddForm and AddInventoryItemForm
 - Add tests for FieldSelector component field visibility and interactions
 - Add archive and delete integration tests for App component
