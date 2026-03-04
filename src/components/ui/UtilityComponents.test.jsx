@@ -27,7 +27,7 @@ describe("QuickStatsBar", () => {
     );
     const expectedTotalItems = activeItems.length;
     const expectedExpiringSoon = activeItems.filter(
-      (item) => new Date(item.ExpiresOn) - new Date() < 7 * 24 * 60 * 60 * 1000,
+      (item) => new Date(item.ExpiresOn) - new Date() < 14 * 24 * 60 * 60 * 1000,
     ).length;
     const expectedLowStock = activeItems.filter(
       (item) => item.QtyOnHand < 5,

@@ -21,6 +21,7 @@ function ItemCard({
   visibleFields = DEFAULT_VISIBLE_FIELDS_SET,
   handleArchiveItem,
   handleUnarchiveItem,
+  handleDeleteItem,
 }) {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -32,7 +33,11 @@ function ItemCard({
   const handleCancel = () => {
     setIsEditing(false);
   };
-
+  const handleClickDeleteItem = (itemId) => {
+    if (window.confirm("Are you sure you want to delete this item?")) {
+      handleDeleteItem(itemId);
+    }
+  };
   // Build the list of dynamic fields to render (excluding ItemName, which is always the heading)
   const fieldsToRender = ALL_FIELDS.filter(
     ({ key }) =>
@@ -69,15 +74,18 @@ function ItemCard({
                   </p>
                 ))}
                 <button onClick={() => setIsEditing(true)}>Edit</button>
-                {handleArchiveItem &&
-                  item.Status !== "archived" && (
-                    <button onClick={() => handleArchiveItem(item.id)}>
-                      Archive
-                    </button>
-                  )}
+                {handleArchiveItem && item.Status !== "archived" && (
+                  <button onClick={() => handleArchiveItem(item.id)}>
+                    Archive
+                  </button>
+                )}
               </>
             )}
-
+            {handleDeleteItem && (
+              <button onClick={() => handleClickDeleteItem(item.id)}>
+                Delete
+              </button>
+            )}
             {(handleAddToShoppingList || handleUpdateItemQuantity) && (
               <ShoppingListControl
                 item={item}

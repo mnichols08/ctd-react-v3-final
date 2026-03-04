@@ -92,6 +92,11 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     );
   };
 
+  // Handler to delete an item permanently from the inventory
+  const deleteItem = (itemId) => {
+    setInventoryItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+  };
+
   // Effect to check for archived items whenever the inventory changes and update the state in App accordingly
   useEffect(() => {
     setArchivedItemsExist(
@@ -127,6 +132,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             item.Location.includes("Fridge") && item.Status !== "archived",
         )}
         archiveItem={archiveItem}
+        deleteItem={deleteItem}
       />
       <InventorySection
         id="freezer"
@@ -140,6 +146,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             item.Location.includes("Freezer") && item.Status !== "archived",
         )}
         archiveItem={archiveItem}
+        deleteItem={deleteItem}
       />
       <InventorySection
         id="pantry"
@@ -153,6 +160,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             item.Location.includes("Pantry") && item.Status !== "archived",
         )}
         archiveItem={archiveItem}
+        deleteItem={deleteItem}
       />
       {/* Render Shopping List based upon NeedRestock and TargetQty vs QtyOnHand */}
       <InventorySection
@@ -171,6 +179,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
           title="Archived Items"
           items={inventoryItems.filter((item) => item.Status === "archived")}
           unarchiveItem={unarchiveItem}
+          deleteItem={deleteItem}
         />
       )}
       <ToolSection id="filter" title="Filter & Sort">
