@@ -8,6 +8,7 @@ function InventorySection({
   title,
   items,
   addToShoppingList,
+  removeFromShoppingList,
   updateItemQuantity,
   updateItem,
   visibleFields,
@@ -61,6 +62,7 @@ function InventorySection({
                   key={item.id}
                   item={item}
                   handleAddToShoppingList={addToShoppingList}
+                  handleRemoveFromShoppingList={removeFromShoppingList}
                   handleUpdateItemQuantity={updateItemQuantity}
                   handleUpdateItem={updateItem}
                   visibleFields={visibleFields}
