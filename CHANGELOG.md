@@ -21,10 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [Unreleased]
+## [0.2.4] - 2026-03-03
 
 ### Added
 
+- Add null check for handleArchiveItem before rendering Archive button
 - Add archived item "Bacon & Velveeta Scrambler" to inventory sample
 - Add inventoryItems prop to QuickStatsBar and display statistics
 - Conditionally renders a link to Archived Items in NavMenu if they exist

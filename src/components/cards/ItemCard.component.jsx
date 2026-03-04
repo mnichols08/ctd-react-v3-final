@@ -69,11 +69,12 @@ function ItemCard({
                   </p>
                 ))}
                 <button onClick={() => setIsEditing(true)}>Edit</button>
-                {item.Status !== "archived" && item.Status !== "disabled" && (
-                  <button onClick={() => handleArchiveItem(item.id)}>
-                    Archive
-                  </button>
-                )}
+                {handleArchiveItem &&
+                  item.Status !== "archived" && (
+                    <button onClick={() => handleArchiveItem(item.id)}>
+                      Archive
+                    </button>
+                  )}
               </>
             )}
 
