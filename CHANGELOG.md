@@ -21,7 +21,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [Unreleased]
+## [0.2.6]
+
+### Added
+
+- Add tests for InventorySection collapsible behavior
+- Add tests for controlled forms in QuickAddForm and AddInventoryItemForm
+- Add tests for FieldSelector component field visibility and interactions
+- Add archive and delete integration tests for App component
+
+### Changed
+
+- Update ShoppingListControl to conditionally render "Remove from Shopping List" button or static text
+- Refactor delete behavior tests to use try-finally for confirm spy restoration
+- Modifies Add to Shopping List functionality to provide a better user experience
+
+---
+
+## [0.2.5] - 2026-03-03
 
 ### Added
 
