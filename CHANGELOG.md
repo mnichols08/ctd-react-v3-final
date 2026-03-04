@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [Unreleased]
+## [0.2.6]
 
 ### Added
 
@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update ShoppingListControl to conditionally render "Remove from Shopping List" button or static text
 - Refactor delete behavior tests to use try-finally for confirm spy restoration
 - Modifies Add to Shopping List functionality to provide a better user experience
 

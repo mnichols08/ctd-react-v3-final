@@ -60,17 +60,21 @@ function ShoppingListControl({
     );
   }
 
-  // Case 2: Already on shopping list but no stepper (location sections) → hide the button
+  // Case 2: Already on shopping list but no stepper (location sections) → render "Remove from Shopping List" button (if handler provided) or static text
   if (isInShoppingList) {
     return (
       <div>
         {componentHeading}
-        <button
-          onClick={() => handleRemoveFromShoppingList(id)}
-          aria-label={`Remove ${itemName} from shopping list`}
-        >
-          Remove from Shopping List
-        </button>
+        {typeof handleRemoveFromShoppingList === "function" ? (
+          <button
+            onClick={() => handleRemoveFromShoppingList(id)}
+            aria-label={`Remove ${itemName} from shopping list`}
+          >
+            Remove from Shopping List
+          </button>
+        ) : (
+          <p>On Shopping List</p>
+        )}
       </div>
     );
   }
