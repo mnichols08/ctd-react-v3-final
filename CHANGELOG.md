@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add tests for FieldSelector component field visibility and interactions
 - Add archive and delete integration tests for App component
 
 ### Changed
