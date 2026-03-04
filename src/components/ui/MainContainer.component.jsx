@@ -179,7 +179,6 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         id="shopping-list"
         title="Shopping List"
         updateItemQuantity={updateItemQuantity}
-        visibleFields={visibleFields}
         items={inventoryItems.filter(
           (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
         )}

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
 import EmptyState from "./EmptyState.component";
@@ -20,15 +20,32 @@ describe("EmptyState", () => {
 });
 
 describe("QuickStatsBar", () => {
+  const FIXED_NOW = new Date("2026-03-10T00:00:00").getTime();
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(FIXED_NOW);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("renders quick stat labels and values", () => {
     const inventoryItems = inventorySampleData.records;
     const activeItems = inventoryItems.filter(
       (item) => item.Status !== "archived",
     );
+    const expirationThresholdMs = 14 * 24 * 60 * 60 * 1000;
+    const now = new Date();
     const expectedTotalItems = activeItems.length;
-    const expectedExpiringSoon = activeItems.filter(
-      (item) => new Date(item.ExpiresOn) - new Date() < 14 * 24 * 60 * 60 * 1000,
-    ).length;
+    const expectedExpiringSoon = activeItems.filter((item) => {
+      if (!item.ExpiresOn) return false;
+      const timeUntilExpiration =
+        new Date(item.ExpiresOn).getTime() - now.getTime();
+      if (Number.isNaN(timeUntilExpiration)) return false;
+      return timeUntilExpiration >= 0 && timeUntilExpiration < expirationThresholdMs;
+    }).length;
     const expectedLowStock = activeItems.filter(
       (item) => item.QtyOnHand < 5,
     ).length;

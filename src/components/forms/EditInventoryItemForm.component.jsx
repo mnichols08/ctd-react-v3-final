@@ -153,8 +153,9 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
 
         <label htmlFor={`Location-${item.id}`}>Location:</label>
         <input
-          defaultValue={formData.Location}
+          value={formData.Location}
           onChange={handleChange}
+          type="text"
           id={`Location-${item.id}`}
           name="Location"
           required

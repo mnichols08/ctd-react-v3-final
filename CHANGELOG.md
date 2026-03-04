@@ -21,7 +21,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [0.2.6]
+## [0.2.7] - 2026-03-04
+
+### Changed
+
+- In EditInventoryItemForm, changed defaultValue to value and added type="text" so the Location input is fully controlled, consistent with every other text input in the form.
+- Enhance QuickStatsBar tests with fake timers and improve expiration logic
+
+### Removed
+
+- Remove unnecessary visibleFields prop from ShoppingList component
+
+---
+
+## [0.2.6] - 2026-03-04
 
 ### Added
 
