@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add archive and delete integration tests for App component
+
 ### Changed
 
 - Modifies Add to Shopping List functionality to provide a better user experience
