@@ -21,6 +21,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [Unreleased]
+
+### Added
+
+- Add delete functionality to permanently remove inventory
+
+### Changed
+
+- Update expiration threshold to 14 days for expiring items
+
+### Fixed
+
+- Fix expiring soon calculation to use active items in `QuickStatsBar` instead of `inventoryItems`
+- Fixes expiring soon in `QuickStatsBar` by refactoring handleSubmit to parse numeric fields and handle null values for date fields
+
+---
+
 ## [0.2.4] - 2026-03-03
 
 ### Added

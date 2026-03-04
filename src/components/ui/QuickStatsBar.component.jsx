@@ -3,9 +3,9 @@ function QuickStatsBar({ inventoryItems }) {
     (item) => item.Status !== "archived",
   );
   const totalItems = activeItems.length;
-  const expirationThresholdMs = 7 * 24 * 60 * 60 * 1000;
+  const expirationThresholdMs = 14 * 24 * 60 * 60 * 1000;
   const now = new Date();
-  const expiringSoon = inventoryItems.filter((item) => {
+  const expiringSoon = activeItems.filter((item) => {
     if (!item.ExpiresOn) {
       return false;
     }

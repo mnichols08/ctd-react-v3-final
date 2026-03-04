@@ -36,12 +36,22 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const changes = { ...formData };
 
-    // Merge original item with changes, auto-set LastUpdated
     const updatedItem = {
       ...item,
-      ...changes,
+      ...formData,
+      QtyOnHand:
+        formData.QtyOnHand !== "" ? parseFloat(formData.QtyOnHand) : null,
+      TargetQty:
+        formData.TargetQty !== "" ? parseFloat(formData.TargetQty) : null,
+      PurchasePrice:
+        formData.PurchasePrice !== ""
+          ? parseFloat(formData.PurchasePrice)
+          : null,
+      UnitCost: formData.UnitCost !== "" ? parseFloat(formData.UnitCost) : null,
+      ExpiresOn: formData.ExpiresOn || null,
+      DatePurchased: formData.DatePurchased || null,
+      DateFrozen: formData.DateFrozen || null,
       LastUpdated: new Date().toISOString(),
     };
 
