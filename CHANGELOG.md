@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- In EditInventoryItemForm, changed defaultValue to value and added type="text" so the Location input is fully controlled, consistent with every other text input in the form.
 - Enhance QuickStatsBar tests with fake timers and improve expiration logic
 
 ### Removed
