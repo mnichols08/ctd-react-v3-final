@@ -1,20 +1,37 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 // This component is a simplified version of the AddInventoryItemForm, designed for quick addition of items with minimal required fields.
 // It focuses on essential information needed to add an item to the inventory, making it ideal for users who want to quickly log items without filling out a lengthy form.
 function QuickAddForm({ addInventoryItem }) {
-  // Refs for form and item name input to reset and focus after submission
-  const formRef = useRef(null);
+  // Refs for item name input to reset and focus after submission
   const itemNameRef = useRef(null);
+
+  // State to manage form data, initialized with empty values for the required fields
+  const [formData, setFormData] = useState({
+    ItemName: "",
+    Category: "",
+    ExpiresOn: "",
+    Location: "",
+    QtyOnHand: "",
+    QtyUnit: "",
+  });
+  // Handle input changes for controlled components, updating the formData state accordingly
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
   // Handle form submission by creating a new item object with the provided data and default values for other fields
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
     // Extract only the necessary fields for quick addition, and set defaults for the rest
-    const { ItemName, Category, Location, QtyOnHand, QtyUnit } =
-      Object.fromEntries(formData.entries());
+    const { ItemName, Category, ExpiresOn, Location, QtyOnHand, QtyUnit } =
+      formData;
     // Basic validation to ensure required fields are provided
     if (!ItemName.trim()) return;
+    // Create a new item object with the provided data and default values for other fields
     const newItem = {
       id: Date.now(),
       ItemName: ItemName.trim(),
@@ -29,7 +46,7 @@ function QuickAddForm({ addInventoryItem }) {
       QtyUnit,
       TargetQty: 0,
       NeedRestock: false,
-      ExpiresOn: null,
+      ExpiresOn: ExpiresOn || null,
       DatePurchased: null,
       DateFrozen: null,
       PurchasePrice: null,
@@ -45,21 +62,27 @@ function QuickAddForm({ addInventoryItem }) {
     };
     // Call the addInventoryItem function passed as a prop to add the new item to the inventory
     addInventoryItem(newItem);
-    formRef.current?.reset();
+    // Reset the form and focus the item name input for quick entry of the next item
+    setFormData({
+      ItemName: "",
+      Category: "",
+      ExpiresOn: "",
+      Location: "",
+      QtyOnHand: "",
+      QtyUnit: "",
+    });
     itemNameRef.current?.focus();
   };
   return (
-    <form
-      ref={formRef}
-      onSubmit={handleSubmit}
-      aria-label="Quick add inventory item"
-    >
+    <form onSubmit={handleSubmit} aria-label="Quick add inventory item">
       <fieldset>
         <legend>Quick Add Item</legend>
 
         <p>
           <label htmlFor="quick-ItemName">Item Name: </label>
           <input
+            value={formData.ItemName}
+            onChange={handleChange}
             ref={itemNameRef}
             type="text"
             id="quick-ItemName"
@@ -70,7 +93,13 @@ function QuickAddForm({ addInventoryItem }) {
 
         <p>
           <label htmlFor="quick-Category">Category: </label>
-          <select id="quick-Category" name="Category" required>
+          <select
+            value={formData.Category}
+            onChange={handleChange}
+            id="quick-Category"
+            name="Category"
+            required
+          >
             <option value="">Select Category</option>
             <option value="Drinks">Drinks</option>
             <option value="Dairy">Dairy</option>
@@ -85,8 +114,25 @@ function QuickAddForm({ addInventoryItem }) {
         </p>
 
         <p>
+          <label htmlFor="quick-ExpiresOn">Expires On: </label>
+          <input
+            value={formData.ExpiresOn}
+            onChange={handleChange}
+            type="date"
+            id="quick-ExpiresOn"
+            name="ExpiresOn"
+          />  
+        </p>
+
+        <p>
           <label htmlFor="quick-Location">Location: </label>
-          <select id="quick-Location" name="Location" required>
+          <select
+            value={formData.Location}
+            onChange={handleChange}
+            id="quick-Location"
+            name="Location"
+            required
+          >
             <option value="">Select Location</option>
             <option value="Fridge">Fridge</option>
             <option value="Freezer">Freezer</option>
@@ -97,10 +143,13 @@ function QuickAddForm({ addInventoryItem }) {
         <p>
           <label htmlFor="quick-QtyOnHand">Quantity on Hand: </label>
           <input
+            value={formData.QtyOnHand}
+            onChange={handleChange}
             type="number"
             id="quick-QtyOnHand"
             name="QtyOnHand"
             min="0"
+            step="any"
             required
           />
         </p>
@@ -108,6 +157,8 @@ function QuickAddForm({ addInventoryItem }) {
         <p>
           <label htmlFor="quick-QtyUnit">Unit: </label>
           <input
+            value={formData.QtyUnit}
+            onChange={handleChange}
             type="text"
             id="quick-QtyUnit"
             name="QtyUnit"

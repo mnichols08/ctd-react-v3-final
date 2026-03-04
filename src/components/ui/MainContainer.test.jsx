@@ -28,17 +28,10 @@ vi.mock("../forms/FilterBarForm.component", () => ({
 }));
 
 vi.mock("../sections/InventorySection.component", () => ({
-  default: ({
-    title,
-    items,
-    shoppingCart = false,
-    addToShoppingList,
-    removeFromShoppingList,
-  }) => (
+  default: ({ title, items, addToShoppingList, updateItemQuantity }) => (
     <section>
       <h2>{title}</h2>
       <p>{`count:${items.length}`}</p>
-      <p>{shoppingCart ? "shopping:true" : "shopping:false"}</p>
       <p>{items.map((item) => item.ItemName).join("|")}</p>
       <p>
         {items
@@ -47,7 +40,7 @@ vi.mock("../sections/InventorySection.component", () => ({
           )
           .join("|")}
       </p>
-      {!shoppingCart && items[0] && (
+      {addToShoppingList && items[0] && (
         <form
           aria-label={`mock-form-${title}`}
           onSubmit={(e) => {
@@ -67,8 +60,10 @@ vi.mock("../sections/InventorySection.component", () => ({
           <button type="submit">{`mock-add-${title}`}</button>
         </form>
       )}
-      {shoppingCart && items[0] && (
-        <button onClick={() => removeFromShoppingList?.(items[0].id)}>
+      {updateItemQuantity && items[0] && (
+        <button
+          onClick={() => updateItemQuantity?.(items[0].id, items[0].QtyOnHand)}
+        >
           {`mock-remove-${title}`}
         </button>
       )}
@@ -82,14 +77,14 @@ afterEach(() => {
 
 describe("MainContainer", () => {
   it("initializes state from sample data and passes filtered section items", () => {
-    const expectedFridgeCount = inventorySampleData.records.filter((item) =>
-      item.Location.includes("Fridge"),
+    const expectedFridgeCount = inventorySampleData.records.filter(
+      (item) => item.Location.includes("Fridge") && item.Status !== "archived",
     ).length;
-    const expectedFreezerCount = inventorySampleData.records.filter((item) =>
-      item.Location.includes("Freezer"),
+    const expectedFreezerCount = inventorySampleData.records.filter(
+      (item) => item.Location.includes("Freezer") && item.Status !== "archived",
     ).length;
-    const expectedPantryCount = inventorySampleData.records.filter((item) =>
-      item.Location.includes("Pantry"),
+    const expectedPantryCount = inventorySampleData.records.filter(
+      (item) => item.Location.includes("Pantry") && item.Status !== "archived",
     ).length;
     const expectedShoppingListCount = inventorySampleData.records.filter(
       (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
@@ -127,12 +122,11 @@ describe("MainContainer", () => {
     expect(shoppingSection?.textContent).toContain(
       `count:${expectedShoppingListCount}`,
     );
-    expect(shoppingSection?.textContent).toContain("shopping:true");
   });
 
   it("submits an add-item form and updates state-backed section data", () => {
-    const initialPantryCount = inventorySampleData.records.filter((item) =>
-      item.Location.includes("Pantry"),
+    const initialPantryCount = inventorySampleData.records.filter(
+      (item) => item.Location.includes("Pantry") && item.Status !== "archived",
     ).length;
 
     render(<MainContainer />);
@@ -229,7 +223,7 @@ describe("MainContainer", () => {
     );
   });
 
-  it("preserves TargetQty when removing from shopping list", () => {
+  it("resets TargetQty to QtyOnHand when removing from shopping list via stepper", () => {
     const initialShoppingListItems = inventorySampleData.records.filter(
       (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
     );
@@ -255,7 +249,7 @@ describe("MainContainer", () => {
 
     expect(locationSection).toBeTruthy();
     expect(locationSection?.textContent).toContain(
-      `${shoppingItemToRemove.ItemName}:${shoppingItemToRemove.TargetQty}:false`,
+      `${shoppingItemToRemove.ItemName}:${shoppingItemToRemove.QtyOnHand}:false`,
     );
   });
   it("toggles between QuickAddForm and AddInventoryItemForm", () => {

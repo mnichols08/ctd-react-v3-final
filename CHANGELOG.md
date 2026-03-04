@@ -21,6 +21,141 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.2.7] - 2026-03-04
+
+### Changed
+
+- In EditInventoryItemForm, changed defaultValue to value and added type="text" so the Location input is fully controlled, consistent with every other text input in the form.
+- Enhance QuickStatsBar tests with fake timers and improve expiration logic
+
+### Removed
+
+- Remove unnecessary visibleFields prop from ShoppingList component
+
+---
+
+## [0.2.6] - 2026-03-04
+
+### Added
+
+- Add tests for InventorySection collapsible behavior
+- Add tests for controlled forms in QuickAddForm and AddInventoryItemForm
+- Add tests for FieldSelector component field visibility and interactions
+- Add archive and delete integration tests for App component
+
+### Changed
+
+- Update ShoppingListControl to conditionally render "Remove from Shopping List" button or static text
+- Refactor delete behavior tests to use try-finally for confirm spy restoration
+- Modifies Add to Shopping List functionality to provide a better user experience
+
+---
+
+## [0.2.5] - 2026-03-03
+
+### Added
+
+- Add delete functionality to permanently remove inventory
+
+### Changed
+
+- Update expiration threshold to 14 days for expiring items
+
+### Fixed
+
+- Fix expiring soon calculation to use active items in `QuickStatsBar` instead of `inventoryItems`
+- Fixes expiring soon in `QuickStatsBar` by refactoring handleSubmit to parse numeric fields and handle null values for date fields
+
+---
+
+## [0.2.4] - 2026-03-03
+
+### Added
+
+- Add null check for handleArchiveItem before rendering Archive button
+- Add archived item "Bacon & Velveeta Scrambler" to inventory sample
+- Add inventoryItems prop to QuickStatsBar and display statistics
+- Conditionally renders a link to Archived Items in NavMenu if they exist
+- Add archive and unarchive functionality to MainContainer and update App state
+- Add archivedItemsExist prop to Header and NavMenu components
+- Add archive and unarchive functionality to ItemCard component
+
+### Changed
+
+- Refactor expiringSoon calculation for clarity and accuracy
+- Refactor QuickStatsBar test to calculate stats based on active items
+- Filter out archived items from inventory counts in MainContainer tests
+- Refactor QuickStatsBar to display active items and conditionally render archived items count
+- Enhance QuickStatsBar test to include archived items and other inventory statistics
+- Refactor InventorySection to support archiving and unarchiving items in local state
+
+---
+
+## [0.2.3]  - 2026-03-03
+
+### Added
+
+- Add handleUpdateItem prop to ItemCard component in tests
+- Implement collapsible functionality in InventorySection component
+
+### Changed
+
+- Refactor ItemCard to conditionally render fields and Edit button together
+- In ShoppingListControl conditionally renders the qtyOnHand only in the Shopping List category
+- Update App tests to use regex for heading names
+
+---
+
+## [0.2.2] - 2026-03-03
+
+### Added
+
+- Add field visibility management and configuration
+- Add FieldSelector component and integrate with Header and NavMenu for managing visible fields
+
+### Changed
+
+- Improves accessibility in FieldSelector component by properly declaring as a modal and labelling it by the heading
+- Update ItemCard tests to use visibleFields and adjust field labels
+
+---
+
+## [0.2.1] - 2026-03-02
+
+### Changed
+
+- Refactor shopping list form tests to use ShoppingListControl component
+- Refactor InventorySection mock to remove shoppingCart prop and update button logic
+- Refactor updateItemQuantity handler to manage shopping list item quantities and remove items when necessary
+- Refactor InventorySection to remove unused props and streamline item handling
+- Refactor ItemCard to replace AddShoppingListItemForm with ShoppingListControl and streamline shopping list handling
+- Renames AddShoppingListItemForm to ShoppingListControl component for enhanced item management in shopping list
+
+### Fixed
+
+- Refactor ShoppingListControl and ItemCard components to remove unused prop and adjust heading condition
+- Refactor ShoppingListControl component to improve quantity handling and update button logic
+- Prevents form errors by adding step attribute to TargetQty input to allow decimal values
+
+---
+
+## [0.2.0] - 2026-03-01
+
+### Added
+
+- Creates a `dev:server` script to allow running the development server on the local network
+- Adds script `test:watch` for running Vitest tests in watch mode 
+
+### Changed
+
+- Refactor EditInventoryItemForm to use controlled components and improve form handling
+- Refactor QuickAddForm to use controlled components for form data management
+- Refactor FilterBarForm to use controlled components for search input
+- Refactor AddShoppingListItemForm to use controlled components for quantity input
+- Refactor AddInventoryItemForm to use controlled components for form inputs
+
+---
+
 ## [0.1.5] - 2026-03-01
 
 ### Changed

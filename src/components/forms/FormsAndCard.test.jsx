@@ -9,12 +9,13 @@ import {
 } from "@testing-library/react";
 
 import AddInventoryItemForm from "./AddInventoryItemForm.component";
-import AddShoppingListItemForm from "./AddShoppingListItemForm.component";
+import ShoppingListControl from "./ShoppingListControl.component";
 import EditInventoryItemForm from "./EditInventoryItemForm.component";
 import FilterBarForm from "./FilterBarForm.component";
 import QuickAddForm from "./QuickAddForm.component";
 import ItemCard from "../cards/ItemCard.component";
 import ToolSection from "../sections/ToolSection.component";
+import { DEFAULT_VISIBLE_FIELDS } from "../../data/fieldConfig";
 
 afterEach(() => {
   cleanup();
@@ -72,120 +73,99 @@ describe("AddInventoryItemForm", () => {
   });
 });
 
-describe("AddShoppingListItemForm", () => {
-  it("renders quantity input and submit button", () => {
+describe("ShoppingListControl", () => {
+  it("renders an Add to Shopping List button when item is not on the list", () => {
+    const item = {
+      id: 25,
+      ItemName: "Rice",
+      QtyOnHand: 2,
+      TargetQty: 2,
+      NeedRestock: false,
+    };
+
     render(
-      <AddShoppingListItemForm
-        itemId={25}
-        handleAddToShoppingList={() => {}}
-      />,
+      <ShoppingListControl item={item} handleAddToShoppingList={() => {}} />,
     );
 
-    expect(
-      screen.getByRole("heading", { name: "Add Item to Shopping List" }),
-    ).toBeTruthy();
-    expect(screen.getByLabelText("Quantity:")).toBeTruthy();
     expect(
       screen.getByRole("button", { name: "Add to Shopping List" }),
     ).toBeTruthy();
   });
 
-  it("includes hidden item id and enforces minimum quantity", () => {
-    const { container } = render(
-      <AddShoppingListItemForm
-        itemId={25}
-        handleAddToShoppingList={() => {}}
-      />,
+  it("calls handler with itemId and quantity of 1 when Add clicked", () => {
+    const handleAdd = vi.fn();
+    const item = {
+      id: 25,
+      ItemName: "Rice",
+      QtyOnHand: 2,
+      TargetQty: 2,
+      NeedRestock: false,
+    };
+
+    render(
+      <ShoppingListControl item={item} handleAddToShoppingList={handleAdd} />,
     );
 
-    const hiddenItemId = container.querySelector(
-      "input[type='hidden'][name='itemId']",
+    fireEvent.click(
+      screen.getByRole("button", { name: "Add to Shopping List" }),
     );
-    const quantityInput = screen.getByLabelText("Quantity:");
 
-    expect(hiddenItemId).toBeTruthy();
-    expect(hiddenItemId?.getAttribute("value")).toBe("25");
-    expect(quantityInput.getAttribute("min")).toBe("1");
-    expect(quantityInput.required).toBe(true);
+    expect(handleAdd).toHaveBeenCalledTimes(1);
+    expect(handleAdd).toHaveBeenCalledWith({
+      itemId: 25,
+      quantity: 1,
+    });
   });
 
-  it("submits expected payload, prevents default, and resets quantity", () => {
-    const handleAddToShoppingList = vi.fn();
+  it("does not throw when callback prop is missing", () => {
+    const item = {
+      id: 25,
+      ItemName: "Rice",
+      QtyOnHand: 2,
+      TargetQty: 2,
+      NeedRestock: false,
+    };
 
-    const { container } = render(
-      <AddShoppingListItemForm
-        itemId={25}
-        handleAddToShoppingList={handleAddToShoppingList}
-      />,
-    );
+    render(<ShoppingListControl item={item} />);
 
-    const quantityInput = screen.getByLabelText("Quantity:");
-
-    fireEvent.change(quantityInput, {
-      target: { value: "3" },
-    });
-
-    const form = container.querySelector("form");
-    expect(form).toBeTruthy();
-
-    if (!form) {
-      return;
-    }
-
-    const submitEvent = createEvent.submit(form);
-    fireEvent(form, submitEvent);
-
-    expect(submitEvent.defaultPrevented).toBe(true);
-    expect(handleAddToShoppingList).toHaveBeenCalledTimes(1);
-    expect(handleAddToShoppingList).toHaveBeenCalledWith({
-      itemId: 25,
-      quantity: "3",
-    });
-    expect(quantityInput.value).toBe("");
+    expect(() => {
+      fireEvent.click(
+        screen.getByRole("button", { name: "Add to Shopping List" }),
+      );
+    }).not.toThrow();
   });
 
-  it("keeps quantity and does not break submit flow when callback throws", () => {
-    const handleAddToShoppingList = vi.fn(() => {
-      throw new Error("submit failure");
-    });
-    const consoleErrorSpy = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
+  it("shows stepper when item is on the shopping list", () => {
+    const handleUpdateQty = vi.fn();
+    const item = {
+      id: 10,
+      ItemName: "Sesame Oil",
+      QtyOnHand: 1,
+      TargetQty: 3,
+      NeedRestock: true,
+    };
 
-    const { container } = render(
-      <AddShoppingListItemForm
-        itemId={25}
-        handleAddToShoppingList={handleAddToShoppingList}
+    render(
+      <ShoppingListControl
+        item={item}
+        handleUpdateItemQuantity={handleUpdateQty}
       />,
     );
 
-    const quantityInput = screen.getByLabelText("Quantity:");
+    expect(
+      screen.queryByRole("button", { name: "Add to Shopping List" }),
+    ).toBeNull();
 
-    fireEvent.change(quantityInput, {
-      target: { value: "2" },
-    });
+    expect(screen.getByText("2")).toBeTruthy();
 
-    const form = container.querySelector("form");
-    expect(form).toBeTruthy();
+    const decBtn = screen.getByRole("button", { name: /decrease quantity/i });
+    const incBtn = screen.getByRole("button", { name: /increase quantity/i });
 
-    if (!form) {
-      consoleErrorSpy.mockRestore();
-      return;
-    }
+    fireEvent.click(incBtn);
+    expect(handleUpdateQty).toHaveBeenCalledWith(10, 4);
 
-    const submitEvent = createEvent.submit(form);
-    fireEvent(form, submitEvent);
-
-    expect(submitEvent.defaultPrevented).toBe(true);
-    expect(handleAddToShoppingList).toHaveBeenCalledTimes(1);
-    expect(handleAddToShoppingList).toHaveBeenCalledWith({
-      itemId: 25,
-      quantity: "2",
-    });
-    expect(quantityInput.value).toBe("2");
-    expect(consoleErrorSpy).toHaveBeenCalled();
-
-    consoleErrorSpy.mockRestore();
+    fireEvent.click(decBtn);
+    expect(handleUpdateQty).toHaveBeenCalledWith(10, 2);
   });
 });
 
@@ -222,13 +202,6 @@ describe("Form submission behavior", () => {
     const formRenderers = [
       () =>
         render(<AddInventoryItemForm addInventoryItem={() => {}} lastId={0} />),
-      () =>
-        render(
-          <AddShoppingListItemForm
-            itemId={25}
-            handleAddToShoppingList={() => {}}
-          />,
-        ),
       () => render(<FilterBarForm />),
     ];
 
@@ -252,6 +225,13 @@ describe("Form submission behavior", () => {
 });
 
 describe("ItemCard", () => {
+  // A visibleFields set that includes every field the old tests relied on
+  const allTestFields = new Set([
+    ...DEFAULT_VISIBLE_FIELDS,
+    "DateFrozen",
+    "Notes",
+  ]);
+
   it("renders mapped inventory fields", () => {
     const item = {
       id: 1,
@@ -264,13 +244,20 @@ describe("ItemCard", () => {
       Category: "Fruit",
     };
 
-    render(<ItemCard item={item} />);
+    render(
+      <ItemCard
+        item={item}
+        visibleFields={allTestFields}
+        handleUpdateItem={() => {}}
+      />,
+    );
 
     expect(
       screen.getByRole("heading", { name: "Blueberries", level: 2 }),
     ).toBeTruthy();
-    expect(screen.getByText("Quantity on Hand: 2 bags")).toBeTruthy();
-    expect(screen.getByText("Expiration Date: 2026-04-10")).toBeTruthy();
+    expect(screen.getByText("Qty on Hand: 2")).toBeTruthy();
+    expect(screen.getByText("Qty Unit: bags")).toBeTruthy();
+    expect(screen.getByText("Expires On: 2026-04-10")).toBeTruthy();
     expect(screen.getByText("Date Frozen: 2026-03-01")).toBeTruthy();
     expect(screen.getByText("Notes: Use for smoothies")).toBeTruthy();
     expect(screen.getByText("Category: Fruit")).toBeTruthy();
@@ -286,7 +273,13 @@ describe("ItemCard", () => {
       Category: "Dairy",
     };
 
-    render(<ItemCard item={item} handleAddToShoppingList={() => {}} />);
+    render(
+      <ItemCard
+        item={item}
+        handleAddToShoppingList={() => {}}
+        visibleFields={allTestFields}
+      />,
+    );
 
     expect(screen.queryByText(/Date Frozen:/)).toBeNull();
     expect(screen.queryByText(/Notes:/)).toBeNull();
@@ -301,8 +294,8 @@ describe("ItemCard", () => {
     ).toBeTruthy();
   });
 
-  it("shows remove button and hides add form for shopping cart items", () => {
-    const handleRemove = vi.fn();
+  it("shows quantity stepper and hides add button for shopping list items", () => {
+    const handleUpdateQty = vi.fn();
     const item = {
       id: 3,
       ItemName: "Sesame Oil",
@@ -314,31 +307,37 @@ describe("ItemCard", () => {
       Category: "Cooking Essentials",
     };
 
-    render(
-      <ItemCard
-        item={item}
-        shoppingCart
-        handleRemoveFromShoppingList={handleRemove}
-      />,
-    );
+    render(<ItemCard item={item} handleUpdateItemQuantity={handleUpdateQty} />);
 
-    const removeButton = screen.getByRole("button", {
-      name: "Remove from Shopping List",
+    // With TargetQty 1 and QtyOnHand 0.1, decrementing would remove from list
+    const removeBtn = screen.getByRole("button", {
+      name: /remove from/i,
     });
-    expect(removeButton).toBeTruthy();
+    const incrementBtn = screen.getByRole("button", {
+      name: /increase quantity/i,
+    });
+    expect(removeBtn).toBeTruthy();
+    expect(incrementBtn).toBeTruthy();
 
+    // Current TargetQty should be displayed
+    expect(screen.getByText("1")).toBeTruthy();
+
+    // Add button should not be shown
     expect(
       screen.queryByRole("button", { name: "Add to Shopping List" }),
     ).toBeNull();
-    expect(
-      screen.queryByRole("heading", { name: "Add Item to Shopping List" }),
-    ).toBeNull();
 
-    fireEvent.click(removeButton);
-    expect(handleRemove).toHaveBeenCalledWith(3);
+    // Clicking + should call handler with incremented qty
+    fireEvent.click(incrementBtn);
+    expect(handleUpdateQty).toHaveBeenCalledWith(3, 2);
+
+    // Clicking Remove should call handler with decremented qty (triggers removal)
+    fireEvent.click(removeBtn);
+    expect(handleUpdateQty).toHaveBeenCalledWith(3, 0);
   });
 
-  it("hides add form when item is already in the shopping list", () => {
+  it("shows stepper instead of add button when item is already in the shopping list", () => {
+    const handleUpdateQty = vi.fn();
     const item = {
       id: 4,
       ItemName: "Pearl Couscous",
@@ -350,17 +349,27 @@ describe("ItemCard", () => {
       Category: "Dry",
     };
 
-    render(<ItemCard item={item} handleAddToShoppingList={() => {}} />);
+    render(
+      <ItemCard
+        item={item}
+        handleAddToShoppingList={() => {}}
+        handleUpdateItemQuantity={handleUpdateQty}
+      />,
+    );
 
+    // Add button should not be shown
     expect(
       screen.queryByRole("button", { name: "Add to Shopping List" }),
     ).toBeNull();
+
+    // Stepper should be shown with current Qty in Cart
+    expect(screen.getByText("2")).toBeTruthy();
     expect(
-      screen.queryByRole("heading", { name: "Add Item to Shopping List" }),
-    ).toBeNull();
+      screen.getByRole("button", { name: /decrease quantity/i }),
+    ).toBeTruthy();
     expect(
-      screen.queryByRole("button", { name: "Remove from Shopping List" }),
-    ).toBeNull();
+      screen.getByRole("button", { name: /increase quantity/i }),
+    ).toBeTruthy();
   });
 });
 
@@ -749,6 +758,319 @@ describe("Integration: QuickAddForm in ToolSection", () => {
 
     expect(addInventoryItem).toHaveBeenCalledTimes(1);
     expect(addInventoryItem.mock.calls[0][0].ItemName).toBe("Almonds");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M2 – Controlled forms: immediate value update
+// ---------------------------------------------------------------------------
+describe("Controlled forms – typing updates displayed value immediately", () => {
+  it("QuickAddForm: typing in Item Name updates its value", () => {
+    render(<QuickAddForm addInventoryItem={() => {}} />);
+
+    const input = screen.getByLabelText("Item Name:");
+    expect(input.value).toBe("");
+
+    fireEvent.change(input, { target: { value: "Almond Butter" } });
+    expect(input.value).toBe("Almond Butter");
+
+    fireEvent.change(input, { target: { value: "Almond Butter Smooth" } });
+    expect(input.value).toBe("Almond Butter Smooth");
+  });
+
+  it("AddInventoryItemForm: typing in Item Name updates its value", () => {
+    render(<AddInventoryItemForm addInventoryItem={() => {}} lastId={0} />);
+
+    const input = screen.getByLabelText("Item Name:");
+    expect(input.value).toBe("");
+
+    fireEvent.change(input, { target: { value: "Coconut Oil" } });
+    expect(input.value).toBe("Coconut Oil");
+  });
+
+  it("AddInventoryItemForm: typing in numeric Quantity field updates its value", () => {
+    render(<AddInventoryItemForm addInventoryItem={() => {}} lastId={0} />);
+
+    const input = screen.getByLabelText("Quantity on Hand:");
+    fireEvent.change(input, { target: { value: "12" } });
+    expect(input.value).toBe("12");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M2 – Controlled forms: clear + resubmit sends defaults
+// ---------------------------------------------------------------------------
+describe("Controlled forms – clearing and resubmitting sends empty/default values", () => {
+  it("QuickAddForm: clearing fields and submitting sends defaults for non-name fields", () => {
+    const handler = vi.fn();
+    const { container } = render(<QuickAddForm addInventoryItem={handler} />);
+
+    // Fill all fields first
+    fireEvent.change(screen.getByLabelText("Item Name:"), {
+      target: { value: "Rice" },
+    });
+    fireEvent.change(screen.getByLabelText("Category:"), {
+      target: { value: "Dry" },
+    });
+    fireEvent.change(screen.getByLabelText("Location:"), {
+      target: { value: "Pantry" },
+    });
+    fireEvent.change(screen.getByLabelText("Quantity on Hand:"), {
+      target: { value: "3" },
+    });
+
+    const form = container.querySelector("form");
+    fireEvent(form, createEvent.submit(form));
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    // Form resets — now submit again with only required Item Name
+    fireEvent.change(screen.getByLabelText("Item Name:"), {
+      target: { value: "Oats" },
+    });
+    fireEvent.change(screen.getByLabelText("Location:"), {
+      target: { value: "Pantry" },
+    });
+    fireEvent(form, createEvent.submit(form));
+
+    expect(handler).toHaveBeenCalledTimes(2);
+    const payload = handler.mock.calls[1][0];
+    expect(payload.ItemName).toBe("Oats");
+    // QtyOnHand should be 0 (default) since not re-entered after reset
+    expect(payload.QtyOnHand).toBe(0);
+  });
+
+  it("AddInventoryItemForm: submitting with cleared numeric fields sends null/0", () => {
+    const handler = vi.fn();
+    const { container } = render(
+      <AddInventoryItemForm addInventoryItem={handler} lastId={0} />,
+    );
+
+    fireEvent.change(screen.getByLabelText("Item Name:"), {
+      target: { value: "Test" },
+    });
+    fireEvent.change(screen.getByLabelText("Location:"), {
+      target: { value: "Fridge" },
+    });
+    // Leave QtyOnHand and TargetQty at their defaults (empty)
+    const form = container.querySelector("form");
+    fireEvent(form, createEvent.submit(form));
+
+    expect(handler).toHaveBeenCalledTimes(1);
+    const payload = handler.mock.calls[0][0];
+    // Empty numeric fields should coerce to 0 or null
+    expect(payload.PurchasePrice === null || payload.PurchasePrice === 0).toBe(
+      true,
+    );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M2 – Controlled forms: form state resets after submit
+// ---------------------------------------------------------------------------
+describe("Controlled forms – form state resets correctly after submit", () => {
+  it("AddInventoryItemForm: form resets and focuses Item Name after submit", () => {
+    const handler = vi.fn();
+    const { container } = render(
+      <AddInventoryItemForm addInventoryItem={handler} lastId={0} />,
+    );
+
+    const nameInput = screen.getByLabelText("Item Name:");
+    const qtyInput = screen.getByLabelText("Quantity on Hand:");
+    const locSelect = screen.getByLabelText("Location:");
+
+    fireEvent.change(nameInput, { target: { value: "Test Item" } });
+    fireEvent.change(qtyInput, { target: { value: "5" } });
+    fireEvent.change(locSelect, { target: { value: "Pantry" } });
+
+    const form = container.querySelector("form");
+    fireEvent(form, createEvent.submit(form));
+
+    expect(handler).toHaveBeenCalledTimes(1);
+    expect(nameInput.value).toBe("");
+    expect(qtyInput.value).toBe("");
+    expect(document.activeElement).toBe(nameInput);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M2 – Quantity stepper: new cases
+// ---------------------------------------------------------------------------
+describe("ShoppingListControl – stepper behavior", () => {
+  it("clicking + calls handler with incremented TargetQty", () => {
+    const handler = vi.fn();
+    const item = {
+      id: 1,
+      ItemName: "Milk",
+      QtyOnHand: 2,
+      TargetQty: 4,
+      NeedRestock: true,
+    };
+
+    render(
+      <ShoppingListControl item={item} handleUpdateItemQuantity={handler} />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /increase quantity/i }));
+    expect(handler).toHaveBeenCalledWith(1, 5);
+  });
+
+  it("clicking - calls handler with decremented TargetQty", () => {
+    const handler = vi.fn();
+    const item = {
+      id: 1,
+      ItemName: "Milk",
+      QtyOnHand: 2,
+      TargetQty: 5,
+      NeedRestock: true,
+    };
+
+    render(
+      <ShoppingListControl item={item} handleUpdateItemQuantity={handler} />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /decrease quantity/i }));
+    expect(handler).toHaveBeenCalledWith(1, 4);
+  });
+
+  it("at boundary, button shows Remove and triggers removal via decrement", () => {
+    const handler = vi.fn();
+    // TargetQty - 1 = 2 which equals QtyOnHand — boundary
+    const item = {
+      id: 1,
+      ItemName: "Milk",
+      QtyOnHand: 2,
+      TargetQty: 3,
+      NeedRestock: true,
+    };
+
+    render(
+      <ShoppingListControl item={item} handleUpdateItemQuantity={handler} />,
+    );
+
+    const removeBtn = screen.getByRole("button", { name: /remove from/i });
+    expect(removeBtn.textContent).toBe("Remove");
+
+    fireEvent.click(removeBtn);
+    expect(handler).toHaveBeenCalledWith(1, 2);
+  });
+
+  it("displays Math.ceil(targetQty - qtyOnHand) as cart quantity", () => {
+    const item = {
+      id: 1,
+      ItemName: "Oil",
+      QtyOnHand: 0.1,
+      TargetQty: 1,
+      NeedRestock: true,
+    };
+
+    render(
+      <ShoppingListControl item={item} handleUpdateItemQuantity={() => {}} />,
+    );
+
+    // Math.ceil(1 - 0.1) = Math.ceil(0.9) = 1
+    expect(screen.getByText("1")).toBeTruthy();
+  });
+
+  it("does not render stepper when handleUpdateItemQuantity is absent even if item is on shopping list", () => {
+    const item = {
+      id: 1,
+      ItemName: "Oil",
+      QtyOnHand: 0.1,
+      TargetQty: 1,
+      NeedRestock: true,
+    };
+
+    render(
+      <ShoppingListControl item={item} handleAddToShoppingList={() => {}} />,
+    );
+
+    // Should NOT see stepper buttons
+    expect(
+      screen.queryByRole("button", { name: /increase quantity/i }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /decrease quantity/i }),
+    ).toBeNull();
+    // Should see Remove from Shopping List button (Case 2)
+    expect(
+      screen.queryByRole("button", { name: "Add to Shopping List" }),
+    ).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// M2 – ShoppingListControl: Case 2 (remove from shopping list in location sections)
+// ---------------------------------------------------------------------------
+describe("ShoppingListControl – remove from shopping list (location section)", () => {
+  it("renders Remove from Shopping List button when on list but no stepper handler", () => {
+    const item = {
+      id: 5,
+      ItemName: "Yogurt",
+      QtyOnHand: 0.5,
+      TargetQty: 1,
+      NeedRestock: true,
+    };
+
+    render(
+      <ShoppingListControl
+        item={item}
+        handleAddToShoppingList={() => {}}
+        handleRemoveFromShoppingList={() => {}}
+      />,
+    );
+
+    expect(
+      screen.getByRole("button", { name: /remove.*from shopping list/i }),
+    ).toBeTruthy();
+  });
+
+  it("clicking Remove from Shopping List calls handleRemoveFromShoppingList with item id", () => {
+    const removeFn = vi.fn();
+    const item = {
+      id: 5,
+      ItemName: "Yogurt",
+      QtyOnHand: 0.5,
+      TargetQty: 1,
+      NeedRestock: true,
+    };
+
+    render(
+      <ShoppingListControl
+        item={item}
+        handleAddToShoppingList={() => {}}
+        handleRemoveFromShoppingList={removeFn}
+      />,
+    );
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /remove.*from shopping list/i }),
+    );
+    expect(removeFn).toHaveBeenCalledWith(5);
+  });
+
+  it("does not render Remove button when item is not on the shopping list", () => {
+    const item = {
+      id: 5,
+      ItemName: "Yogurt",
+      QtyOnHand: 1,
+      TargetQty: 1,
+      NeedRestock: false,
+    };
+
+    render(
+      <ShoppingListControl
+        item={item}
+        handleAddToShoppingList={() => {}}
+        handleRemoveFromShoppingList={() => {}}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("button", { name: /remove.*from shopping list/i }),
+    ).toBeNull();
+    expect(
+      screen.getByRole("button", { name: "Add to Shopping List" }),
+    ).toBeTruthy();
   });
 });
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import inventorySampleData from "../../data/inventorySample.json";
 import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
@@ -7,7 +7,7 @@ import QuickAddForm from "../forms/QuickAddForm.component";
 import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
 
-function MainContainer() {
+function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Initialize inventory items from sample data, ensuring we have a fresh copy of each item
   const [inventoryItems, setInventoryItems] = useState(() =>
     inventorySampleData.records.map((item) => ({ ...item })),
@@ -35,18 +35,35 @@ function MainContainer() {
       return prevItems.map((i) => (i.id === itemId ? updatedItem : i));
     });
   };
-  // Handler to remove an item from the shopping list (mark as not NeedRestock)
+  // Handler to remove an item from the shopping list (mark as not NeedRestock and reset TargetQty to QtyOnHand)
   const removeFromShoppingList = (itemId) => {
+    setInventoryItems((prevItems) =>
+      prevItems.map((i) =>
+        i.id === itemId
+          ? { ...i, NeedRestock: false, TargetQty: i.QtyOnHand }
+          : i,
+      ),
+    );
+  };
+  // Handler to update the TargetQty for a shopping-list item.
+  // Automatically removes from shopping list when newTargetQty <= QtyOnHand.
+  const updateItemQuantity = (itemId, newTargetQty) => {
     setInventoryItems((prevItems) => {
       const item = prevItems.find((i) => i.id === itemId);
-      if (!item) {
-        return prevItems;
+      if (!item) return prevItems;
+      const qty = Number(newTargetQty);
+      if (!Number.isFinite(qty)) return prevItems;
+      // If the new target is at or below what's on hand, remove from list
+      if (qty <= item.QtyOnHand) {
+        return prevItems.map((i) =>
+          i.id === itemId
+            ? { ...i, NeedRestock: false, TargetQty: i.QtyOnHand }
+            : i,
+        );
       }
-      const updatedItem = {
-        ...item,
-        NeedRestock: false,
-      };
-      return prevItems.map((i) => (i.id === itemId ? updatedItem : i));
+      return prevItems.map((i) =>
+        i.id === itemId ? { ...i, TargetQty: qty } : i,
+      );
     });
   };
   // Handler to update an existing inventory item
@@ -55,10 +72,54 @@ function MainContainer() {
       prevItems.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
     );
   };
+
+  // Handler to archive an item (mark as Status: "archived" and remove from shopping list)
+  const archiveItem = (itemId) => {
+    setInventoryItems((prevItems) =>
+      prevItems.map((item) => {
+        if (item.id !== itemId || item.Status === "archived") return item;
+        return {
+          ...item,
+          Status: "archived",
+          NeedRestock: false,
+          LastUpdated: new Date().toISOString(),
+        };
+      }),
+    );
+  };
+
+  // Handler to unarchive an item (mark as Status: "active")
+  const unarchiveItem = (itemId) => {
+    setInventoryItems((prevItems) =>
+      prevItems.map((item) => {
+        if (item.id !== itemId || item.Status !== "archived") return item;
+        return {
+          ...item,
+          Status: "active",
+          LastUpdated: new Date().toISOString(),
+        };
+      }),
+    );
+  };
+
+  // Handler to delete an item permanently from the inventory
+  const deleteItem = (itemId) => {
+    setInventoryItems((prevItems) =>
+      prevItems.filter((item) => item.id !== itemId),
+    );
+  };
+
+  // Effect to check for archived items whenever the inventory changes and update the state in App accordingly
+  useEffect(() => {
+    setArchivedItemsExist(
+      inventoryItems.some((item) => item.Status === "archived"),
+    );
+  }, [inventoryItems, setArchivedItemsExist]);
+
   return (
     <main>
       <ToolSection id="stats" title="Quick Stats">
-        <QuickStatsBar />
+        <QuickStatsBar inventoryItems={inventoryItems} />
       </ToolSection>
       <ToolSection id="add-item" title="Add Item">
         {/*  Toggle between Quick Add and Full Form */}
@@ -75,39 +136,63 @@ function MainContainer() {
         id="fridge"
         title="Fridge"
         addToShoppingList={addToShoppingList}
+        removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
-        items={inventoryItems.filter((item) =>
-          item.Location.includes("Fridge"),
+        visibleFields={visibleFields}
+        items={inventoryItems.filter(
+          (item) =>
+            item.Location.includes("Fridge") && item.Status !== "archived",
         )}
+        archiveItem={archiveItem}
+        deleteItem={deleteItem}
       />
       <InventorySection
         id="freezer"
         title="Freezer"
         addToShoppingList={addToShoppingList}
+        removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
-        items={inventoryItems.filter((item) =>
-          item.Location.includes("Freezer"),
+        visibleFields={visibleFields}
+        items={inventoryItems.filter(
+          (item) =>
+            item.Location.includes("Freezer") && item.Status !== "archived",
         )}
+        archiveItem={archiveItem}
+        deleteItem={deleteItem}
       />
       <InventorySection
         id="pantry"
         title="Pantry"
         addToShoppingList={addToShoppingList}
+        removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
-        items={inventoryItems.filter((item) =>
-          item.Location.includes("Pantry"),
+        visibleFields={visibleFields}
+        items={inventoryItems.filter(
+          (item) =>
+            item.Location.includes("Pantry") && item.Status !== "archived",
         )}
+        archiveItem={archiveItem}
+        deleteItem={deleteItem}
       />
       {/* Render Shopping List based upon NeedRestock and TargetQty vs QtyOnHand */}
       <InventorySection
         id="shopping-list"
         title="Shopping List"
-        removeFromShoppingList={removeFromShoppingList}
-        shoppingCart
+        updateItemQuantity={updateItemQuantity}
         items={inventoryItems.filter(
           (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
         )}
       />
+      {/* Archived Items Section */}
+      {inventoryItems.some((item) => item.Status === "archived") && (
+        <InventorySection
+          id="archived"
+          title="Archived Items"
+          items={inventoryItems.filter((item) => item.Status === "archived")}
+          unarchiveItem={unarchiveItem}
+          deleteItem={deleteItem}
+        />
+      )}
       <ToolSection id="filter" title="Filter & Sort">
         <FilterBarForm />
       </ToolSection>
