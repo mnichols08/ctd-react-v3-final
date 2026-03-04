@@ -35,6 +35,16 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       return prevItems.map((i) => (i.id === itemId ? updatedItem : i));
     });
   };
+  // Handler to remove an item from the shopping list (mark as not NeedRestock and reset TargetQty to QtyOnHand)
+  const removeFromShoppingList = (itemId) => {
+    setInventoryItems((prevItems) =>
+      prevItems.map((i) =>
+        i.id === itemId
+          ? { ...i, NeedRestock: false, TargetQty: i.QtyOnHand }
+          : i,
+      ),
+    );
+  };
   // Handler to update the TargetQty for a shopping-list item.
   // Automatically removes from shopping list when newTargetQty <= QtyOnHand.
   const updateItemQuantity = (itemId, newTargetQty) => {
@@ -94,7 +104,9 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
 
   // Handler to delete an item permanently from the inventory
   const deleteItem = (itemId) => {
-    setInventoryItems((prevItems) => prevItems.filter((item) => item.id !== itemId));
+    setInventoryItems((prevItems) =>
+      prevItems.filter((item) => item.id !== itemId),
+    );
   };
 
   // Effect to check for archived items whenever the inventory changes and update the state in App accordingly
@@ -124,7 +136,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         id="fridge"
         title="Fridge"
         addToShoppingList={addToShoppingList}
-        updateItemQuantity={updateItemQuantity}
+        removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
         items={inventoryItems.filter(
@@ -138,7 +150,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         id="freezer"
         title="Freezer"
         addToShoppingList={addToShoppingList}
-        updateItemQuantity={updateItemQuantity}
+        removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
         items={inventoryItems.filter(
@@ -152,7 +164,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         id="pantry"
         title="Pantry"
         addToShoppingList={addToShoppingList}
-        updateItemQuantity={updateItemQuantity}
+        removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
         items={inventoryItems.filter(
