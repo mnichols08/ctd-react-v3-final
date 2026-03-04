@@ -16,6 +16,7 @@ function formatValue(value) {
 function ItemCard({
   item,
   handleAddToShoppingList,
+  handleRemoveFromShoppingList,
   handleUpdateItemQuantity,
   handleUpdateItem,
   visibleFields = DEFAULT_VISIBLE_FIELDS_SET,
@@ -90,6 +91,7 @@ function ItemCard({
               <ShoppingListControl
                 item={item}
                 handleAddToShoppingList={handleAddToShoppingList}
+                handleRemoveFromShoppingList={handleRemoveFromShoppingList}
                 handleUpdateItemQuantity={handleUpdateItemQuantity}
               />
             )}
