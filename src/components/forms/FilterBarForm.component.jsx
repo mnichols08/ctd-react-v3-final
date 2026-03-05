@@ -2,9 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const DEFAULT_FILTERS = {
   categories: [],
-  location: null,
-  needRestock: null,
-  status: null,
+  expiringSoon: false,
+  lowStock: false,
 };
 
 function FilterBarForm({
@@ -31,9 +30,8 @@ function FilterBarForm({
   // Count active filters
   const activeFilterCount =
     (filters.categories.length > 0 ? 1 : 0) +
-    (filters.location ? 1 : 0) +
-    (filters.needRestock !== null ? 1 : 0) +
-    (filters.status ? 1 : 0);
+    (filters.expiringSoon ? 1 : 0) +
+    (filters.lowStock ? 1 : 0);
 
   const handleSortChange = (e) => {
     const value = e.target.value;
@@ -128,64 +126,32 @@ function FilterBarForm({
         ))}
       </fieldset>
 
-      <label htmlFor="filter-location">Location:</label>
-      <select
-        id="filter-location"
-        name="filter-location"
-        value={filters.location || ""}
-        onChange={(e) =>
-          onFilter({ ...filters, location: e.target.value || null })
-        }
-      >
-        <option value="">All</option>
-        <option value="Fridge">Fridge</option>
-        <option value="Freezer">Freezer</option>
-        <option value="Pantry">Pantry</option>
-      </select>
+      <label htmlFor="filter-expiring-soon">
+        <input
+          type="checkbox"
+          id="filter-expiring-soon"
+          name="filter-expiring-soon"
+          checked={filters.expiringSoon}
+          onChange={(e) =>
+            onFilter({ ...filters, expiringSoon: e.target.checked })
+          }
+        />
+        Expiring Soon
+      </label>
 
-      <label htmlFor="filter-restock">Needs Restock:</label>
-      <select
-        id="filter-restock"
-        name="filter-restock"
-        value={
-          filters.needRestock === null ? "" : filters.needRestock ? "yes" : "no"
-        }
-        onChange={(e) => {
-          const val = e.target.value;
-          onFilter({
-            ...filters,
-            needRestock: val === "" ? null : val === "yes",
-          });
-        }}
-      >
-        <option value="">All</option>
-        <option value="yes">Yes</option>
-        <option value="no">No</option>
-      </select>
-
-      <label htmlFor="filter-status">Status:</label>
-      <select
-        id="filter-status"
-        name="filter-status"
-        value={filters.status || ""}
-        onChange={(e) =>
-          onFilter({ ...filters, status: e.target.value || null })
-        }
-      >
-        <option value="">All</option>
-        <option value="active">Active</option>
-        <option value="archived">Archived</option>
-      </select>
-      {activeFilterCount > 0 && (
-        <span>
-          {activeFilterCount} filter{activeFilterCount !== 1 ? "s" : ""} active
-        </span>
-      )}
-
+      <label htmlFor="filter-low-stock">
+        <input
+          type="checkbox"
+          id="filter-low-stock"
+          name="filter-low-stock"
+          checked={filters.lowStock}
+          onChange={(e) => onFilter({ ...filters, lowStock: e.target.checked })}
+        />
+        Low Stock
+      </label>
       <button type="button" onClick={handleClearFilters}>
         Clear All Filters
       </button>
-
     </form>
   );
 }
