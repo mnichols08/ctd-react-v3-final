@@ -14,7 +14,7 @@ export function isExpiringSoon(item) {
     now.getUTCDate(),
   );
   const timeUntilExpiration = expiresAt.getTime() - todayUTC;
-  return timeUntilExpiration >= 0 && timeUntilExpiration < EXPIRING_SOON_MS;
+  return timeUntilExpiration >= 0 && timeUntilExpiration <= EXPIRING_SOON_MS;
 }
 
 export const isLowStock = (item) => item.QtyOnHand < LOW_STOCK_THRESHOLD;
