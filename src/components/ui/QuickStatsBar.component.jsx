@@ -1,54 +1,41 @@
-function QuickStatsBar({ inventoryItems }) {
-  const activeItems = inventoryItems.filter(
-    (item) => item.Status !== "archived",
-  );
+import { countExpiringSoon } from "../../data/inventoryUtils";
+
+function QuickStatsBar({
+  inventoryItems = [],
+  filteredItems = [],
+  isFiltered = false,
+} = {}) {
+  const sourceItems = isFiltered ? filteredItems : inventoryItems;
+  const activeItems = sourceItems.filter((item) => item.Status !== "archived");
+
   const totalItems = activeItems.length;
-  const expirationThresholdMs = 14 * 24 * 60 * 60 * 1000;
-  const now = new Date();
-  const expiringSoon = activeItems.filter((item) => {
-    if (!item.ExpiresOn) {
-      return false;
-    }
-    const expiresAt = new Date(item.ExpiresOn);
-    const timeUntilExpiration = expiresAt.getTime() - now.getTime();
-    if (Number.isNaN(timeUntilExpiration)) {
-      return false;
-    }
-    return (
-      timeUntilExpiration >= 0 && timeUntilExpiration < expirationThresholdMs
-    );
-  }).length;
-  const lowStock = activeItems.filter((item) => item.QtyOnHand < 5).length;
-  const categories = [...new Set(activeItems.map((item) => item.Category))]
-    .length;
-  const archivedItems = inventoryItems.filter(
-    (item) => item.Status === "archived",
+  const needRestock = activeItems.filter(
+    (item) => item.NeedRestock === true,
+  ).length;
+  const expiringSoon = countExpiringSoon(activeItems);
+  const shoppingList = activeItems.filter(
+    (item) => item.NeedRestock === true && item.TargetQty > item.QtyOnHand,
   ).length;
 
   return (
     <>
+      {isFiltered && <p>Showing stats for filtered items</p>}
       <div>
-        <h3>Active Items</h3>
+        <h3>Total Items</h3>
         <p>{totalItems}</p>
+      </div>
+      <div>
+        <h3>Need Restock</h3>
+        <p>{needRestock}</p>
       </div>
       <div>
         <h3>Expiring Soon</h3>
         <p>{expiringSoon}</p>
       </div>
       <div>
-        <h3>Low Stock</h3>
-        <p>{lowStock}</p>
+        <h3>Shopping List</h3>
+        <p>{shoppingList}</p>
       </div>
-      <div>
-        <h3>Categories</h3>
-        <p>{categories}</p>
-      </div>
-      {archivedItems > 0 && (
-        <div>
-          <h3>Archived Items</h3>
-          <p>{archivedItems}</p>
-        </div>
-      )}
     </>
   );
 }

@@ -21,6 +21,109 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.3.6] - 2026-03-05
+
+### Changed
+
+- Migrates sorting logic into inventoryUtils and refactor expiration date calculation and enhance sorting logic to better handle empty values 
+- Refactor sorting logic in MainContainer to utilize new sortItems utility function
+- Enhance QuickStatsBar component with default props for better usability
+- Refactor active filter count logic into a utility function for better code reuse
+
+### Fixed
+
+- Fix expiration check to include items expiring soon
+
+---
+
+## [0.3.5] - 2026-03-05
+
+### Aded
+
+- Add comprehensive tests for FilterBarForm functionality
+- Add integration tests for QuickStatsBar functionality
+- Add test for QuickStatsBar to display filtered stats when isFiltered is true
+
+### Changed
+
+- Enhance QuickStatsBar to support filtered items and indicate filter status and filtering by adding filteredItems and isFiltered props
+
+---
+
+## [0.3.4] - 2026-03-04
+
+### Added
+
+- In inventoryUtils, adds countExpiringSoon function to filter items expiring within 14 days
+
+### Changed
+ 
+- Refactor QuickStatsBar tests to improve inventory handling and add zero state checks
+
+---
+
+## [0.3.3] - 2026-03-04
+
+### Added
+
+- Add archived items toggle functionality and refactor filters in MainContainer
+- Add inventory utility functions for expiration and low stock checks
+
+### Changed
+
+- Update FilterBar tests to validate new expiring soon and low stock filters
+- Enhance archive behavior tests to include Archived Items section toggle functionality
+- Refactor FilterBarForm to remove unused filters and add expiring soon and low stock checkboxes
+- Refactor QuickStatsBar to use utility functions for expiring soon and low stock calculations
+
+---
+
+## [0.3.2] - 2026-03-04
+
+### Added
+
+- Add filtering options to FilterBarForm for categories, location, restock needs, and status
+- Add filtering functionality to MainContainer for inventory items
+
+### Changed
+
+- Update FilterBar test to include specific filter options for Location, Needs Restock, and Status
+
+---
+
+## [0.3.1] - 2026-03-04
+
+### Added
+
+- Add sorting functionality to FilterBarForm with sort field and direction options
+- Implement sorting functionality for inventory items in MainContainer
+- Implement a reset button within FilterBarForm that resets the search query
+
+### Changed
+
+- Modify FilterBar tests to add Sort Direction label and update sort options
+
+---
+
+## [0.3.0] - 2026-03-04
+
+### Added
+
+- Add default no-op function for onSearch prop in FilterBarForm
+- Implement search functionality with filtering across multiple fields
+- Add search functionality with debounced input in FilterBarForm
+
+### Removed
+
+- Remove "Apply Filter" button from FilterBar tests
+- Removes "Apply Filter" button from FilterBarForm
+
+### Fixed
+
+- Update archived items check to use original inventoryItems array
+
+---
+
 ## [0.2.7] - 2026-03-04
 
 ### Changed

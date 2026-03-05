@@ -95,14 +95,17 @@ describe("App – archive behavior", () => {
       .closest("article");
     fireEvent.click(within(article).getByRole("button", { name: "Archive" }));
 
-    // The Archived Items section already exists (sample data has one archived item)
-    // We need to expand it first since archived section starts collapsed
+    // Click the toggle button to reveal the Archived Items section
+    fireEvent.click(
+      screen.getByRole("button", { name: /Show Archived Items/i }),
+    );
+
+    // Now expand the collapsed section inside InventorySection
     const archivedSection = screen
       .getByRole("heading", { name: /Archived Items/i, level: 2 })
       .closest("section");
     const toggle = archivedSection.querySelector("a[aria-expanded]");
-    // If collapsed, expand it
-    if (toggle.getAttribute("aria-expanded") === "false") {
+    if (toggle && toggle.getAttribute("aria-expanded") === "false") {
       fireEvent.click(toggle);
     }
 

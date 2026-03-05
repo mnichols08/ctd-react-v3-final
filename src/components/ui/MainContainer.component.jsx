@@ -1,11 +1,25 @@
 import { useEffect, useState } from "react";
 import inventorySampleData from "../../data/inventorySample.json";
+import {
+  getActiveFilterCount,
+  isExpiringSoon,
+  isLowStock,
+  sortItems,
+} from "../../data/inventoryUtils";
 import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
 import AddInventoryItemForm from "../forms/AddInventoryItemForm.component";
 import QuickAddForm from "../forms/QuickAddForm.component";
 import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
+
+// Searchable fields for filtering inventory items
+const SEARCHABLE_FIELDS = ["ItemName", "Brand", "Category", "Tags", "Notes"];
+const DEFAULT_FILTERS = {
+  categories: [],
+  expiringSoon: false,
+  lowStock: false,
+};
 
 function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Initialize inventory items from sample data, ensuring we have a fresh copy of each item
@@ -14,6 +28,45 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   );
   // State to toggle between Quick Add and Full Form
   const [showQuickAdd, setShowQuickAdd] = useState(true);
+  // Search term state (updated via debounced callback from FilterBarForm)
+  const [searchTerm, setSearchTerm] = useState("");
+  // Sorting state (default to sorting by ItemName)
+  const [sortField, setSortField] = useState("ItemName");
+  // Sort direction state (asc default, can be toggled to desc)
+  const [sortDirection, setSortDirection] = useState("asc");
+  // Filter state for category, location, restock, and status filters
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  // Toggle state for showing/hiding the archived items section (session only)
+  const [showArchived, setShowArchived] = useState(false);
+
+  // Filter inventory items by search term across searchable fields (case-insensitive, null-safe)
+  const term = searchTerm.trim().toLowerCase();
+  const filteredItems = term
+    ? inventoryItems.filter((item) =>
+        SEARCHABLE_FIELDS.some((field) => {
+          const value = item[field];
+          if (value == null) return false;
+          return String(value).toLowerCase().includes(term);
+        }),
+      )
+    : inventoryItems;
+
+  // Apply filters after search but before sort
+  const filterAppliedItems = filteredItems.filter((item) => {
+    if (
+      filters.categories.length > 0 &&
+      !filters.categories.includes(item.Category)
+    ) {
+      return false;
+    }
+    if (filters.expiringSoon && !isExpiringSoon(item)) return false;
+    if (filters.lowStock && !isLowStock(item)) return false;
+    return true;
+  });
+
+  // Count of active filters for display
+  const activeFilterCount = getActiveFilterCount(filters);
+
   // Handler to add a new inventory item
   const addInventoryItem = (newItem) => {
     setInventoryItems((prevItems) => [...prevItems, newItem]);
@@ -88,7 +141,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     );
   };
 
-  // Handler to unarchive an item (mark as Status: "active")
+  // Handler to unarchive an item (mark as Status: "active" and keep in shopping list if it was previously there)
   const unarchiveItem = (itemId) => {
     setInventoryItems((prevItems) =>
       prevItems.map((item) => {
@@ -109,6 +162,15 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     );
   };
 
+  // Handler to update sort field and direction (sorting is derived, not mutated)
+  const handleSort = (field, direction) => {
+    setSortField(field);
+    setSortDirection(direction);
+  };
+
+  // Sort filtered items by the selected field and direction
+  const sortedItems = sortItems(filterAppliedItems, sortField, sortDirection);
+
   // Effect to check for archived items whenever the inventory changes and update the state in App accordingly
   useEffect(() => {
     setArchivedItemsExist(
@@ -119,7 +181,29 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   return (
     <main>
       <ToolSection id="stats" title="Quick Stats">
-        <QuickStatsBar inventoryItems={inventoryItems} />
+        <QuickStatsBar
+          inventoryItems={inventoryItems}
+          filteredItems={filterAppliedItems}
+          isFiltered={searchTerm.trim() !== "" || activeFilterCount > 0}
+        />
+      </ToolSection>
+      <ToolSection id="filter" title="Filter & Sort">
+        <FilterBarForm
+          onSearch={setSearchTerm}
+          onSort={handleSort}
+          onFilter={setFilters}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          filters={filters}
+          inventoryItems={inventoryItems}
+        />
+        {(searchTerm.trim() || activeFilterCount > 0) && (
+          <p>
+            Showing {filterAppliedItems.length} of {inventoryItems.length} items
+            {activeFilterCount > 0 &&
+              ` (${activeFilterCount} filter${activeFilterCount !== 1 ? "s" : ""} active)`}
+          </p>
+        )}
       </ToolSection>
       <ToolSection id="add-item" title="Add Item">
         {/*  Toggle between Quick Add and Full Form */}
@@ -139,7 +223,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={inventoryItems.filter(
+        items={sortedItems.filter(
           (item) =>
             item.Location.includes("Fridge") && item.Status !== "archived",
         )}
@@ -153,7 +237,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={inventoryItems.filter(
+        items={sortedItems.filter(
           (item) =>
             item.Location.includes("Freezer") && item.Status !== "archived",
         )}
@@ -167,7 +251,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={inventoryItems.filter(
+        items={sortedItems.filter(
           (item) =>
             item.Location.includes("Pantry") && item.Status !== "archived",
         )}
@@ -179,23 +263,40 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         id="shopping-list"
         title="Shopping List"
         updateItemQuantity={updateItemQuantity}
-        items={inventoryItems.filter(
+        items={sortedItems.filter(
           (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
         )}
       />
-      {/* Archived Items Section */}
-      {inventoryItems.some((item) => item.Status === "archived") && (
-        <InventorySection
-          id="archived"
-          title="Archived Items"
-          items={inventoryItems.filter((item) => item.Status === "archived")}
-          unarchiveItem={unarchiveItem}
-          deleteItem={deleteItem}
-        />
-      )}
-      <ToolSection id="filter" title="Filter & Sort">
-        <FilterBarForm />
-      </ToolSection>
+      {/* Archived Items Toggle & Section */}
+      {(() => {
+        const archivedItems = sortItems(
+          inventoryItems.filter((item) => item.Status === "archived"),
+          sortField,
+          sortDirection,
+        );
+        const totalArchived = archivedItems.length;
+        return (
+          totalArchived > 0 && (
+            <div id="archived">
+              <button
+                type="button"
+                onClick={() => setShowArchived((prev) => !prev)}
+              >
+                {showArchived ? "Hide Archived Items" : `Show Archived Items`} (
+                {totalArchived})
+              </button>
+              {showArchived && (
+                <InventorySection
+                  title="Archived Items"
+                  items={archivedItems}
+                  unarchiveItem={unarchiveItem}
+                  deleteItem={deleteItem}
+                />
+              )}
+            </div>
+          )
+        );
+      })()}
     </main>
   );
 }
