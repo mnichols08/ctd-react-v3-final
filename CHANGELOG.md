@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Migrates sorting logic into inventoryUtils and refactor expiration date calculation and enhance sorting logic to better handle empty values 
+- Refactor sorting logic in MainContainer to utilize new sortItems utility function
 
 ---
 
