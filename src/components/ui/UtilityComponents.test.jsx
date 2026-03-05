@@ -140,4 +140,32 @@ describe("QuickStatsBar", () => {
       String(activeItems.length),
     );
   });
+
+  it("shows filtered stats when isFiltered is true", () => {
+    const inventoryItems = inventorySampleData.records;
+    const filteredItems = inventoryItems.filter(
+      (item) => item.Category === "Dairy",
+    );
+    const activeFiltered = filteredItems.filter(
+      (item) => item.Status !== "archived",
+    );
+
+    render(
+      <QuickStatsBar
+        inventoryItems={inventoryItems}
+        filteredItems={filteredItems}
+        isFiltered
+      />,
+    );
+
+    expect(screen.getByText("Showing stats for filtered items")).toBeTruthy();
+
+    const totalHeading = screen.getByRole("heading", {
+      name: "Total Items",
+      level: 3,
+    });
+    expect(totalHeading.nextElementSibling?.textContent).toBe(
+      String(activeFiltered.length),
+    );
+  });
 });
