@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Refactor FilterBarForm to remove unused filters and add expiring soon and low stock checkboxes
 - Refactor QuickStatsBar to use utility functions for expiring soon and low stock calculations
 
 ---
