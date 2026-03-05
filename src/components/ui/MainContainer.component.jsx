@@ -9,6 +9,12 @@ import FilterBarForm from "../forms/FilterBarForm.component";
 
 // Searchable fields for filtering inventory items
 const SEARCHABLE_FIELDS = ["ItemName", "Brand", "Category", "Tags", "Notes"];
+const DEFAULT_FILTERS = {
+  categories: [],
+  location: null,
+  needRestock: null,
+  status: null,
+};
 
 function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Initialize inventory items from sample data, ensuring we have a fresh copy of each item
@@ -23,6 +29,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [sortField, setSortField] = useState("ItemName");
   // Sort direction state (asc default, can be toggled to desc)
   const [sortDirection, setSortDirection] = useState("asc");
+  // Filter state for category, location, restock, and status filters
+  const [filters, setFilters] = useState(DEFAULT_FILTERS);
 
   // Filter inventory items by search term across searchable fields (case-insensitive, null-safe)
   const term = searchTerm.trim().toLowerCase();
@@ -35,6 +43,34 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         }),
       )
     : inventoryItems;
+
+  // Apply filters after search but before sort
+  const filterAppliedItems = filteredItems.filter((item) => {
+    if (
+      filters.categories.length > 0 &&
+      !filters.categories.includes(item.Category)
+    ) {
+      return false;
+    }
+    if (filters.location && !item.Location.includes(filters.location)) {
+      return false;
+    }
+    if (filters.needRestock === true && !item.NeedRestock) return false;
+    if (filters.needRestock === false && item.NeedRestock) return false;
+    if (filters.status === "active" && item.Status === "archived") return false;
+    if (filters.status === "archived" && item.Status !== "archived") {
+      return false;
+    }
+    return true;
+  });
+
+  // Count of active filters for display
+  const activeFilterCount =
+    (filters.categories.length > 0 ? 1 : 0) +
+    (filters.location ? 1 : 0) +
+    (filters.needRestock !== null ? 1 : 0) +
+    (filters.status ? 1 : 0);
+
   // Handler to add a new inventory item
   const addInventoryItem = (newItem) => {
     setInventoryItems((prevItems) => [...prevItems, newItem]);
@@ -145,7 +181,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
 
   // Sort filtered items by the selected field and direction
   const sortedItems = sortField
-    ? [...filteredItems].sort((a, b) => {
+    ? [...filterAppliedItems].sort((a, b) => {
         const aValue = a[sortField] ?? "";
         const bValue = b[sortField] ?? "";
         const dir = sortDirection === "asc" ? 1 : -1;
@@ -169,7 +205,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
         return 0;
       })
-    : filteredItems;
+    : filterAppliedItems;
 
   // Effect to check for archived items whenever the inventory changes and update the state in App accordingly
   useEffect(() => {
@@ -187,12 +223,17 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         <FilterBarForm
           onSearch={setSearchTerm}
           onSort={handleSort}
+          onFilter={setFilters}
           sortField={sortField}
           sortDirection={sortDirection}
+          filters={filters}
+          inventoryItems={inventoryItems}
         />
-        {searchTerm.trim() && (
+        {(searchTerm.trim() || activeFilterCount > 0) && (
           <p>
-            Showing {filteredItems.length} of {inventoryItems.length} items
+            Showing {filterAppliedItems.length} of {inventoryItems.length} items
+            {activeFilterCount > 0 &&
+              ` (${activeFilterCount} filter${activeFilterCount !== 1 ? "s" : ""} active)`}
           </p>
         )}
       </ToolSection>
