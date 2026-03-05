@@ -209,7 +209,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         )}
       />
       {/* Archived Items Section */}
-      {filteredItems.some((item) => item.Status === "archived") && (
+      {inventoryItems.some((item) => item.Status === "archived") && (
         <InventorySection
           id="archived"
           title="Archived Items"

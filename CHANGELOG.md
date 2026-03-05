@@ -34,6 +34,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove "Apply Filter" button from FilterBar tests
 - Removes "Apply Filter" button from FilterBarForm
 
+### Fixed
+
+- Update archived items check to use original inventoryItems array
+
 ---
 
 ## [0.2.7] - 2026-03-04
