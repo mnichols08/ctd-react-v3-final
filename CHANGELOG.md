@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Aded
 
+- Add comprehensive tests for FilterBarForm functionality
 - Add integration tests for QuickStatsBar functionality
 - Add test for QuickStatsBar to display filtered stats when isFiltered is true
 
