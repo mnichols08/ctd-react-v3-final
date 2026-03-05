@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import inventorySampleData from "../../data/inventorySample.json";
-import { isExpiringSoon, isLowStock } from "../../data/inventoryUtils";
+import {
+  getActiveFilterCount,
+  isExpiringSoon,
+  isLowStock,
+  sortItems,
+} from "../../data/inventoryUtils";
 import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
 import AddInventoryItemForm from "../forms/AddInventoryItemForm.component";
@@ -60,10 +65,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   });
 
   // Count of active filters for display
-  const activeFilterCount =
-    (filters.categories.length > 0 ? 1 : 0) +
-    (filters.expiringSoon ? 1 : 0) +
-    (filters.lowStock ? 1 : 0);
+  const activeFilterCount = getActiveFilterCount(filters);
 
   // Handler to add a new inventory item
   const addInventoryItem = (newItem) => {
@@ -166,40 +168,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     setSortDirection(direction);
   };
 
-  // Fields that should use locale-aware string comparison
-  const STRING_SORT_FIELDS = ["ItemName", "Category"];
-  // Fields that should use numeric comparison
-  const NUMERIC_SORT_FIELDS = ["QtyOnHand"];
-  // Fields that should use date comparison (nulls sort to end)
-  const DATE_SORT_FIELDS = ["ExpiresOn", "LastUpdated"];
-
   // Sort filtered items by the selected field and direction
-  const sortedItems = sortField
-    ? [...filterAppliedItems].sort((a, b) => {
-        const aValue = a[sortField] ?? "";
-        const bValue = b[sortField] ?? "";
-        const dir = sortDirection === "asc" ? 1 : -1;
-        if (STRING_SORT_FIELDS.includes(sortField)) {
-          return String(aValue).localeCompare(String(bValue)) * dir;
-        }
-        if (NUMERIC_SORT_FIELDS.includes(sortField)) {
-          return (Number(aValue) - Number(bValue)) * dir;
-        }
-        if (DATE_SORT_FIELDS.includes(sortField)) {
-          const aEmpty = !aValue;
-          const bEmpty = !bValue;
-          if (aEmpty && bEmpty) return 0;
-          if (aEmpty) return 1;
-          if (bEmpty) return -1;
-          const aTime = new Date(aValue).getTime();
-          const bTime = new Date(bValue).getTime();
-          return (aTime - bTime) * dir;
-        }
-        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
-        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
-        return 0;
-      })
-    : filterAppliedItems;
+  const sortedItems = sortItems(filterAppliedItems, sortField, sortDirection);
 
   // Effect to check for archived items whenever the inventory changes and update the state in App accordingly
   useEffect(() => {
@@ -299,12 +269,12 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       />
       {/* Archived Items Toggle & Section */}
       {(() => {
-        const archivedItems = sortedItems.filter(
-          (item) => item.Status === "archived",
+        const archivedItems = sortItems(
+          inventoryItems.filter((item) => item.Status === "archived"),
+          sortField,
+          sortDirection,
         );
-        const totalArchived = inventoryItems.filter(
-          (item) => item.Status === "archived",
-        ).length;
+        const totalArchived = archivedItems.length;
         return (
           totalArchived > 0 && (
             <div id="archived">
