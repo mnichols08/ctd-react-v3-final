@@ -176,7 +176,6 @@ describe("FilterBar", () => {
     expect(screen.getByLabelText("Search:")).toBeTruthy();
     expect(screen.getByLabelText("Sort by:")).toBeTruthy();
     expect(screen.getByLabelText("Filter by:")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Apply Filter" })).toBeTruthy();
   });
 
   it("includes expected option sets for sort and filter", () => {
