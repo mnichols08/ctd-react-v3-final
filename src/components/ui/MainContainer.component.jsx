@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import inventorySampleData from "../../data/inventorySample.json";
+import { isExpiringSoon, isLowStock } from "../../data/inventoryUtils";
 import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
 import AddInventoryItemForm from "../forms/AddInventoryItemForm.component";
@@ -11,9 +12,8 @@ import FilterBarForm from "../forms/FilterBarForm.component";
 const SEARCHABLE_FIELDS = ["ItemName", "Brand", "Category", "Tags", "Notes"];
 const DEFAULT_FILTERS = {
   categories: [],
-  location: null,
-  needRestock: null,
-  status: null,
+  expiringSoon: false,
+  lowStock: false,
 };
 
 function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
@@ -31,6 +31,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [sortDirection, setSortDirection] = useState("asc");
   // Filter state for category, location, restock, and status filters
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
+  // Toggle state for showing/hiding the archived items section (session only)
+  const [showArchived, setShowArchived] = useState(false);
 
   // Filter inventory items by search term across searchable fields (case-insensitive, null-safe)
   const term = searchTerm.trim().toLowerCase();
@@ -52,24 +54,16 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     ) {
       return false;
     }
-    if (filters.location && !item.Location.includes(filters.location)) {
-      return false;
-    }
-    if (filters.needRestock === true && !item.NeedRestock) return false;
-    if (filters.needRestock === false && item.NeedRestock) return false;
-    if (filters.status === "active" && item.Status === "archived") return false;
-    if (filters.status === "archived" && item.Status !== "archived") {
-      return false;
-    }
+    if (filters.expiringSoon && !isExpiringSoon(item)) return false;
+    if (filters.lowStock && !isLowStock(item)) return false;
     return true;
   });
 
   // Count of active filters for display
   const activeFilterCount =
     (filters.categories.length > 0 ? 1 : 0) +
-    (filters.location ? 1 : 0) +
-    (filters.needRestock !== null ? 1 : 0) +
-    (filters.status ? 1 : 0);
+    (filters.expiringSoon ? 1 : 0) +
+    (filters.lowStock ? 1 : 0);
 
   // Handler to add a new inventory item
   const addInventoryItem = (newItem) => {
@@ -145,7 +139,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     );
   };
 
-  // Handler to unarchive an item (mark as Status: "active")
+  // Handler to unarchive an item (mark as Status: "active" and keep in shopping list if it was previously there)
   const unarchiveItem = (itemId) => {
     setInventoryItems((prevItems) =>
       prevItems.map((item) => {
@@ -299,16 +293,36 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
           (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
         )}
       />
-      {/* Archived Items Section */}
-      {inventoryItems.some((item) => item.Status === "archived") && (
-        <InventorySection
-          id="archived"
-          title="Archived Items"
-          items={sortedItems.filter((item) => item.Status === "archived")}
-          unarchiveItem={unarchiveItem}
-          deleteItem={deleteItem}
-        />
-      )}
+      {/* Archived Items Toggle & Section */}
+      {(() => {
+        const archivedItems = sortedItems.filter(
+          (item) => item.Status === "archived",
+        );
+        const totalArchived = inventoryItems.filter(
+          (item) => item.Status === "archived",
+        ).length;
+        return (
+          totalArchived > 0 && (
+            <div id="archived">
+              <button
+                type="button"
+                onClick={() => setShowArchived((prev) => !prev)}
+              >
+                {showArchived ? "Hide Archived Items" : `Show Archived Items`} (
+                {totalArchived})
+              </button>
+              {showArchived && (
+                <InventorySection
+                  title="Archived Items"
+                  items={archivedItems}
+                  unarchiveItem={unarchiveItem}
+                  deleteItem={deleteItem}
+                />
+              )}
+            </div>
+          )
+        );
+      })()}
     </main>
   );
 }
