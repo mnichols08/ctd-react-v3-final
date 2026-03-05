@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add sorting functionality to FilterBarForm with sort field and direction options
 - Implement sorting functionality for inventory items in MainContainer
 - Implement a reset button within FilterBarForm that resets the search query
 
