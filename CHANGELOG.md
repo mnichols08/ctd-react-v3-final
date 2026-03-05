@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Implement a reset button within FilterBarForm that resets the search query
 
+### Changed
+
+- Modify FilterBar tests to add Sort Direction label and update sort options
+
 ---
 
 ## [0.3.0] - 2026-03-04
