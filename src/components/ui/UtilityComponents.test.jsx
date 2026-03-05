@@ -21,6 +21,7 @@ describe("EmptyState", () => {
 
 describe("QuickStatsBar", () => {
   const FIXED_NOW = new Date("2026-03-10T00:00:00").getTime();
+  const EXPIRATION_THRESHOLD_MS = 14 * 24 * 60 * 60 * 1000; // matches EXPIRING_SOON_MS
 
   beforeEach(() => {
     vi.useFakeTimers();
@@ -36,62 +37,107 @@ describe("QuickStatsBar", () => {
     const activeItems = inventoryItems.filter(
       (item) => item.Status !== "archived",
     );
-    const expirationThresholdMs = 14 * 24 * 60 * 60 * 1000;
     const now = new Date();
+    const todayUTC = Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+    );
     const expectedTotalItems = activeItems.length;
+    const expectedNeedRestock = activeItems.filter(
+      (item) => item.NeedRestock === true,
+    ).length;
     const expectedExpiringSoon = activeItems.filter((item) => {
       if (!item.ExpiresOn) return false;
-      const timeUntilExpiration =
-        new Date(item.ExpiresOn).getTime() - now.getTime();
-      if (Number.isNaN(timeUntilExpiration)) return false;
-      return timeUntilExpiration >= 0 && timeUntilExpiration < expirationThresholdMs;
+      const expiresAt = new Date(item.ExpiresOn).getTime();
+      if (Number.isNaN(expiresAt)) return false;
+      const timeUntilExpiration = expiresAt - todayUTC;
+      return (
+        timeUntilExpiration >= 0 &&
+        timeUntilExpiration < EXPIRATION_THRESHOLD_MS
+      );
     }).length;
-    const expectedLowStock = activeItems.filter(
-      (item) => item.QtyOnHand < 5,
-    ).length;
-    const expectedCategories = new Set(activeItems.map((item) => item.Category))
-      .size;
-    const expectedArchivedItems = inventoryItems.filter(
-      (item) => item.Status === "archived",
+    const expectedShoppingList = activeItems.filter(
+      (item) => item.NeedRestock === true && item.TargetQty > item.QtyOnHand,
     ).length;
 
     render(<QuickStatsBar inventoryItems={inventoryItems} />);
 
     const totalHeading = screen.getByRole("heading", {
-      name: "Active Items",
+      name: "Total Items",
+      level: 3,
+    });
+    const restockHeading = screen.getByRole("heading", {
+      name: "Need Restock",
       level: 3,
     });
     const expiringHeading = screen.getByRole("heading", {
       name: "Expiring Soon",
       level: 3,
     });
-    const lowStockHeading = screen.getByRole("heading", {
-      name: "Low Stock",
-      level: 3,
-    });
-    const categoriesHeading = screen.getByRole("heading", {
-      name: "Categories",
-      level: 3,
-    });
-    const archivedHeading = screen.getByRole("heading", {
-      name: "Archived Items",
+    const shoppingHeading = screen.getByRole("heading", {
+      name: "Shopping List",
       level: 3,
     });
 
     expect(totalHeading.nextElementSibling?.textContent).toBe(
       String(expectedTotalItems),
     );
+    expect(restockHeading.nextElementSibling?.textContent).toBe(
+      String(expectedNeedRestock),
+    );
     expect(expiringHeading.nextElementSibling?.textContent).toBe(
       String(expectedExpiringSoon),
     );
-    expect(lowStockHeading.nextElementSibling?.textContent).toBe(
-      String(expectedLowStock),
+    expect(shoppingHeading.nextElementSibling?.textContent).toBe(
+      String(expectedShoppingList),
     );
-    expect(categoriesHeading.nextElementSibling?.textContent).toBe(
-      String(expectedCategories),
+  });
+
+  it("shows all zeros for empty inventory", () => {
+    render(<QuickStatsBar inventoryItems={[]} />);
+
+    const totalHeading = screen.getByRole("heading", {
+      name: "Total Items",
+      level: 3,
+    });
+    expect(totalHeading.nextElementSibling?.textContent).toBe("0");
+
+    const restockHeading = screen.getByRole("heading", {
+      name: "Need Restock",
+      level: 3,
+    });
+    expect(restockHeading.nextElementSibling?.textContent).toBe("0");
+
+    const expiringHeading = screen.getByRole("heading", {
+      name: "Expiring Soon",
+      level: 3,
+    });
+    expect(expiringHeading.nextElementSibling?.textContent).toBe("0");
+
+    const shoppingHeading = screen.getByRole("heading", {
+      name: "Shopping List",
+      level: 3,
+    });
+    expect(shoppingHeading.nextElementSibling?.textContent).toBe("0");
+  });
+
+  it("always uses full inventoryItems regardless of extra props", () => {
+    const inventoryItems = inventorySampleData.records;
+    const activeItems = inventoryItems.filter(
+      (item) => item.Status !== "archived",
     );
-    expect(archivedHeading.nextElementSibling?.textContent).toBe(
-      String(expectedArchivedItems),
+
+    render(<QuickStatsBar inventoryItems={inventoryItems} />);
+
+    expect(screen.queryByText("Showing stats for filtered items")).toBeNull();
+
+    const totalHeading = screen.getByRole("heading", {
+      name: "Total Items",
+      level: 3,
+    });
+    expect(totalHeading.nextElementSibling?.textContent).toBe(
+      String(activeItems.length),
     );
   });
 });
