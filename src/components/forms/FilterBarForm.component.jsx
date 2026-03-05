@@ -1,15 +1,24 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-function FilterBarForm() {
+function FilterBarForm({ onSearch }) {
   const [searchTerm, setSearchTerm] = useState("");
+  const debounceTimer = useRef(null);
+
+  // Debounce the onSearch callback by 300ms
+  useEffect(() => {
+    debounceTimer.current = setTimeout(() => {
+      onSearch(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(debounceTimer.current);
+  }, [searchTerm, onSearch]);
 
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
 
-  const handleSubmit = (e) => e.preventDefault();
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={e => e.preventDefault()} >
       <label htmlFor="search">Search:</label>
       <input
         value={searchTerm}
@@ -33,7 +42,6 @@ function FilterBarForm() {
         <option value="lowStock">Low Stock</option>
         <option value="categories">Categories</option>
       </select>
-      <button type="submit">Apply Filter</button>
     </form>
   );
 }
