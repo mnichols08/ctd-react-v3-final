@@ -30,7 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Removes apply filter button from FilterBarForm
+- Remove "Apply Filter" button from FilterBar tests
+- Removes "Apply Filter" button from FilterBarForm
 
 ---
 
