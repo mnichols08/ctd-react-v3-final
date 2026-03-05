@@ -6,6 +6,8 @@ import {
   isLowStock,
   sortItems,
 } from "../../data/inventoryUtils";
+import LoadingState from "./LoadingState.component";
+import ErrorState from "./ErrorState.component";
 import ToolSection from "../sections/ToolSection.component";
 import QuickStatsBar from "./QuickStatsBar.component";
 import AddInventoryItemForm from "../forms/AddInventoryItemForm.component";
@@ -38,6 +40,10 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   // Toggle state for showing/hiding the archived items section (session only)
   const [showArchived, setShowArchived] = useState(false);
+  // State to tell if the inventory is loading (e.g., fetching from API)
+  const [isLoading, setIsLoading] = useState(true);
+  // State to track if there was an error loading or updating inventory items
+  const [error, setError] = useState(null);
 
   // Filter inventory items by search term across searchable fields (case-insensitive, null-safe)
   const term = searchTerm.trim().toLowerCase();
@@ -178,125 +184,154 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     );
   }, [inventoryItems, setArchivedItemsExist]);
 
+  // Function to simulate loading state on initial mount (e.g., fetching from API) that can be called via onRetry in ErrorState as well
+  const simulateLoading = () => {
+    setError(null);
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1750);
+  };
+  // Simulate initial data fetch on mount
+  useEffect(() => {
+    const randomError = Math.random() < 0.55; // 55% chance of error for demonstration
+    if (randomError) {
+      /* eslint-disable-next-line */
+      setError("Failed to load inventory. Please try again.");
+      setIsLoading(false);
+    } else simulateLoading();
+  }, []);
+
   return (
     <main>
-      <ToolSection id="stats" title="Quick Stats">
-        <QuickStatsBar
-          inventoryItems={inventoryItems}
-          filteredItems={filterAppliedItems}
-          isFiltered={searchTerm.trim() !== "" || activeFilterCount > 0}
-        />
-      </ToolSection>
-      <ToolSection id="filter" title="Filter & Sort">
-        <FilterBarForm
-          onSearch={setSearchTerm}
-          onSort={handleSort}
-          onFilter={setFilters}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          filters={filters}
-          inventoryItems={inventoryItems}
-        />
-        {(searchTerm.trim() || activeFilterCount > 0) && (
-          <p>
-            Showing {filterAppliedItems.length} of {inventoryItems.length} items
-            {activeFilterCount > 0 &&
-              ` (${activeFilterCount} filter${activeFilterCount !== 1 ? "s" : ""} active)`}
-          </p>
-        )}
-      </ToolSection>
-      <ToolSection id="add-item" title="Add Item">
-        {/*  Toggle between Quick Add and Full Form */}
-        <button onClick={() => setShowQuickAdd((prev) => !prev)}>
-          {showQuickAdd ? "Switch to Full Form" : "Switch to Quick Add"}
-        </button>
-        {showQuickAdd ? (
-          <QuickAddForm addInventoryItem={addInventoryItem} />
-        ) : (
-          <AddInventoryItemForm addInventoryItem={addInventoryItem} />
-        )}
-      </ToolSection>
-      <InventorySection
-        id="fridge"
-        title="Fridge"
-        addToShoppingList={addToShoppingList}
-        removeFromShoppingList={removeFromShoppingList}
-        updateItem={updateInventoryItem}
-        visibleFields={visibleFields}
-        items={sortedItems.filter(
-          (item) =>
-            item.Location.includes("Fridge") && item.Status !== "archived",
-        )}
-        archiveItem={archiveItem}
-        deleteItem={deleteItem}
-      />
-      <InventorySection
-        id="freezer"
-        title="Freezer"
-        addToShoppingList={addToShoppingList}
-        removeFromShoppingList={removeFromShoppingList}
-        updateItem={updateInventoryItem}
-        visibleFields={visibleFields}
-        items={sortedItems.filter(
-          (item) =>
-            item.Location.includes("Freezer") && item.Status !== "archived",
-        )}
-        archiveItem={archiveItem}
-        deleteItem={deleteItem}
-      />
-      <InventorySection
-        id="pantry"
-        title="Pantry"
-        addToShoppingList={addToShoppingList}
-        removeFromShoppingList={removeFromShoppingList}
-        updateItem={updateInventoryItem}
-        visibleFields={visibleFields}
-        items={sortedItems.filter(
-          (item) =>
-            item.Location.includes("Pantry") && item.Status !== "archived",
-        )}
-        archiveItem={archiveItem}
-        deleteItem={deleteItem}
-      />
-      {/* Render Shopping List based upon NeedRestock and TargetQty vs QtyOnHand */}
-      <InventorySection
-        id="shopping-list"
-        title="Shopping List"
-        updateItemQuantity={updateItemQuantity}
-        items={sortedItems.filter(
-          (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
-        )}
-      />
-      {/* Archived Items Toggle & Section */}
-      {(() => {
-        const archivedItems = sortItems(
-          inventoryItems.filter((item) => item.Status === "archived"),
-          sortField,
-          sortDirection,
-        );
-        const totalArchived = archivedItems.length;
-        return (
-          totalArchived > 0 && (
-            <div id="archived">
-              <button
-                type="button"
-                onClick={() => setShowArchived((prev) => !prev)}
-              >
-                {showArchived ? "Hide Archived Items" : `Show Archived Items`} (
-                {totalArchived})
-              </button>
-              {showArchived && (
-                <InventorySection
-                  title="Archived Items"
-                  items={archivedItems}
-                  unarchiveItem={unarchiveItem}
-                  deleteItem={deleteItem}
-                />
-              )}
-            </div>
-          )
-        );
-      })()}
+      {isLoading ? (
+        <LoadingState isLoading={isLoading} />
+      ) : error ? (
+        <ErrorState error={error} onRetry={simulateLoading} />
+      ) : (
+        <>
+          <ToolSection id="stats" title="Quick Stats">
+            <QuickStatsBar
+              inventoryItems={inventoryItems}
+              filteredItems={filterAppliedItems}
+              isFiltered={searchTerm.trim() !== "" || activeFilterCount > 0}
+            />
+          </ToolSection>
+          <ToolSection id="filter" title="Filter & Sort">
+            <FilterBarForm
+              onSearch={setSearchTerm}
+              onSort={handleSort}
+              onFilter={setFilters}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              filters={filters}
+              inventoryItems={inventoryItems}
+            />
+            {(searchTerm.trim() || activeFilterCount > 0) && (
+              <p>
+                Showing {filterAppliedItems.length} of {inventoryItems.length}{" "}
+                items
+                {activeFilterCount > 0 &&
+                  ` (${activeFilterCount} filter${activeFilterCount !== 1 ? "s" : ""} active)`}
+              </p>
+            )}
+          </ToolSection>
+          <ToolSection id="add-item" title="Add Item">
+            {/*  Toggle between Quick Add and Full Form */}
+            <button onClick={() => setShowQuickAdd((prev) => !prev)}>
+              {showQuickAdd ? "Switch to Full Form" : "Switch to Quick Add"}
+            </button>
+            {showQuickAdd ? (
+              <QuickAddForm addInventoryItem={addInventoryItem} />
+            ) : (
+              <AddInventoryItemForm addInventoryItem={addInventoryItem} />
+            )}
+          </ToolSection>
+          <InventorySection
+            id="fridge"
+            title="Fridge"
+            addToShoppingList={addToShoppingList}
+            removeFromShoppingList={removeFromShoppingList}
+            updateItem={updateInventoryItem}
+            visibleFields={visibleFields}
+            items={sortedItems.filter(
+              (item) =>
+                item.Location.includes("Fridge") && item.Status !== "archived",
+            )}
+            archiveItem={archiveItem}
+            deleteItem={deleteItem}
+          />
+          <InventorySection
+            id="freezer"
+            title="Freezer"
+            addToShoppingList={addToShoppingList}
+            removeFromShoppingList={removeFromShoppingList}
+            updateItem={updateInventoryItem}
+            visibleFields={visibleFields}
+            items={sortedItems.filter(
+              (item) =>
+                item.Location.includes("Freezer") && item.Status !== "archived",
+            )}
+            archiveItem={archiveItem}
+            deleteItem={deleteItem}
+          />
+          <InventorySection
+            id="pantry"
+            title="Pantry"
+            addToShoppingList={addToShoppingList}
+            removeFromShoppingList={removeFromShoppingList}
+            updateItem={updateInventoryItem}
+            visibleFields={visibleFields}
+            items={sortedItems.filter(
+              (item) =>
+                item.Location.includes("Pantry") && item.Status !== "archived",
+            )}
+            archiveItem={archiveItem}
+            deleteItem={deleteItem}
+          />
+          {/* Render Shopping List based upon NeedRestock and TargetQty vs QtyOnHand */}
+          <InventorySection
+            id="shopping-list"
+            title="Shopping List"
+            updateItemQuantity={updateItemQuantity}
+            items={sortedItems.filter(
+              (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
+            )}
+          />
+          {/* Archived Items Toggle & Section */}
+          {(() => {
+            const archivedItems = sortItems(
+              inventoryItems.filter((item) => item.Status === "archived"),
+              sortField,
+              sortDirection,
+            );
+            const totalArchived = archivedItems.length;
+            return (
+              totalArchived > 0 && (
+                <div id="archived">
+                  <button
+                    type="button"
+                    onClick={() => setShowArchived((prev) => !prev)}
+                  >
+                    {showArchived
+                      ? "Hide Archived Items"
+                      : `Show Archived Items`}{" "}
+                    ({totalArchived})
+                  </button>
+                  {showArchived && (
+                    <InventorySection
+                      title="Archived Items"
+                      items={archivedItems}
+                      unarchiveItem={unarchiveItem}
+                      deleteItem={deleteItem}
+                    />
+                  )}
+                </div>
+              )
+            );
+          })()}
+        </>
+      )}
     </main>
   );
 }

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -16,6 +17,7 @@ afterEach(() => {
 describe("App", () => {
   it("renders header, inventory, and footer sections", () => {
     render(<App />);
+    act(() => vi.advanceTimersByTime(2000));
 
     expect(
       screen.getByRole("heading", { name: "Kitchen Inventory", level: 1 }),
@@ -26,6 +28,7 @@ describe("App", () => {
 
   it("renders navigation and inventory content", () => {
     render(<App />);
+    act(() => vi.advanceTimersByTime(2000));
 
     expect(screen.getByRole("link", { name: "Fridge" })).toBeTruthy();
     expect(screen.getByRole("link", { name: "Freezer" })).toBeTruthy();
@@ -53,6 +56,7 @@ describe("App", () => {
 
     try {
       render(<App />);
+      act(() => vi.advanceTimersByTime(2000));
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     } finally {
       consoleErrorSpy.mockRestore();
@@ -66,6 +70,7 @@ describe("App", () => {
 describe("App – archive behavior", () => {
   it("clicking Archive removes item from its location section", () => {
     render(<App />);
+    act(() => vi.advanceTimersByTime(2000));
 
     // Pearl Couscous is in Pantry
     const pantrySection = screen
@@ -85,6 +90,7 @@ describe("App – archive behavior", () => {
 
   it("archived item appears in Archived Items section", () => {
     render(<App />);
+    act(() => vi.advanceTimersByTime(2000));
 
     // Archive Apple Sauce from Fridge
     const fridgeSection = screen
@@ -114,6 +120,7 @@ describe("App – archive behavior", () => {
 
   it("archiving a shopping list item removes it from Shopping List section", () => {
     render(<App />);
+    act(() => vi.advanceTimersByTime(2000));
 
     // Sesame Oil is already on shopping list (NeedRestock=true, TargetQty=1 > QtyOnHand=0.1)
     const shoppingSection = screen
@@ -136,6 +143,7 @@ describe("App – archive behavior", () => {
 
   it("Archived Items nav link is visible when archived items exist", () => {
     render(<App />);
+    act(() => vi.advanceTimersByTime(2000));
 
     // Sample data includes an archived item so the link should already be there
     expect(screen.getByRole("link", { name: "Archived Items" })).toBeTruthy();
@@ -150,6 +158,7 @@ describe("App – delete behavior", () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     try {
       render(<App />);
+      act(() => vi.advanceTimersByTime(2000));
       const fridgeSection = screen
         .getByRole("heading", { name: /Fridge/i, level: 2 })
         .closest("section");
@@ -168,6 +177,7 @@ describe("App – delete behavior", () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
     try {
       render(<App />);
+      act(() => vi.advanceTimersByTime(2000));
       const fridgeSection = screen
         .getByRole("heading", { name: /Fridge/i, level: 2 })
         .closest("section");
@@ -186,6 +196,7 @@ describe("App – delete behavior", () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     try {
       render(<App />);
+      act(() => vi.advanceTimersByTime(2000));
       const fridgeSection = screen
         .getByRole("heading", { name: /Fridge/i, level: 2 })
         .closest("section");
@@ -221,6 +232,7 @@ describe("App – delete behavior", () => {
 describe("App – field visibility", () => {
   it("default fields are visible on item cards on initial render", () => {
     render(<App />);
+    act(() => vi.advanceTimersByTime(2000));
 
     // Pearl Couscous has Brand="Rice Select" — Brand is a default visible field
     expect(screen.getByText("Brand: Rice Select")).toBeTruthy();
@@ -230,6 +242,7 @@ describe("App – field visibility", () => {
 
   it("toggling a field off via FieldSelector hides it from the card", () => {
     render(<App />);
+    act(() => vi.advanceTimersByTime(2000));
 
     // Open FieldSelector via nav (aria-label is "Select visible fields")
     fireEvent.click(
@@ -251,6 +264,7 @@ describe("App – field visibility", () => {
 
   it("toggling a field on shows it on the card", () => {
     render(<App />);
+    act(() => vi.advanceTimersByTime(2000));
 
     // "Notes" is not in default visible fields — should not appear
     expect(screen.queryByText(/^Notes:/)).toBeNull();
@@ -283,6 +297,7 @@ describe("App – field visibility", () => {
 
   it("ItemName always remains visible regardless of field selector state", () => {
     render(<App />);
+    act(() => vi.advanceTimersByTime(2000));
 
     // Open FieldSelector
     fireEvent.click(
@@ -307,6 +322,7 @@ describe("App – field visibility", () => {
 
   it("Reset to Defaults restores original visible field set", () => {
     render(<App />);
+    act(() => vi.advanceTimersByTime(2000));
 
     // First, toggle Brand off
     fireEvent.click(
