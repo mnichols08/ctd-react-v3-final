@@ -4,6 +4,14 @@ function FilterBarForm({ onSearch = () => {} }) {
   const [searchTerm, setSearchTerm] = useState("");
   const debounceTimer = useRef(null);
 
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleReset = () => {
+    setSearchTerm("");
+    onSearch("");
+  };
   // Debounce the onSearch callback by 300ms
   useEffect(() => {
     debounceTimer.current = setTimeout(() => {
@@ -13,12 +21,8 @@ function FilterBarForm({ onSearch = () => {} }) {
     return () => clearTimeout(debounceTimer.current);
   }, [searchTerm, onSearch]);
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-  };
-
   return (
-    <form onSubmit={e => e.preventDefault()} >
+    <form onSubmit={(e) => e.preventDefault()}>
       <label htmlFor="search">Search:</label>
       <input
         value={searchTerm}
@@ -42,6 +46,9 @@ function FilterBarForm({ onSearch = () => {} }) {
         <option value="lowStock">Low Stock</option>
         <option value="categories">Categories</option>
       </select>
+      <button type="button" onClick={handleReset}>
+        Reset
+      </button>
     </form>
   );
 }

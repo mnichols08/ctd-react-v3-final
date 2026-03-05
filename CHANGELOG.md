@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.3.1] - 2026-03-04
+
+### Added
+
+- Implement a reset button within FilterBarForm that resets the search query
+
+---
+
 ## [0.3.0] - 2026-03-04
 
 ### Added
