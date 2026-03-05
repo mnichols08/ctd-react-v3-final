@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.3.4] - 2024-03-04
+
+### Added
+
+- In inventoryUtils, adds countExpiringSoon function to filter items expiring within 14 days
+
+---
+
 ## [0.3.3] - 2026-03-04
 
 ### Added
