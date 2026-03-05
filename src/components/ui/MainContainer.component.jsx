@@ -211,7 +211,11 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   return (
     <main>
       <ToolSection id="stats" title="Quick Stats">
-        <QuickStatsBar inventoryItems={inventoryItems} />
+        <QuickStatsBar
+          inventoryItems={inventoryItems}
+          filteredItems={filterAppliedItems}
+          isFiltered={searchTerm.trim() !== "" || activeFilterCount > 0}
+        />
       </ToolSection>
       <ToolSection id="filter" title="Filter & Sort">
         <FilterBarForm

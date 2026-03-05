@@ -21,7 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [0.3.4] - 2024-03-04
+## [0.3.5] - 2026-03-04
+
+### Changed
+
+- Enhance QuickStatsBar to support filtered items and indicate filter status
+
+---
+
+## [0.3.4] - 2026-03-04
 
 ### Added
 
@@ -30,7 +38,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
  
 - Refactor QuickStatsBar tests to improve inventory handling and add zero state checks
-- Enhance QuickStatsBar to support filtered items and active filter state
 
 ---
 
