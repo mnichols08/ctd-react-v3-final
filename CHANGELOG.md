@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add default no-op function for onSearch prop in FilterBarForm
 - Implement search functionality with filtering across multiple fields
 - Add search functionality with debounced input in FilterBarForm
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-function FilterBarForm({ onSearch }) {
+function FilterBarForm({ onSearch = () => {} }) {
   const [searchTerm, setSearchTerm] = useState("");
   const debounceTimer = useRef(null);
 
