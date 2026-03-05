@@ -19,6 +19,10 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [showQuickAdd, setShowQuickAdd] = useState(true);
   // Search term state (updated via debounced callback from FilterBarForm)
   const [searchTerm, setSearchTerm] = useState("");
+  // Sorting state (default to sorting by ItemName)
+  const [sortField, setSortField] = useState("ItemName");
+  // Sort direction state (asc default, can be toggled to desc)
+  const [sortDirection, setSortDirection] = useState("asc");
 
   // Filter inventory items by search term across searchable fields (case-insensitive, null-safe)
   const term = searchTerm.trim().toLowerCase();
@@ -126,6 +130,47 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     );
   };
 
+  // Handler to update sort field and direction (sorting is derived, not mutated)
+  const handleSort = (field, direction) => {
+    setSortField(field);
+    setSortDirection(direction);
+  };
+
+  // Fields that should use locale-aware string comparison
+  const STRING_SORT_FIELDS = ["ItemName", "Category"];
+  // Fields that should use numeric comparison
+  const NUMERIC_SORT_FIELDS = ["QtyOnHand"];
+  // Fields that should use date comparison (nulls sort to end)
+  const DATE_SORT_FIELDS = ["ExpiresOn", "LastUpdated"];
+
+  // Sort filtered items by the selected field and direction
+  const sortedItems = sortField
+    ? [...filteredItems].sort((a, b) => {
+        const aValue = a[sortField] ?? "";
+        const bValue = b[sortField] ?? "";
+        const dir = sortDirection === "asc" ? 1 : -1;
+        if (STRING_SORT_FIELDS.includes(sortField)) {
+          return String(aValue).localeCompare(String(bValue)) * dir;
+        }
+        if (NUMERIC_SORT_FIELDS.includes(sortField)) {
+          return (Number(aValue) - Number(bValue)) * dir;
+        }
+        if (DATE_SORT_FIELDS.includes(sortField)) {
+          const aEmpty = !aValue;
+          const bEmpty = !bValue;
+          if (aEmpty && bEmpty) return 0;
+          if (aEmpty) return 1;
+          if (bEmpty) return -1;
+          const aTime = new Date(aValue).getTime();
+          const bTime = new Date(bValue).getTime();
+          return (aTime - bTime) * dir;
+        }
+        if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      })
+    : filteredItems;
+
   // Effect to check for archived items whenever the inventory changes and update the state in App accordingly
   useEffect(() => {
     setArchivedItemsExist(
@@ -139,7 +184,12 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         <QuickStatsBar inventoryItems={inventoryItems} />
       </ToolSection>
       <ToolSection id="filter" title="Filter & Sort">
-        <FilterBarForm onSearch={setSearchTerm} />
+        <FilterBarForm
+          onSearch={setSearchTerm}
+          onSort={handleSort}
+          sortField={sortField}
+          sortDirection={sortDirection}
+        />
         {searchTerm.trim() && (
           <p>
             Showing {filteredItems.length} of {inventoryItems.length} items
@@ -164,7 +214,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={filteredItems.filter(
+        items={sortedItems.filter(
           (item) =>
             item.Location.includes("Fridge") && item.Status !== "archived",
         )}
@@ -178,7 +228,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={filteredItems.filter(
+        items={sortedItems.filter(
           (item) =>
             item.Location.includes("Freezer") && item.Status !== "archived",
         )}
@@ -192,7 +242,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={filteredItems.filter(
+        items={sortedItems.filter(
           (item) =>
             item.Location.includes("Pantry") && item.Status !== "archived",
         )}
@@ -204,7 +254,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         id="shopping-list"
         title="Shopping List"
         updateItemQuantity={updateItemQuantity}
-        items={filteredItems.filter(
+        items={sortedItems.filter(
           (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
         )}
       />
@@ -213,7 +263,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         <InventorySection
           id="archived"
           title="Archived Items"
-          items={filteredItems.filter((item) => item.Status === "archived")}
+          items={sortedItems.filter((item) => item.Status === "archived")}
           unarchiveItem={unarchiveItem}
           deleteItem={deleteItem}
         />
