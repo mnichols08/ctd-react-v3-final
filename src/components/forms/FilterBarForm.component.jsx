@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getActiveFilterCount } from "../../data/inventoryUtils";
 
 const DEFAULT_FILTERS = {
   categories: [],
@@ -28,10 +29,7 @@ function FilterBarForm({
   );
 
   // Count active filters
-  const activeFilterCount =
-    (filters.categories.length > 0 ? 1 : 0) +
-    (filters.expiringSoon ? 1 : 0) +
-    (filters.lowStock ? 1 : 0);
+  const activeFilterCount = getActiveFilterCount(filters);
 
   const handleSortChange = (e) => {
     const value = e.target.value;

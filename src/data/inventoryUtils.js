@@ -19,6 +19,14 @@ export function isExpiringSoon(item) {
 
 export const isLowStock = (item) => item.QtyOnHand < LOW_STOCK_THRESHOLD;
 
+export function getActiveFilterCount(filters) {
+  return (
+    (filters.categories.length > 0 ? 1 : 0) +
+    (filters.expiringSoon ? 1 : 0) +
+    (filters.lowStock ? 1 : 0)
+  );
+}
+
 export const countExpiringSoon = (items) =>
   items.filter((item) => isExpiringSoon(item)).length;
 

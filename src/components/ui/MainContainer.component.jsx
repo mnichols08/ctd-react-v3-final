@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import inventorySampleData from "../../data/inventorySample.json";
 import {
+  getActiveFilterCount,
   isExpiringSoon,
   isLowStock,
   sortItems,
@@ -64,10 +65,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   });
 
   // Count of active filters for display
-  const activeFilterCount =
-    (filters.categories.length > 0 ? 1 : 0) +
-    (filters.expiringSoon ? 1 : 0) +
-    (filters.lowStock ? 1 : 0);
+  const activeFilterCount = getActiveFilterCount(filters);
 
   // Handler to add a new inventory item
   const addInventoryItem = (newItem) => {
