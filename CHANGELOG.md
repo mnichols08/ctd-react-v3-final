@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update FilterBar tests to validate new expiring soon and low stock filters
 - Enhance archive behavior tests to include Archived Items section toggle functionality
 - Refactor FilterBarForm to remove unused filters and add expiring soon and low stock checkboxes
 - Refactor QuickStatsBar to use utility functions for expiring soon and low stock calculations
