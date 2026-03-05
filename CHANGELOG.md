@@ -21,6 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.0] - 2026-03-05
+
+### Added
+
+- Add example environment variables for Airtable integration
+- Add environment variable checks for Airtable integration
+- Add detailed environment variable setup instructions for Airtable integration
+
+---
+
 ## [0.3.6] - 2026-03-05
 
 ### Changed
