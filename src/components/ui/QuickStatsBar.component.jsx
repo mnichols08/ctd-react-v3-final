@@ -1,24 +1,12 @@
+import { isExpiringSoon, isLowStock } from "../../data/inventoryUtils";
+
 function QuickStatsBar({ inventoryItems }) {
   const activeItems = inventoryItems.filter(
     (item) => item.Status !== "archived",
   );
   const totalItems = activeItems.length;
-  const expirationThresholdMs = 14 * 24 * 60 * 60 * 1000;
-  const now = new Date();
-  const expiringSoon = activeItems.filter((item) => {
-    if (!item.ExpiresOn) {
-      return false;
-    }
-    const expiresAt = new Date(item.ExpiresOn);
-    const timeUntilExpiration = expiresAt.getTime() - now.getTime();
-    if (Number.isNaN(timeUntilExpiration)) {
-      return false;
-    }
-    return (
-      timeUntilExpiration >= 0 && timeUntilExpiration < expirationThresholdMs
-    );
-  }).length;
-  const lowStock = activeItems.filter((item) => item.QtyOnHand < 5).length;
+  const expiringSoon = activeItems.filter(isExpiringSoon).length;
+  const lowStock = activeItems.filter(isLowStock).length;
   const categories = [...new Set(activeItems.map((item) => item.Category))]
     .length;
   const archivedItems = inventoryItems.filter(
