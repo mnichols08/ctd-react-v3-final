@@ -21,10 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [0.3.5] - 2026-03-04
+## [0.3.5] - 2026-03-05
 
 ### Aded
 
+- Add integration tests for QuickStatsBar functionality
 - Add test for QuickStatsBar to display filtered stats when isFiltered is true
 
 ### Changed
