@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Migrates sorting logic into inventoryUtils and refactor expiration date calculation and enhance sorting logic to better handle empty values 
 - Refactor sorting logic in MainContainer to utilize new sortItems utility function
+- Enhance QuickStatsBar component with default props for better usability
+
+### Fixed
+
 - Fix expiration check to include items expiring soon
 
 ---

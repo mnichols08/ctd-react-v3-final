@@ -1,6 +1,10 @@
 import { countExpiringSoon } from "../../data/inventoryUtils";
 
-function QuickStatsBar({ inventoryItems, filteredItems, isFiltered }) {
+function QuickStatsBar({
+  inventoryItems = [],
+  filteredItems = [],
+  isFiltered = false,
+} = {}) {
   const sourceItems = isFiltered ? filteredItems : inventoryItems;
   const activeItems = sourceItems.filter((item) => item.Status !== "archived");
 
