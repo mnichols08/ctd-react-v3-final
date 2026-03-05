@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.3.5] - 2026-03-04
 
+### Aded
+
+- Add test for QuickStatsBar to display filtered stats when isFiltered is true
+
 ### Changed
 
 - Enhance QuickStatsBar to support filtered items and indicate filter status and filtering by adding filteredItems and isFiltered props
