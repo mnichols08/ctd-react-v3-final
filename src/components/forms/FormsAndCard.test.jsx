@@ -176,9 +176,8 @@ describe("FilterBar", () => {
     expect(screen.getByLabelText("Search:")).toBeTruthy();
     expect(screen.getByLabelText("Sort by:")).toBeTruthy();
     expect(screen.getByLabelText("Sort Direction:")).toBeTruthy();
-    expect(screen.getByLabelText("Location:")).toBeTruthy();
-    expect(screen.getByLabelText("Needs Restock:")).toBeTruthy();
-    expect(screen.getByLabelText("Status:")).toBeTruthy();
+    expect(screen.getByLabelText("Expiring Soon")).toBeTruthy();
+    expect(screen.getByLabelText("Low Stock")).toBeTruthy();
   });
 
   it("includes expected option sets for sort and filter", () => {

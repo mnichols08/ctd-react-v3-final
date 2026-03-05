@@ -21,6 +21,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.3.3] - 2026-03-04
+
+### Added
+
+- Add archived items toggle functionality and refactor filters in MainContainer
+- Add inventory utility functions for expiration and low stock checks
+
+### Changed
+
+- Update FilterBar tests to validate new expiring soon and low stock filters
+- Enhance archive behavior tests to include Archived Items section toggle functionality
+- Refactor FilterBarForm to remove unused filters and add expiring soon and low stock checkboxes
+- Refactor QuickStatsBar to use utility functions for expiring soon and low stock calculations
+
+---
+
 ## [0.3.2] - 2026-03-04
 
 ### Added
