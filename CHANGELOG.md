@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement search functionality with filtering across multiple fields
 - Add search functionality with debounced input in FilterBarForm
 
+### Removed
+
+- Removes apply filter button from FilterBarForm
+
 ---
 
 ## [0.2.7] - 2026-03-04
