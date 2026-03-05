@@ -175,6 +175,7 @@ describe("FilterBar", () => {
 
     expect(screen.getByLabelText("Search:")).toBeTruthy();
     expect(screen.getByLabelText("Sort by:")).toBeTruthy();
+    expect(screen.getByLabelText("Sort Direction:")).toBeTruthy();
     expect(screen.getByLabelText("Filter by:")).toBeTruthy();
   });
 
@@ -185,14 +186,11 @@ describe("FilterBar", () => {
       .getAllByRole("option")
       .map((option) => option.textContent);
 
-    expect(sortOptions).toContain("Name");
-    expect(sortOptions).toContain("Expiration Date");
-    expect(sortOptions).toContain("Purchase Date");
-    expect(sortOptions).toContain("Quantity");
-    expect(sortOptions).toContain("All Items");
-    expect(sortOptions).toContain("Expiring Soon");
-    expect(sortOptions).toContain("Low Stock");
-    expect(sortOptions).toContain("Categories");
+    expect(sortOptions).toContain("None");
+    expect(sortOptions).toContain("Item Name");
+    expect(sortOptions).toContain("Expires On");
+    expect(sortOptions).toContain("Qty on Hand");
+    expect(sortOptions).toContain("Last Updated");
   });
 });
 
