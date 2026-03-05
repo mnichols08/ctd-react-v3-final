@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add filtering options to FilterBarForm for categories, location, restock needs, and status
 - Add filtering functionality to MainContainer for inventory items
 
+### Changed
+
+- Update FilterBar test to include specific filter options for Location, Needs Restock, and Status
+
 ---
 
 ## [0.3.1] - 2026-03-04
