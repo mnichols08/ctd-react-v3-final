@@ -28,7 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In inventoryUtils, adds countExpiringSoon function to filter items expiring within 14 days
 
 ### Changed
-
+ 
+- Refactor QuickStatsBar tests to improve inventory handling and add zero state checks
 - Enhance QuickStatsBar to support filtered items and active filter state
 
 ---
