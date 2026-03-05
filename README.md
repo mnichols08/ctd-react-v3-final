@@ -43,6 +43,26 @@ The goal of this project is to demonstrate core front-end development skills lea
 npm install
 ```
 
+### Environment Variables
+
+This app connects to Airtable and requires a few environment variables.
+
+1. Copy the example file:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. Open `.env.local` and fill in your values:
+
+   | Variable                   | Description                                      |
+   | -------------------------- | ------------------------------------------------ |
+   | `VITE_AIRTABLE_PAT`       | Your Airtable Personal Access Token               |
+   | `VITE_AIRTABLE_BASE_ID`   | The Base ID from your Airtable base URL or API docs |
+   | `VITE_AIRTABLE_TABLE_NAME`| The name of the table to read/write               |
+
+> **Note:** `.env.local` is git-ignored and will not be committed. If any variable is missing at startup, a warning will be logged to the browser console.
+
 ### Run in Development
 
 ```bash
