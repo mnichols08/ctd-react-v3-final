@@ -7,6 +7,9 @@ import QuickAddForm from "../forms/QuickAddForm.component";
 import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
 
+// Searchable fields for filtering inventory items
+const SEARCHABLE_FIELDS = ["ItemName", "Brand", "Category", "Tags", "Notes"];
+
 function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Initialize inventory items from sample data, ensuring we have a fresh copy of each item
   const [inventoryItems, setInventoryItems] = useState(() =>
@@ -14,6 +17,20 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   );
   // State to toggle between Quick Add and Full Form
   const [showQuickAdd, setShowQuickAdd] = useState(true);
+  // Search term state (updated via debounced callback from FilterBarForm)
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // Filter inventory items by search term across searchable fields (case-insensitive, null-safe)
+  const term = searchTerm.trim().toLowerCase();
+  const filteredItems = term
+    ? inventoryItems.filter((item) =>
+        SEARCHABLE_FIELDS.some((field) => {
+          const value = item[field];
+          if (value == null) return false;
+          return String(value).toLowerCase().includes(term);
+        }),
+      )
+    : inventoryItems;
   // Handler to add a new inventory item
   const addInventoryItem = (newItem) => {
     setInventoryItems((prevItems) => [...prevItems, newItem]);
@@ -121,6 +138,14 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       <ToolSection id="stats" title="Quick Stats">
         <QuickStatsBar inventoryItems={inventoryItems} />
       </ToolSection>
+      <ToolSection id="filter" title="Filter & Sort">
+        <FilterBarForm onSearch={setSearchTerm} />
+        {searchTerm.trim() && (
+          <p>
+            Showing {filteredItems.length} of {inventoryItems.length} items
+          </p>
+        )}
+      </ToolSection>
       <ToolSection id="add-item" title="Add Item">
         {/*  Toggle between Quick Add and Full Form */}
         <button onClick={() => setShowQuickAdd((prev) => !prev)}>
@@ -139,7 +164,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={inventoryItems.filter(
+        items={filteredItems.filter(
           (item) =>
             item.Location.includes("Fridge") && item.Status !== "archived",
         )}
@@ -153,7 +178,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={inventoryItems.filter(
+        items={filteredItems.filter(
           (item) =>
             item.Location.includes("Freezer") && item.Status !== "archived",
         )}
@@ -167,7 +192,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         removeFromShoppingList={removeFromShoppingList}
         updateItem={updateInventoryItem}
         visibleFields={visibleFields}
-        items={inventoryItems.filter(
+        items={filteredItems.filter(
           (item) =>
             item.Location.includes("Pantry") && item.Status !== "archived",
         )}
@@ -179,23 +204,20 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         id="shopping-list"
         title="Shopping List"
         updateItemQuantity={updateItemQuantity}
-        items={inventoryItems.filter(
+        items={filteredItems.filter(
           (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
         )}
       />
       {/* Archived Items Section */}
-      {inventoryItems.some((item) => item.Status === "archived") && (
+      {filteredItems.some((item) => item.Status === "archived") && (
         <InventorySection
           id="archived"
           title="Archived Items"
-          items={inventoryItems.filter((item) => item.Status === "archived")}
+          items={filteredItems.filter((item) => item.Status === "archived")}
           unarchiveItem={unarchiveItem}
           deleteItem={deleteItem}
         />
       )}
-      <ToolSection id="filter" title="Filter & Sort">
-        <FilterBarForm />
-      </ToolSection>
     </main>
   );
 }
