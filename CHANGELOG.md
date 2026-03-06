@@ -21,6 +21,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.4] - 2026-03-06
+
+### Added
+
+- Add sample data configuration to .env.example for development
+- Implement fetchInventoryItems and loadSampleData functions for Airtable integration
+- Implement inventory fetching from Airtable API and load sample data for development
+
+### Fixed
+
+- Fix typos throughout repository: corrected "ItemDescripton" to "ItemDescription" for consistency
+
+---
+
 ## [0.4.3] - 2026-03-05
 
 ### Changed
@@ -41,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add global test setup for loading and error states
 - Add simulated load and random error on initial mount
 - Add timer duration in tests to handle simulated load and random error
+
+---
 
 ## [0.4.1] - 2026-03-05
 
