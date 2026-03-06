@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import inventorySampleData from "../../data/inventorySample.json";
 import {
   getActiveFilterCount,
   isExpiringSoon,
   isLowStock,
   sortItems,
 } from "../../data/inventoryUtils";
+import { fetchInventoryItems, loadSampleData } from "../../data/airtableUtils";
 import LoadingState from "./LoadingState.component";
 import ErrorState from "./ErrorState.component";
 import ToolSection from "../sections/ToolSection.component";
@@ -25,9 +25,7 @@ const DEFAULT_FILTERS = {
 
 function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Initialize inventory items from sample data, ensuring we have a fresh copy of each item
-  const [inventoryItems, setInventoryItems] = useState(() =>
-    inventorySampleData.records.map((item) => ({ ...item })),
-  );
+  const [inventoryItems, setInventoryItems] = useState([]);
   // State to toggle between Quick Add and Full Form
   const [showQuickAdd, setShowQuickAdd] = useState(true);
   // Search term state (updated via debounced callback from FilterBarForm)
@@ -184,28 +182,18 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     );
   }, [inventoryItems, setArchivedItemsExist]);
 
-  // Function to simulate loading state on initial mount (e.g., fetching from API) that can be called via onRetry in ErrorState as well
-  const simulateLoading = () => {
-    setError(null);
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1750);
-  };
-  // Simulate initial data fetch on mount
+  // Initial load effect to fetch inventory items from Airtable API
   useEffect(() => {
-    // In development, simulate a random error for demonstration purposes.
-    // In production, always perform the normal loading flow for deterministic behavior.
-    if (import.meta.env && import.meta.env.VITE_DEV_MODE) {
-      const randomError = Math.random() < 0.55; // 55% chance of error for demonstration
-      if (randomError) {
-        /* eslint-disable-next-line */
-        setError("Failed to load inventory. Please try again.");
-        setIsLoading(false);
-        return;
-      }
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      // Load sample data from local JSON file for development/testing
+      const cleanup = loadSampleData({
+        setInventoryItems,
+        setIsLoading,
+        setError,
+      });
+      return cleanup;
     }
-    simulateLoading();
+    fetchInventoryItems({ setInventoryItems, setIsLoading, setError });
   }, []);
 
   return (
@@ -213,7 +201,20 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       {isLoading ? (
         <LoadingState isLoading={isLoading} />
       ) : error ? (
-        <ErrorState error={error} onRetry={simulateLoading} />
+        <ErrorState
+          error={error}
+          onRetry={() => {
+            if (import.meta.env.VITE_SAMPLE_DATA) {
+              loadSampleData({ setInventoryItems, setIsLoading, setError });
+            } else {
+              fetchInventoryItems({
+                setInventoryItems,
+                setIsLoading,
+                setError,
+              });
+            }
+          }}
+        />
       ) : (
         <>
           <ToolSection id="stats" title="Quick Stats">

@@ -4,7 +4,7 @@ function AddInventoryItemForm({ addInventoryItem }) {
   // Initial form state with all fields set to empty or default values
   const initialFormState = {
     ItemName: "",
-    ItemDescripton: "",
+    ItemDescription: "",
     Brand: "",
     PackageSize: "",
     UPC: "",
@@ -79,12 +79,12 @@ function AddInventoryItemForm({ addInventoryItem }) {
           required
         />
 
-        <label htmlFor="ItemDescripton">Item Description:</label>
+        <label htmlFor="ItemDescription">Item Description:</label>
         <textarea
-          value={formData.ItemDescripton}
+          value={formData.ItemDescription}
           onChange={handleChange}
-          id="ItemDescripton"
-          name="ItemDescripton"
+          id="ItemDescription"
+          name="ItemDescription"
         />
 
         <label htmlFor="Brand">Brand:</label>

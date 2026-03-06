@@ -1,6 +1,6 @@
 export const ALL_FIELDS = [
   { key: "ItemName", label: "Item Name", alwaysVisible: true },
-  { key: "ItemDescripton", label: "Description" },
+  { key: "ItemDescription", label: "Description" },
   { key: "Brand", label: "Brand" },
   { key: "PackageSize", label: "Package Size" },
   { key: "UPC", label: "UPC" },

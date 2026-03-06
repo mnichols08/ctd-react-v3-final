@@ -21,6 +21,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.5] - 2026-03-06
+
+### Fixed
+
+- Fix cleanup function in useEffect for MainContainer and ensure VITE_SAMPLE_DATA is checked as a string
+- Reset error state before fetching inventory items to prevent stale errors
+- Encode Airtable table name in BASE_URL for proper URL formatting
+
+---
+
+## [0.4.4] - 2026-03-06
+
+### Added
+
+- Add sample data configuration to .env.example for development
+- Implement fetchInventoryItems and loadSampleData functions for Airtable integration
+- Implement inventory fetching from Airtable API and load sample data for development
+
+### Fixed
+
+- Fix typos throughout repository: corrected "ItemDescripton" to "ItemDescription" for consistency
+
+---
+
 ## [0.4.3] - 2026-03-05
 
 ### Changed
