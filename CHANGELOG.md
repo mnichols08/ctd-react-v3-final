@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add LoadingState component for handling loading states
+- Add ErrorState component for handling error states
 
 ## [0.4.1] - 2026-03-05
 
