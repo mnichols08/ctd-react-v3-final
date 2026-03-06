@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.5] - 2026-03-06
+
+### Fixed
+
+- Fix cleanup function in useEffect for MainContainer and ensure VITE_SAMPLE_DATA is checked as a string
+
+---
+
 ## [0.4.4] - 2026-03-06
 
 ### Added
