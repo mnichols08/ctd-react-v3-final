@@ -8,7 +8,7 @@ import { afterEach, beforeEach, vi } from "vitest";
 // deterministic, timer-controlled render cycle:
 //
 //   • Math.random → 1   (always skips the error branch)
-//   • Fake timers        (tests call vi.advanceTimersByTime to resolve loading)
+//   • Fake timers        (tests call vi.runAllTimers to resolve loading)
 //
 // Both become harmless no-ops once the simulation is replaced with real API
 // calls – no test-file changes required in future PRs.
