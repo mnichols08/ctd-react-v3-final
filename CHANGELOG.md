@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.3] - 2026-03-05
+
+### Changed
+
+- Refactor tests to use vi.runAllTimers for consistent timer handling
+
+---
+
 ## [0.4.2] - 2026-03-05
 
 ### Added
