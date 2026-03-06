@@ -9,6 +9,7 @@ export const fetchInventoryItems = async ({
   setError,
 }) => {
   setIsLoading(true);
+  setError(null);
   const options = {
     method: "GET",
     headers: {
