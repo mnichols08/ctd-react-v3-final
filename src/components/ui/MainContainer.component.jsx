@@ -184,12 +184,16 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
 
   // Initial load effect to fetch inventory items from Airtable API
   useEffect(() => {
-    if (import.meta.env.VITE_SAMPLE_DATA) {
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       // Load sample data from local JSON file for development/testing
-      loadSampleData({ setInventoryItems, setIsLoading, setError });
-    } else {
-      fetchInventoryItems({ setInventoryItems, setIsLoading, setError });
+      const cleanup = loadSampleData({
+        setInventoryItems,
+        setIsLoading,
+        setError,
+      });
+      return cleanup;
     }
+    fetchInventoryItems({ setInventoryItems, setIsLoading, setError });
   }, []);
 
   return (
@@ -203,7 +207,11 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             if (import.meta.env.VITE_SAMPLE_DATA) {
               loadSampleData({ setInventoryItems, setIsLoading, setError });
             } else {
-              fetchInventoryItems({ setInventoryItems, setIsLoading, setError });
+              fetchInventoryItems({
+                setInventoryItems,
+                setIsLoading,
+                setError,
+              });
             }
           }}
         />

@@ -1,6 +1,6 @@
 import sampleData from "./inventorySample.json";
 
-const BASE_URL = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${import.meta.env.VITE_AIRTABLE_TABLE_NAME}`;
+const BASE_URL = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${encodeURIComponent(import.meta.env.VITE_AIRTABLE_TABLE_NAME)}`;
 const AUTH_TOKEN = `Bearer ${import.meta.env.VITE_AIRTABLE_PAT}`;
 
 export const fetchInventoryItems = async ({
@@ -9,6 +9,7 @@ export const fetchInventoryItems = async ({
   setError,
 }) => {
   setIsLoading(true);
+  setError(null);
   const options = {
     method: "GET",
     headers: {
