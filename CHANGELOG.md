@@ -21,6 +21,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.3] - 2026-03-05
+
+### Changed
+
+- Refactor tests to use vi.runAllTimers for consistent timer handling
+- Refactor effect that called simulateLoading to only trigger random error if in DEV_MODE
+- Remove unnecessary aria-live attributes from loading and error state components
+
+---
+
+## [0.4.2] - 2026-03-05
+
+### Added
+
+- Add LoadingState component for handling loading states
+- Add ErrorState component for handling error states
+- Add loading and error handling states to MainContainer component
+- Add global test setup for loading and error states
+- Add simulated load and random error on initial mount
+- Add timer duration in tests to handle simulated load and random error
+
+---
+
 ## [0.4.1] - 2026-03-05
 
 ### Added

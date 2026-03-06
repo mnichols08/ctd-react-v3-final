@@ -70,7 +70,7 @@ describe("QuickStatsBar", () => {
 
   it("stats reflect current inventory state", () => {
     render(<App />);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.runAllTimers());
 
     expect(getStatValue("Total Items")).toBe("4");
     expect(getStatValue("Need Restock")).toBe("1");
@@ -82,7 +82,7 @@ describe("QuickStatsBar", () => {
     const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
 
     render(<App />);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.runAllTimers());
 
     expect(getStatValue("Total Items")).toBe("4");
 
@@ -120,7 +120,7 @@ describe("QuickStatsBar", () => {
     vi.setSystemTime(new Date("2026-03-10T00:00:00Z"));
 
     render(<App />);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.runAllTimers());
 
     expect(getStatValue("Expiring Soon")).toBe("1");
   });

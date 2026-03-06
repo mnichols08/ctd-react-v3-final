@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -91,6 +92,7 @@ describe("MainContainer", () => {
     ).length;
 
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     const fridgeSection = screen
       .getByRole("heading", { name: "Fridge" })
@@ -130,6 +132,7 @@ describe("MainContainer", () => {
     ).length;
 
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     // Locate the "Add Item" ToolSection and the default QuickAddForm by its accessible name
     const addItemSection = screen
@@ -177,6 +180,7 @@ describe("MainContainer", () => {
     expect(pantryCandidate).toBeTruthy();
 
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     fireEvent.change(screen.getByLabelText("mock-qty-Pantry"), {
       target: { value: "2" },
@@ -205,6 +209,7 @@ describe("MainContainer", () => {
     expect(shoppingItemToRemove).toBeTruthy();
 
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     fireEvent.click(
       screen.getByRole("button", { name: "mock-remove-Shopping List" }),
@@ -238,6 +243,7 @@ describe("MainContainer", () => {
         : "Pantry";
 
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     fireEvent.click(
       screen.getByRole("button", { name: "mock-remove-Shopping List" }),
@@ -254,6 +260,7 @@ describe("MainContainer", () => {
   });
   it("toggles between QuickAddForm and AddInventoryItemForm", () => {
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     // QuickAddForm should be visible by default
     expect(
