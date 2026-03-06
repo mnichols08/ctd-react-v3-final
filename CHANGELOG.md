@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add ErrorState component for handling error states
 - Add loading and error handling states to MainContainer component
 - Add global test setup for loading and error states
+- Add simulated load and random error on initial mount
+- Add timer duration in tests to handle simulated load and random error
 
 ## [0.4.1] - 2026-03-05
 
