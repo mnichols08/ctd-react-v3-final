@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix cleanup function in useEffect for MainContainer and ensure VITE_SAMPLE_DATA is checked as a string
 - Reset error state before fetching inventory items to prevent stale errors
+- Encode Airtable table name in BASE_URL for proper URL formatting
 
 ---
 
