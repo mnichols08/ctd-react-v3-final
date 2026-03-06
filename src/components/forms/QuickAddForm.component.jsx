@@ -35,7 +35,7 @@ function QuickAddForm({ addInventoryItem }) {
     const newItem = {
       id: Date.now(),
       ItemName: ItemName.trim(),
-      ItemDescripton: null,
+      ItemDescription: null,
       Brand: null,
       PackageSize: null,
       UPC: null,
@@ -121,7 +121,7 @@ function QuickAddForm({ addInventoryItem }) {
             type="date"
             id="quick-ExpiresOn"
             name="ExpiresOn"
-          />  
+          />
         </p>
 
         <p>

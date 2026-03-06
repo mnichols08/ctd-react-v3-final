@@ -426,7 +426,7 @@ describe("QuickAddForm", () => {
     const expectedKeys = [
       "id",
       "ItemName",
-      "ItemDescripton",
+      "ItemDescription",
       "Brand",
       "PackageSize",
       "UPC",
@@ -562,7 +562,7 @@ describe("EditInventoryItemForm", () => {
   const baseItem = {
     id: 10,
     ItemName: "Blueberries",
-    ItemDescripton: "Organic",
+    ItemDescription: "Organic",
     Brand: "Nature's Best",
     PackageSize: "16oz",
     UPC: "123456789",
@@ -1084,7 +1084,7 @@ describe("Integration: EditInventoryItemForm in ItemCard", () => {
     DateFrozen: null,
     Notes: "Sharp cheddar",
     Category: "Dairy",
-    ItemDescripton: null,
+    ItemDescription: null,
     Brand: null,
     PackageSize: null,
     UPC: null,

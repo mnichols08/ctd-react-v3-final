@@ -6,7 +6,7 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
   // Initialize form state with existing item data, converting null/undefined to empty strings for controlled inputs
   const [formData, setFormData] = useState({
     ItemName: item.ItemName || "",
-    ItemDescripton: item.ItemDescripton || "",
+    ItemDescription: item.ItemDescription || "",
     Brand: item.Brand || "",
     PackageSize: item.PackageSize || "",
     UPC: item.UPC || "",
@@ -86,12 +86,12 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
           required
         />
 
-        <label htmlFor={`ItemDescripton-${item.id}`}>Item Description:</label>
+        <label htmlFor={`ItemDescription-${item.id}`}>Item Description:</label>
         <textarea
-          value={formData.ItemDescripton}
+          value={formData.ItemDescription}
           onChange={handleChange}
-          id={`ItemDescripton-${item.id}`}
-          name="ItemDescripton"
+          id={`ItemDescription-${item.id}`}
+          name="ItemDescription"
         />
 
         <label htmlFor={`Brand-${item.id}`}>Brand:</label>
