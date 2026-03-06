@@ -42,6 +42,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add simulated load and random error on initial mount
 - Add timer duration in tests to handle simulated load and random error
 
+---
+
 ## [0.4.1] - 2026-03-05
 
 ### Added
