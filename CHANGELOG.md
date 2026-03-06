@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Refactor tests to use vi.runAllTimers for consistent timer handling
+- Refactor effect that called simulateLoading to only trigger random error if in DEV_MODE
 
 ---
 

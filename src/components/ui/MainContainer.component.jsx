@@ -194,12 +194,18 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   };
   // Simulate initial data fetch on mount
   useEffect(() => {
-    const randomError = Math.random() < 0.55; // 55% chance of error for demonstration
-    if (randomError) {
-      /* eslint-disable-next-line */
-      setError("Failed to load inventory. Please try again.");
-      setIsLoading(false);
-    } else simulateLoading();
+    // In development, simulate a random error for demonstration purposes.
+    // In production, always perform the normal loading flow for deterministic behavior.
+    if (import.meta.env && import.meta.env.VITE_DEV_MODE) {
+      const randomError = Math.random() < 0.55; // 55% chance of error for demonstration
+      if (randomError) {
+        /* eslint-disable-next-line */
+        setError("Failed to load inventory. Please try again.");
+        setIsLoading(false);
+        return;
+      }
+    }
+    simulateLoading();
   }, []);
 
   return (
