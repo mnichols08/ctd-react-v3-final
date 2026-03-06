@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.4] - 2026-03-05
 
+### Added
+
+- Add sample data configuration to .env.example for development
+
 ### Fixed
 
 - Fix typos throughout repository: corrected "ItemDescripton" to "ItemDescription" for consistency
