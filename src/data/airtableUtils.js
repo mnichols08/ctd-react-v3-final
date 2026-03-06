@@ -3,6 +3,25 @@ import sampleData from "./inventorySample.json";
 const BASE_URL = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${encodeURIComponent(import.meta.env.VITE_AIRTABLE_TABLE_NAME)}`;
 const AUTH_TOKEN = `Bearer ${import.meta.env.VITE_AIRTABLE_PAT}`;
 
+// --- Client-side rate limiter (Airtable allows 5 requests/sec) ---
+const MAX_REQUESTS_PER_SECOND = 3; // Set to 3 to be safe and avoid hitting the limit
+const requestTimestamps = [];
+
+const throttledFetch = async (url, options) => {
+  const now = Date.now();
+  // Remove timestamps older than 1 second
+  while (requestTimestamps.length && requestTimestamps[0] <= now - 1000) {
+    requestTimestamps.shift();
+  }
+  // If we've hit the limit, wait until the oldest request falls outside the window
+  if (requestTimestamps.length >= MAX_REQUESTS_PER_SECOND) {
+    const waitTime = requestTimestamps[0] + 1000 - now;
+    await new Promise((resolve) => setTimeout(resolve, waitTime));
+  }
+  requestTimestamps.push(Date.now());
+  return fetch(url, options);
+};
+
 export const fetchInventoryItems = async ({
   setInventoryItems,
   setIsLoading,
@@ -19,7 +38,7 @@ export const fetchInventoryItems = async ({
   try {
     let resp;
     try {
-      resp = await fetch(BASE_URL, options);
+      resp = await throttledFetch(BASE_URL, options);
     } catch {
       throw new Error(
         "Network error: Unable to reach the server. Check your internet connection.",
@@ -38,6 +57,10 @@ export const fetchInventoryItems = async ({
         case 422:
           throw new Error(
             "Bad request: The request was invalid. Check your query parameters and field names.",
+          );
+        case 429:
+          throw new Error(
+            "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
           );
         default:
           throw new Error(`${resp.status} ${resp.statusText}`);
@@ -84,4 +107,70 @@ export const loadSampleData = ({
   return () => {
     clearTimeout(simulateLoad);
   };
+};
+
+export const createInventoryItem = async ({
+  item,
+  addInventoryItem,
+  setIsSaving,
+  setError,
+}) => {
+  const { id: _id, ...fields } = item;
+  const newFields = {
+    ...fields,
+    LastUpdated: new Date().toISOString(),
+  };
+  const payload = {
+    records: [
+      {
+        fields: newFields,
+      },
+    ],
+  };
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: AUTH_TOKEN,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  };
+
+  try {
+    setIsSaving(true);
+    let resp;
+    try {
+      resp = await throttledFetch(BASE_URL, options);
+    } catch {
+      throw new Error(
+        "Network error: Unable to reach the server. Check your internet connection.",
+      );
+    }
+    if (!resp.ok) {
+      if (resp.status === 429) {
+        throw new Error(
+          "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
+        );
+      }
+      const errorBody = await resp.json().catch(() => null);
+      const message =
+        errorBody?.error?.message || `${resp.status} ${resp.statusText}`;
+      throw new Error(message);
+    }
+    const { records } = await resp.json();
+    const savedItem = {
+      id: records[0].id,
+      ...records[0].fields,
+    };
+    if (!records[0].fields.isCompleted) {
+      savedItem.isCompleted = false;
+    }
+    addInventoryItem(savedItem);
+    return true;
+  } catch (error) {
+    setError(error.message);
+    return false;
+  } finally {
+    setIsSaving(false);
+  }
 };

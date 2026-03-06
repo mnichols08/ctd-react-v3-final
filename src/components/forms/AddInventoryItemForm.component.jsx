@@ -58,10 +58,8 @@ function AddInventoryItemForm({ addInventoryItem }) {
         newItem[field] = value === "" ? null : Number(value);
       }
     });
-    newItem.LastUpdated = new Date().toISOString();
-    newItem.id = new Date().getTime(); // Use timestamp as unique ID for simplicity
     addInventoryItem(newItem);
-    setFormData(initialFormState); // Reset form after submission
+    setFormData(initialFormState);
     itemNameRef.current?.focus();
   };
   return (
