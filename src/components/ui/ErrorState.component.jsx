@@ -2,7 +2,7 @@ function ErrorState({ error, onRetry }) {
   if (!error) return null;
 
   return (
-    <div role="alert" aria-live="polite">
+    <div role="alert">
       <p>Error: {error}</p>
       {onRetry && (
         <button type="button" onClick={onRetry}>
