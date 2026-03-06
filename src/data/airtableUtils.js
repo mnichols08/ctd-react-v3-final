@@ -1,3 +1,5 @@
+import sampleData from "./inventorySample.json";
+
 const BASE_URL = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${import.meta.env.VITE_AIRTABLE_TABLE_NAME}`;
 const AUTH_TOKEN = `Bearer ${import.meta.env.VITE_AIRTABLE_PAT}`;
 
@@ -71,16 +73,14 @@ export const loadSampleData = ({
   const randomFailure = Math.random() < 0.33; // 33% chance of failure
   if (randomFailure) {
     setError("Failed to load sample data. Please try again.");
+    setIsLoading(false);
     return;
   }
-  import("./inventoryData.json").then((module) => {
-    const sampleData = module.default;
-    setInventoryItems(sampleData.records.map((item) => ({ ...item })));
-    const simulateLoad = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-    return () => {
-      clearTimeout(simulateLoad);
-    };
-  });
+  setInventoryItems(sampleData.records.map((item) => ({ ...item })));
+  const simulateLoad = setTimeout(() => {
+    setIsLoading(false);
+  }, 500);
+  return () => {
+    clearTimeout(simulateLoad);
+  };
 };
