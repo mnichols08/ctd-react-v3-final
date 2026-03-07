@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
  - Fix Math.random spy usage in retry tests
+ - Fix condition for loading sample data in MainContainer
 
 ---
 

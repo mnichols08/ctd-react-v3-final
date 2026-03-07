@@ -336,7 +336,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         <ErrorState
           error={error}
           onRetry={() => {
-            if (import.meta.env.VITE_SAMPLE_DATA) {
+            if (import.meta.env.VITE_SAMPLE_DATA === "true") {
               loadSampleData({ setInventoryItems, setIsLoading, setError });
             } else {
               fetchInventoryItems({
