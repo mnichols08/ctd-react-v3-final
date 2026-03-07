@@ -138,7 +138,7 @@ describe("Search", () => {
     expect(screen.getByText(/Showing 1 of 5 items/)).toBeTruthy();
 
     typeSearch("");
-    // No search or filter â†’ "Showing" text disappears
+    // No search or filter → "Showing" text disappears
     expect(screen.queryByText(/Showing/)).toBeNull();
     expect(getSectionItemNames("Fridge")).toHaveLength(2);
     expect(getSectionItemNames("Pantry")).toHaveLength(2);
@@ -227,7 +227,7 @@ describe("Sort", () => {
       target: { value: "ExpiresOn" },
     });
 
-    // Fridge: Yogurt 2026-03-21, Apple Sauce 2027-05-13, No Expiry (null â†’ last)
+    // Fridge: Yogurt 2026-03-21, Apple Sauce 2027-05-13, No Expiry (null → last)
     expect(getSectionItemNames("Fridge")).toEqual([
       "Low Fat Vanilla Yogurt",
       "Apple Sauce",
@@ -332,14 +332,14 @@ describe("Filter", () => {
     render(<App />);
     act(() => vi.runAllTimers());
 
-    // Category "Fresh" + Expiring Soon â†’ no items satisfy both
+    // Category "Fresh" + Expiring Soon → no items satisfy both
     fireEvent.click(screen.getByRole("checkbox", { name: /Fresh/ }));
     fireEvent.click(screen.getByRole("checkbox", { name: /Expiring Soon/ }));
     expect(
       screen.getByText(/Showing 0 of 5 items.*2 filters active/),
     ).toBeTruthy();
 
-    // Switch to Category "Dairy" + Expiring Soon â†’ Yogurt matches both
+    // Switch to Category "Dairy" + Expiring Soon → Yogurt matches both
     fireEvent.click(screen.getByRole("checkbox", { name: /Fresh/ }));
     fireEvent.click(screen.getByRole("checkbox", { name: /Dairy/ }));
     expect(
@@ -414,7 +414,7 @@ describe("Archived view", () => {
       "Bacon & Velveeta Scrambler",
     );
 
-    // No more archived items â†’ toggle button disappears
+    // No more archived items → toggle button disappears
     expect(screen.queryByRole("button", { name: /Archived Items/ })).toBeNull();
   });
 
@@ -494,14 +494,14 @@ describe("Combined search, sort, and filter", () => {
     typeSearch("pearl");
     expect(getSectionItemNames("Pantry")).toEqual(["Pearl Couscous"]);
 
-    // 4. Clear search â†’ category filter and sort remain
+    // 4. Clear search → category filter and sort remain
     typeSearch("");
     expect(
       screen.getByText(/Showing 2 of 5 items.*1 filter active/),
     ).toBeTruthy();
     expect(getSectionItemNames("Pantry")).toEqual(["Pearl Couscous"]);
 
-    // 5. Clear filters â†’ sort remains
+    // 5. Clear filters → sort remains
     fireEvent.click(screen.getByRole("button", { name: "Clear All Filters" }));
 
     // QtyOnHand asc still in effect
