@@ -21,7 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [0.4.11] - 2026-03-06
+## [0.5.0] - 2026-03-07
+
+### Changed
+
+- Optimize inventory filtering and sorting using useMemo for improved performance
+
+---
+
+## [0.4.11] - 2026-03-07
 
 ### Added
 

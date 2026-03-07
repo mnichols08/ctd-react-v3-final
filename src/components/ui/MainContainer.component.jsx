@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   getActiveFilterCount,
   isExpiringSoon,
@@ -54,32 +54,41 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [saveError, setSaveError] = useState(null);
 
   // Filter inventory items by search term across searchable fields (case-insensitive, null-safe)
-  const term = searchTerm.trim().toLowerCase();
-  const filteredItems = term
-    ? inventoryItems.filter((item) =>
-        SEARCHABLE_FIELDS.some((field) => {
-          const value = item[field];
-          if (value == null) return false;
-          return String(value).toLowerCase().includes(term);
-        }),
-      )
-    : inventoryItems;
+  const filteredItems = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return term
+      ? inventoryItems.filter((item) =>
+          SEARCHABLE_FIELDS.some((field) => {
+            const value = item[field];
+            if (value == null) return false;
+            return String(value).toLowerCase().includes(term);
+          }),
+        )
+      : inventoryItems;
+  }, [inventoryItems, searchTerm]);
 
   // Apply filters after search but before sort
-  const filterAppliedItems = filteredItems.filter((item) => {
-    if (
-      filters.categories.length > 0 &&
-      !filters.categories.includes(item.Category)
-    ) {
-      return false;
-    }
-    if (filters.expiringSoon && !isExpiringSoon(item)) return false;
-    if (filters.lowStock && !isLowStock(item)) return false;
-    return true;
-  });
+  const filterAppliedItems = useMemo(
+    () =>
+      filteredItems.filter((item) => {
+        if (
+          filters.categories.length > 0 &&
+          !filters.categories.includes(item.Category)
+        ) {
+          return false;
+        }
+        if (filters.expiringSoon && !isExpiringSoon(item)) return false;
+        if (filters.lowStock && !isLowStock(item)) return false;
+        return true;
+      }),
+    [filteredItems, filters],
+  );
 
   // Count of active filters for display
-  const activeFilterCount = getActiveFilterCount(filters);
+  const activeFilterCount = useMemo(
+    () => getActiveFilterCount(filters),
+    [filters],
+  );
 
   // Handler to add a new inventory item to local state
   const addInventoryItem = (newItem) => {
@@ -283,7 +292,52 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   };
 
   // Sort filtered items by the selected field and direction
-  const sortedItems = sortItems(filterAppliedItems, sortField, sortDirection);
+  const sortedItems = useMemo(
+    () => sortItems(filterAppliedItems, sortField, sortDirection),
+    [filterAppliedItems, sortField, sortDirection],
+  );
+
+  // Partition sorted items by location and status for each section
+  const fridgeItems = useMemo(
+    () =>
+      sortedItems.filter(
+        (item) =>
+          item.Location.includes("Fridge") && item.Status !== "archived",
+      ),
+    [sortedItems],
+  );
+  const freezerItems = useMemo(
+    () =>
+      sortedItems.filter(
+        (item) =>
+          item.Location.includes("Freezer") && item.Status !== "archived",
+      ),
+    [sortedItems],
+  );
+  const pantryItems = useMemo(
+    () =>
+      sortedItems.filter(
+        (item) =>
+          item.Location.includes("Pantry") && item.Status !== "archived",
+      ),
+    [sortedItems],
+  );
+  const shoppingListItems = useMemo(
+    () =>
+      sortedItems.filter(
+        (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
+      ),
+    [sortedItems],
+  );
+  const archivedItems = useMemo(
+    () =>
+      sortItems(
+        inventoryItems.filter((item) => item.Status === "archived"),
+        sortField,
+        sortDirection,
+      ),
+    [inventoryItems, sortField, sortDirection],
+  );
 
   // Effect to check for archived items whenever the inventory changes and update the state in App accordingly
   useEffect(() => {
@@ -409,10 +463,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             removeFromShoppingList={removeFromShoppingList}
             updateItem={updateInventoryItem}
             visibleFields={visibleFields}
-            items={sortedItems.filter(
-              (item) =>
-                item.Location.includes("Fridge") && item.Status !== "archived",
-            )}
+            items={fridgeItems}
             archiveItem={archiveItem}
             deleteItem={deleteItem}
           />
@@ -423,10 +474,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             removeFromShoppingList={removeFromShoppingList}
             updateItem={updateInventoryItem}
             visibleFields={visibleFields}
-            items={sortedItems.filter(
-              (item) =>
-                item.Location.includes("Freezer") && item.Status !== "archived",
-            )}
+            items={freezerItems}
             archiveItem={archiveItem}
             deleteItem={deleteItem}
           />
@@ -437,10 +485,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             removeFromShoppingList={removeFromShoppingList}
             updateItem={updateInventoryItem}
             visibleFields={visibleFields}
-            items={sortedItems.filter(
-              (item) =>
-                item.Location.includes("Pantry") && item.Status !== "archived",
-            )}
+            items={pantryItems}
             archiveItem={archiveItem}
             deleteItem={deleteItem}
           />
@@ -449,42 +494,28 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             id="shopping-list"
             title="Shopping List"
             updateItemQuantity={updateItemQuantity}
-            items={sortedItems.filter(
-              (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
-            )}
+            items={shoppingListItems}
           />
           {/* Archived Items Toggle & Section */}
-          {(() => {
-            const archivedItems = sortItems(
-              inventoryItems.filter((item) => item.Status === "archived"),
-              sortField,
-              sortDirection,
-            );
-            const totalArchived = archivedItems.length;
-            return (
-              totalArchived > 0 && (
-                <div id="archived">
-                  <button
-                    type="button"
-                    onClick={() => setShowArchived((prev) => !prev)}
-                  >
-                    {showArchived
-                      ? "Hide Archived Items"
-                      : `Show Archived Items`}{" "}
-                    ({totalArchived})
-                  </button>
-                  {showArchived && (
-                    <InventorySection
-                      title="Archived Items"
-                      items={archivedItems}
-                      unarchiveItem={unarchiveItem}
-                      deleteItem={deleteItem}
-                    />
-                  )}
-                </div>
-              )
-            );
-          })()}
+          {archivedItems.length > 0 && (
+            <div id="archived">
+              <button
+                type="button"
+                onClick={() => setShowArchived((prev) => !prev)}
+              >
+                {showArchived ? "Hide Archived Items" : `Show Archived Items`} (
+                {archivedItems.length})
+              </button>
+              {showArchived && (
+                <InventorySection
+                  title="Archived Items"
+                  items={archivedItems}
+                  unarchiveItem={unarchiveItem}
+                  deleteItem={deleteItem}
+                />
+              )}
+            </div>
+          )}
         </>
       )}
     </main>
