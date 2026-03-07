@@ -370,7 +370,7 @@ describe("Airtable API functions", () => {
   // -- fetchInventoryItems -------------------------------------------------
 
   describe("fetchInventoryItems", () => {
-    it("calls setInventoryItems with flattened records on success", async () => {
+    it("successful fetch sets inventoryItems and isLoading: false", async () => {
       globalThis.fetch = createMockFetch(mockFetchResponse);
 
       const setInventoryItems = vi.fn();
@@ -386,21 +386,24 @@ describe("Airtable API functions", () => {
         searchTerm: "",
       });
 
+      // starts loading, clears previous error
       expect(setIsLoading).toHaveBeenCalledWith(true);
       expect(setError).toHaveBeenCalledWith(null);
-      expect(setInventoryItems).toHaveBeenCalledTimes(1);
 
+      // populates inventory with all records
+      expect(setInventoryItems).toHaveBeenCalledTimes(1);
       const items = setInventoryItems.mock.calls[0][0];
       expect(items).toHaveLength(3);
-      expect(items[0]).toMatchObject({
-        id: "rec123abc",
-        ItemName: "Whole Milk",
-      });
+
+      // ends loading
       expect(setIsLoading).toHaveBeenLastCalledWith(false);
     });
 
-    it("sets error on network failure", async () => {
-      globalThis.fetch = createMockFetch(null, { networkError: true });
+    it("failed fetch sets error message and isLoading: false", async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 500,
+        statusText: "Internal Server Error",
+      });
 
       const setInventoryItems = vi.fn();
       const setIsLoading = vi.fn();
@@ -416,13 +419,11 @@ describe("Airtable API functions", () => {
       });
 
       expect(setInventoryItems).not.toHaveBeenCalled();
-      expect(setError).toHaveBeenCalledWith(
-        expect.stringContaining("Network error"),
-      );
+      expect(setError).toHaveBeenCalledWith("500 Internal Server Error");
       expect(setIsLoading).toHaveBeenLastCalledWith(false);
     });
 
-    it("sets error with status-specific message on 401", async () => {
+    it('401 error shows "Invalid API token" message', async () => {
       globalThis.fetch = createMockFetch(mockErrorResponse, {
         status: 401,
         statusText: "Unauthorized",
@@ -441,9 +442,77 @@ describe("Airtable API functions", () => {
         searchTerm: "",
       });
 
+      expect(setInventoryItems).not.toHaveBeenCalled();
       expect(setError).toHaveBeenCalledWith(
-        expect.stringContaining("Authentication failed"),
+        "Authentication failed: Invalid API token. Verify your VITE_AIRTABLE_PAT.",
       );
+      expect(setIsLoading).toHaveBeenLastCalledWith(false);
+    });
+
+    it('network error shows "Network error" message', async () => {
+      globalThis.fetch = createMockFetch(null, { networkError: true });
+
+      const setInventoryItems = vi.fn();
+      const setIsLoading = vi.fn();
+      const setError = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading,
+        setError,
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+      });
+
+      expect(setInventoryItems).not.toHaveBeenCalled();
+      expect(setError).toHaveBeenCalledWith(
+        "Network error: Unable to reach the server. Check your internet connection.",
+      );
+      expect(setIsLoading).toHaveBeenLastCalledWith(false);
+    });
+
+    it("data maps correctly from Airtable shape to app shape", async () => {
+      globalThis.fetch = createMockFetch(mockFetchResponse);
+
+      const setInventoryItems = vi.fn();
+      const setIsLoading = vi.fn();
+      const setError = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading,
+        setError,
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+      });
+
+      const items = setInventoryItems.mock.calls[0][0];
+
+      // record.id is promoted to a top-level id property
+      expect(items[0].id).toBe("rec123abc");
+
+      // record.fields are spread as top-level properties
+      expect(items[0].ItemName).toBe("Whole Milk");
+      expect(items[0].Brand).toBe("Organic Valley");
+      expect(items[0].Category).toBe("Dairy");
+      expect(items[0].QtyOnHand).toBe(2);
+      expect(items[0].NeedRestock).toBe(true);
+      expect(items[0].ExpiresOn).toBe("2026-03-15");
+
+      // isCompleted defaults to false when absent from fields
+      expect(items[0].isCompleted).toBe(false);
+
+      // second record also mapped correctly
+      expect(items[1]).toMatchObject({
+        id: "rec456def",
+        ItemName: "Sesame Oil",
+        QtyOnHand: 0.1,
+      });
+
+      // no nested "fields" key remains on the flattened items
+      expect(items[0]).not.toHaveProperty("fields");
     });
   });
 
