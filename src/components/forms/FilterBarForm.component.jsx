@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { getActiveFilterCount } from "../../data/inventoryUtils";
 
 const DEFAULT_FILTERS = {
@@ -154,4 +154,4 @@ function FilterBarForm({
   );
 }
 
-export default FilterBarForm;
+export default memo(FilterBarForm);

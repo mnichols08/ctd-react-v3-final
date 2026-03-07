@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 
 import ItemCard from "../cards/ItemCard.component";
 import EmptyState from "../ui/EmptyState.component";
@@ -14,7 +14,7 @@ function InventorySection({
   visibleFields,
   archiveItem,
   unarchiveItem,
-  deleteItem
+  deleteItem,
 }) {
   // State to track whether the section is collapsed or expanded
   const isArchivedSection = id === "archived";
@@ -81,4 +81,4 @@ function InventorySection({
   );
 }
 
-export default InventorySection;
+export default memo(InventorySection);
