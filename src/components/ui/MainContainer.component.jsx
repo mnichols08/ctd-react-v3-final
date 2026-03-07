@@ -140,7 +140,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     const item = inventoryItems.find((i) => i.id === itemId);
     if (!item) return;
 
-    const changedFields = { NeedRestock: false };
+    const changedFields = { NeedRestock: false, TargetQty: item.QtyOnHand };
     setInventoryItems((prevItems) =>
       prevItems.map((i) =>
         i.id === itemId

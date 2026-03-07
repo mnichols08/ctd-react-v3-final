@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor handleAddItem to clear previous save errors and return success status for item addition
 - Refactor form submission in AddInventoryItemForm and QuickAddForm to handle async operations and improve item creation logic
 - Clear previous error state before saving in createInventoryItem
+- Update changedFields to include TargetQty in MainContainer
 
 ### Fixed
 
