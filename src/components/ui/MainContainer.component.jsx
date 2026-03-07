@@ -87,17 +87,21 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   };
 
   // Wrapper that persists to Airtable when connected, or adds directly in sample-data mode
-  const handleAddItem = (item) => {
+  const handleAddItem = async (item) => {
+    // Clear any previous save error at the start of a new submission
+    setSaveError(null);
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       addInventoryItem(item);
-    } else {
-      createInventoryItem({
-        item,
-        addInventoryItem,
-        setIsSaving,
-        setError: setSaveError,
-      });
+      // In sample-data mode we treat local add as a successful save
+      return true;
     }
+    // Propagate the boolean success/failure result to callers
+    return await createInventoryItem({
+      item,
+      addInventoryItem,
+      setIsSaving,
+      setError: setSaveError,
+    });
   };
   // Persist field changes to Airtable with optimistic rollback on failure
   const persistUpdate = async (itemId, changedFields, previousItem) => {
@@ -136,7 +140,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     const item = inventoryItems.find((i) => i.id === itemId);
     if (!item) return;
 
-    const changedFields = { NeedRestock: false };
+    const changedFields = { NeedRestock: false, TargetQty: item.QtyOnHand };
     setInventoryItems((prevItems) =>
       prevItems.map((i) =>
         i.id === itemId
@@ -336,7 +340,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         <ErrorState
           error={error}
           onRetry={() => {
-            if (import.meta.env.VITE_SAMPLE_DATA) {
+            if (import.meta.env.VITE_SAMPLE_DATA === "true") {
               loadSampleData({ setInventoryItems, setIsLoading, setError });
             } else {
               fetchInventoryItems({

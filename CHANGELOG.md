@@ -21,6 +21,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.11] - 2026-03-06
+
+### Added
+
+- Add resetThrottle function to clear request timestamps for testing
+
+### Changed
+
+- Enhance Airtable API tests with mocked Date.now for accurate timing in throttledFetch
+- Refactor handleAddItem to clear previous save errors and return success status for item addition
+- Refactor form submission in AddInventoryItemForm and QuickAddForm to handle async operations and improve item creation logic
+- Clear previous error state before saving in createInventoryItem
+- Update changedFields to include TargetQty in MainContainer
+
+### Fixed
+
+ - Fix Math.random spy usage in retry tests
+ - Fix condition for loading sample data in MainContainer
+ - Fix formatting in comments for clarity in FilterBarForm tests
+
+---
+
 ## [0.4.10] - 2026-03-06
 
 ### Added

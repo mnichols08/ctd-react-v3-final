@@ -24,7 +24,7 @@ function QuickAddForm({ addInventoryItem }) {
     }));
   };
   // Handle form submission by creating a new item object with the provided data and default values for other fields
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Extract only the necessary fields for quick addition, and set defaults for the rest
     const { ItemName, Category, ExpiresOn, Location, QtyOnHand, QtyUnit } =
@@ -61,7 +61,8 @@ function QuickAddForm({ addInventoryItem }) {
       LastUpdated: new Date().toISOString(),
     };
     // Call addInventoryItem to add the new item to the inventory
-    addInventoryItem(newItem);
+    const success = await addInventoryItem(newItem);
+    if (success === false) return;
     // Reset the form and focus the item name input for quick entry of the next item
     setFormData({
       ItemName: "",

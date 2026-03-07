@@ -83,6 +83,11 @@ export function buildAirtableParams(sortConfig, filterConfig, searchTerm) {
 const MAX_REQUESTS_PER_SECOND = 3; // Set to 3 to be safe and avoid hitting the limit
 const requestTimestamps = [];
 
+/** Clear the throttle queue — intended for test setup only. */
+export const resetThrottle = () => {
+  requestTimestamps.length = 0;
+};
+
 const throttledFetch = async (url, options) => {
   const now = Date.now();
   // Remove timestamps older than 1 second
@@ -244,6 +249,7 @@ export const createInventoryItem = async ({
   };
 
   try {
+    setError(null);
     setIsSaving(true);
     let resp;
     try {

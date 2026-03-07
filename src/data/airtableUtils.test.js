@@ -5,6 +5,7 @@ import {
   createInventoryItem,
   patchInventoryItem,
   deleteInventoryItem,
+  resetThrottle,
 } from "./airtableUtils";
 
 // --- Mock Airtable API responses matching { records: [{ id, fields }] } ---
@@ -355,14 +356,14 @@ function createMockFetch(body, opts = {}) {
 
 describe("Airtable API functions", () => {
   let originalFetch;
-
   beforeEach(() => {
     // The global test-setup enables fake timers for loading-simulation tests.
     // API tests need real timers so throttledFetch's Date.now / setTimeout work.
     vi.useRealTimers();
     originalFetch = globalThis.fetch;
+    // Clear the module-level throttle queue so tests don't trigger real 1s sleeps.
+    resetThrottle();
   });
-
   afterEach(() => {
     globalThis.fetch = originalFetch;
   });
@@ -616,7 +617,9 @@ describe("Airtable API functions", () => {
       // saving lifecycle completes
       expect(setIsSaving).toHaveBeenCalledWith(true);
       expect(setIsSaving).toHaveBeenLastCalledWith(false);
-      expect(setError).not.toHaveBeenCalled();
+      // Clears any previous error at the start; never sets an actual error
+      expect(setError).toHaveBeenCalledWith(null);
+      expect(setError).toHaveBeenCalledTimes(1);
     });
 
     it("failed create does not add item and shows error", async () => {
