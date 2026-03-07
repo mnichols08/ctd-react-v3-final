@@ -238,7 +238,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Handler to delete an item permanently from the inventory
   const deleteItem = async (itemId) => {
     const item = inventoryItems.find((i) => i.id === itemId);
-    if (!item) return;
+    if (!item || item.isDeleting) return;
 
     if (!window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)) {
       return;
@@ -246,9 +246,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
 
     // Set deleting indicator on the item
     setInventoryItems((prevItems) =>
-      prevItems.map((i) =>
-        i.id === itemId ? { ...i, isDeleting: true } : i,
-      ),
+      prevItems.map((i) => (i.id === itemId ? { ...i, isDeleting: true } : i)),
     );
 
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
