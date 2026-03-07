@@ -235,6 +235,10 @@ export const deleteInventoryItem = async (id) => {
       "Network error: Unable to reach the server. Check your internet connection.",
     );
   }
+  // 404 means the record is already gone — treat as success
+  if (resp.status === 404) {
+    return { id, deleted: true };
+  }
   if (!resp.ok) {
     if (resp.status === 429) {
       throw new Error(
