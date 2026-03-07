@@ -29,10 +29,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement throttled fetch for Airtable API to manage rate limits and handle errors
 - Add saveError state management to handle inline error messages in forms
 - Display saving status message in MainContainer when saving an item to Airtable
+- Integrate createInventoryItem function to handle item submissions in MainContainer
 
 ### Changed
 
 - Refactor AddInventoryItemForm and QuickAddForm to integrate createInventoryItem function for handling submissions
+- Refactor AddInventoryItemForm and QuickAddForm to simplify item addition and remove unused state management
 
 ---
 

@@ -5,7 +5,11 @@ import {
   isLowStock,
   sortItems,
 } from "../../data/inventoryUtils";
-import { fetchInventoryItems, loadSampleData } from "../../data/airtableUtils";
+import {
+  fetchInventoryItems,
+  loadSampleData,
+  createInventoryItem,
+} from "../../data/airtableUtils";
 import LoadingState from "./LoadingState.component";
 import ErrorState from "./ErrorState.component";
 import ToolSection from "../sections/ToolSection.component";
@@ -75,9 +79,23 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Count of active filters for display
   const activeFilterCount = getActiveFilterCount(filters);
 
-  // Handler to add a new inventory item
+  // Handler to add a new inventory item to local state
   const addInventoryItem = (newItem) => {
     setInventoryItems((prevItems) => [...prevItems, newItem]);
+  };
+
+  // Wrapper that persists to Airtable when connected, or adds directly in sample-data mode
+  const handleAddItem = (item) => {
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      addInventoryItem(item);
+    } else {
+      createInventoryItem({
+        item,
+        addInventoryItem,
+        setIsSaving,
+        setError: setSaveError,
+      });
+    }
   };
   // Handler to add an item to the shopping list (mark as NeedRestock and update TargetQty)
   const addToShoppingList = ({ itemId, quantity }) => {
@@ -262,17 +280,9 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
               </div>
             )}
             {showQuickAdd ? (
-              <QuickAddForm
-                addInventoryItem={addInventoryItem}
-                setIsSaving={setIsSaving}
-                setError={setSaveError}
-              />
+              <QuickAddForm addInventoryItem={handleAddItem} />
             ) : (
-              <AddInventoryItemForm
-                addInventoryItem={addInventoryItem}
-                setIsSaving={setIsSaving}
-                setError={setSaveError}
-              />
+              <AddInventoryItemForm addInventoryItem={handleAddItem} />
             )}
           </ToolSection>
           <InventorySection

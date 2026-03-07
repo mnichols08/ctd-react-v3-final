@@ -1,7 +1,6 @@
 import { useState, useRef } from "react";
-import { createInventoryItem } from "../../data/airtableUtils";
 
-function AddInventoryItemForm({ addInventoryItem, setIsSaving, setError }) {
+function AddInventoryItemForm({ addInventoryItem }) {
   // Initial form state with all fields set to empty or default values
   const initialFormState = {
     ItemName: "",
@@ -43,7 +42,7 @@ function AddInventoryItemForm({ addInventoryItem, setIsSaving, setError }) {
     }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     const newItem = { ...formData };
     // Coerce numeric fields from strings to numbers (or null for empty fields)
@@ -59,16 +58,9 @@ function AddInventoryItemForm({ addInventoryItem, setIsSaving, setError }) {
         newItem[field] = value === "" ? null : Number(value);
       }
     });
-    const success = await createInventoryItem({
-      item: newItem,
-      addInventoryItem,
-      setIsSaving,
-      setError,
-    });
-    if (success) {
-      setFormData(initialFormState);
-      itemNameRef.current?.focus();
-    }
+    addInventoryItem(newItem);
+    setFormData(initialFormState);
+    itemNameRef.current?.focus();
   };
   return (
     <form onSubmit={handleSubmit} aria-label="Add Inventory Item">
