@@ -1,5 +1,11 @@
-import { describe, it, expect } from "vitest";
-import { buildAirtableParams } from "./airtableUtils";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {
+  buildAirtableParams,
+  fetchInventoryItems,
+  createInventoryItem,
+  patchInventoryItem,
+  deleteInventoryItem,
+} from "./airtableUtils";
 
 // --- Mock Airtable API responses matching { records: [{ id, fields }] } ---
 
@@ -304,6 +310,242 @@ describe("buildAirtableParams", () => {
       );
       const formula = params.get("filterByFormula");
       expect(formula).toContain("back\\\\slash");
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Fetch mock helper — builds a vi.fn() that returns a Response-like object
+// ---------------------------------------------------------------------------
+
+/**
+ * Create a mock fetch that resolves with the given body and status.
+ *
+ * @param {object} body   - JSON body to return from resp.json()
+ * @param {object} [opts] - Optional overrides
+ * @param {number} [opts.status=200]     - HTTP status code
+ * @param {string} [opts.statusText="OK"] - HTTP status text
+ * @param {boolean} [opts.ok]            - Defaults to status in 200–299
+ * @param {boolean} [opts.networkError]  - If true, fetch rejects (simulates network failure)
+ * @returns {import("vitest").Mock}
+ */
+function createMockFetch(body, opts = {}) {
+  const {
+    status = 200,
+    statusText = "OK",
+    ok = status >= 200 && status < 300,
+    networkError = false,
+  } = opts;
+
+  if (networkError) {
+    return vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
+  }
+
+  return vi.fn().mockResolvedValue({
+    ok,
+    status,
+    statusText,
+    json: vi.fn().mockResolvedValue(body),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// API function tests (fetch, create, patch, delete)
+// ---------------------------------------------------------------------------
+
+describe("Airtable API functions", () => {
+  let originalFetch;
+
+  beforeEach(() => {
+    // The global test-setup enables fake timers for loading-simulation tests.
+    // API tests need real timers so throttledFetch's Date.now / setTimeout work.
+    vi.useRealTimers();
+    originalFetch = globalThis.fetch;
+  });
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  // -- fetchInventoryItems -------------------------------------------------
+
+  describe("fetchInventoryItems", () => {
+    it("calls setInventoryItems with flattened records on success", async () => {
+      globalThis.fetch = createMockFetch(mockFetchResponse);
+
+      const setInventoryItems = vi.fn();
+      const setIsLoading = vi.fn();
+      const setError = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading,
+        setError,
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+      });
+
+      expect(setIsLoading).toHaveBeenCalledWith(true);
+      expect(setError).toHaveBeenCalledWith(null);
+      expect(setInventoryItems).toHaveBeenCalledTimes(1);
+
+      const items = setInventoryItems.mock.calls[0][0];
+      expect(items).toHaveLength(3);
+      expect(items[0]).toMatchObject({
+        id: "rec123abc",
+        ItemName: "Whole Milk",
+      });
+      expect(setIsLoading).toHaveBeenLastCalledWith(false);
+    });
+
+    it("sets error on network failure", async () => {
+      globalThis.fetch = createMockFetch(null, { networkError: true });
+
+      const setInventoryItems = vi.fn();
+      const setIsLoading = vi.fn();
+      const setError = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading,
+        setError,
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+      });
+
+      expect(setInventoryItems).not.toHaveBeenCalled();
+      expect(setError).toHaveBeenCalledWith(
+        expect.stringContaining("Network error"),
+      );
+      expect(setIsLoading).toHaveBeenLastCalledWith(false);
+    });
+
+    it("sets error with status-specific message on 401", async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 401,
+        statusText: "Unauthorized",
+      });
+
+      const setInventoryItems = vi.fn();
+      const setIsLoading = vi.fn();
+      const setError = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading,
+        setError,
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+      });
+
+      expect(setError).toHaveBeenCalledWith(
+        expect.stringContaining("Authentication failed"),
+      );
+    });
+  });
+
+  // -- createInventoryItem -------------------------------------------------
+
+  describe("createInventoryItem", () => {
+    it("calls addInventoryItem with the saved record on success", async () => {
+      globalThis.fetch = createMockFetch(mockCreateResponse);
+
+      const addInventoryItem = vi.fn();
+      const setIsSaving = vi.fn();
+      const setError = vi.fn();
+
+      const result = await createInventoryItem({
+        item: { ItemName: "Cheddar Cheese", Category: "Dairy" },
+        addInventoryItem,
+        setIsSaving,
+        setError,
+      });
+
+      expect(result).toBe(true);
+      expect(addInventoryItem).toHaveBeenCalledTimes(1);
+      expect(addInventoryItem.mock.calls[0][0]).toMatchObject({
+        id: "recNewItem1",
+        ItemName: "Cheddar Cheese",
+      });
+      expect(setIsSaving).toHaveBeenLastCalledWith(false);
+    });
+
+    it("returns false and sets error on network failure", async () => {
+      globalThis.fetch = createMockFetch(null, { networkError: true });
+
+      const addInventoryItem = vi.fn();
+      const setIsSaving = vi.fn();
+      const setError = vi.fn();
+
+      const result = await createInventoryItem({
+        item: { ItemName: "Test" },
+        addInventoryItem,
+        setIsSaving,
+        setError,
+      });
+
+      expect(result).toBe(false);
+      expect(addInventoryItem).not.toHaveBeenCalled();
+      expect(setError).toHaveBeenCalledWith(
+        expect.stringContaining("Network error"),
+      );
+    });
+  });
+
+  // -- patchInventoryItem --------------------------------------------------
+
+  describe("patchInventoryItem", () => {
+    it("returns the updated record on success", async () => {
+      globalThis.fetch = createMockFetch(mockPatchResponse);
+
+      const result = await patchInventoryItem("rec123abc", { QtyOnHand: 5 });
+
+      expect(result).toMatchObject({
+        id: "rec123abc",
+        QtyOnHand: 5,
+      });
+    });
+
+    it("throws on network failure", async () => {
+      globalThis.fetch = createMockFetch(null, { networkError: true });
+
+      await expect(
+        patchInventoryItem("rec123abc", { QtyOnHand: 5 }),
+      ).rejects.toThrow("Network error");
+    });
+  });
+
+  // -- deleteInventoryItem -------------------------------------------------
+
+  describe("deleteInventoryItem", () => {
+    it("returns the deletion confirmation on success", async () => {
+      globalThis.fetch = createMockFetch(mockDeleteResponse);
+
+      const result = await deleteInventoryItem("rec123abc");
+
+      expect(result).toEqual({ id: "rec123abc", deleted: true });
+    });
+
+    it("treats 404 as successful deletion", async () => {
+      globalThis.fetch = createMockFetch(null, {
+        status: 404,
+        statusText: "Not Found",
+      });
+
+      const result = await deleteInventoryItem("rec123abc");
+
+      expect(result).toMatchObject({ id: "rec123abc", deleted: true });
+    });
+
+    it("throws on network failure", async () => {
+      globalThis.fetch = createMockFetch(null, { networkError: true });
+
+      await expect(deleteInventoryItem("rec123abc")).rejects.toThrow(
+        "Network error",
+      );
     });
   });
 });

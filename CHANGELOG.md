@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add mock responses for Airtable API tests
+- Add tests for Airtable API functions including fetch, create, patch, and delete
 
 ---
 
