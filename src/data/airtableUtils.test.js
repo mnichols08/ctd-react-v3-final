@@ -1,6 +1,119 @@
 import { describe, it, expect } from "vitest";
 import { buildAirtableParams } from "./airtableUtils";
 
+// --- Mock Airtable API responses matching { records: [{ id, fields }] } ---
+
+/** GET /records – multi-record list response */
+export const mockFetchResponse = {
+  records: [
+    {
+      id: "rec123abc",
+      fields: {
+        ItemName: "Whole Milk",
+        Brand: "Organic Valley",
+        Category: "Dairy",
+        QtyOnHand: 2,
+        QtyUnit: "gallon",
+        TargetQty: 3,
+        NeedRestock: true,
+        ExpiresOn: "2026-03-15",
+        Location: "Fridge - Shelf 1",
+        Status: null,
+        Notes: "family favorite",
+        Tags: "organic, staple",
+      },
+    },
+    {
+      id: "rec456def",
+      fields: {
+        ItemName: "Sesame Oil",
+        Brand: "Dabur",
+        Category: "Cooking Essentials",
+        QtyOnHand: 0.1,
+        QtyUnit: "bottle",
+        TargetQty: 1,
+        NeedRestock: true,
+        ExpiresOn: "2026-10-01",
+        Location: "Pantry - Shelf 5",
+        Status: null,
+        Notes: null,
+        Tags: null,
+      },
+    },
+    {
+      id: "rec789ghi",
+      fields: {
+        ItemName: "Frozen Peas",
+        Brand: "Green Giant",
+        Category: "Frozen",
+        QtyOnHand: 4,
+        QtyUnit: "bag",
+        TargetQty: 2,
+        NeedRestock: false,
+        ExpiresOn: "2027-01-20",
+        Location: "Freezer - Drawer 2",
+        Status: "archived",
+        Notes: null,
+        Tags: "vegetable",
+      },
+    },
+  ],
+};
+
+/** POST /records – single-record creation response */
+export const mockCreateResponse = {
+  records: [
+    {
+      id: "recNewItem1",
+      fields: {
+        ItemName: "Cheddar Cheese",
+        Brand: "Tillamook",
+        Category: "Dairy",
+        QtyOnHand: 1,
+        QtyUnit: "block",
+        TargetQty: 2,
+        NeedRestock: true,
+        ExpiresOn: "2026-04-10",
+        Location: "Fridge - Shelf 2",
+        Status: null,
+        LastUpdated: "2026-03-06T12:00:00.000Z",
+      },
+    },
+  ],
+};
+
+/** PATCH /records/:id – single-record update response */
+export const mockPatchResponse = {
+  id: "rec123abc",
+  fields: {
+    ItemName: "Whole Milk",
+    Brand: "Organic Valley",
+    Category: "Dairy",
+    QtyOnHand: 5,
+    QtyUnit: "gallon",
+    TargetQty: 3,
+    NeedRestock: false,
+    ExpiresOn: "2026-03-15",
+    Location: "Fridge - Shelf 1",
+    Status: null,
+    LastUpdated: "2026-03-06T14:30:00.000Z",
+  },
+};
+
+/** DELETE /records/:id – deletion response */
+export const mockDeleteResponse = {
+  id: "rec123abc",
+  deleted: true,
+};
+
+/** Error response matching Airtable's error format */
+export const mockErrorResponse = {
+  error: {
+    type: "INVALID_REQUEST_UNKNOWN",
+    message: "Could not find field 'BadField' in table",
+  },
+};
+
 describe("buildAirtableParams", () => {
   // --- AC1: Sort parameters are sent when sort is active ---
   describe("sort parameters", () => {
