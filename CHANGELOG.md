@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add fetch state, error handling, and data mapping tests
 - Add create item success, failure, and form persistence tests
 - Add update tests for success, failure revert, and PATCH body verification
+- Add delete tests for success, failure preservation, and 404 handling
 
 ---
 

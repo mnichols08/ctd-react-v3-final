@@ -668,15 +668,28 @@ describe("Airtable API functions", () => {
   // -- deleteInventoryItem -------------------------------------------------
 
   describe("deleteInventoryItem", () => {
-    it("returns the deletion confirmation on success", async () => {
+    it("successful delete removes item from state (returns confirmation)", async () => {
       globalThis.fetch = createMockFetch(mockDeleteResponse);
 
       const result = await deleteInventoryItem("rec123abc");
 
+      // returns { id, deleted: true } so the caller can remove the item from state
       expect(result).toEqual({ id: "rec123abc", deleted: true });
     });
 
-    it("treats 404 as successful deletion", async () => {
+    it("failed delete keeps item and shows error (throws so caller preserves state)", async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 422,
+        statusText: "Unprocessable Entity",
+      });
+
+      // the function throws, so the caller's catch block keeps the item in state
+      await expect(deleteInventoryItem("rec123abc")).rejects.toThrow(
+        "Could not find field 'BadField' in table",
+      );
+    });
+
+    it("404 still removes from local state (already gone on server)", async () => {
       globalThis.fetch = createMockFetch(null, {
         status: 404,
         statusText: "Not Found",
@@ -684,15 +697,8 @@ describe("Airtable API functions", () => {
 
       const result = await deleteInventoryItem("rec123abc");
 
-      expect(result).toMatchObject({ id: "rec123abc", deleted: true });
-    });
-
-    it("throws on network failure", async () => {
-      globalThis.fetch = createMockFetch(null, { networkError: true });
-
-      await expect(deleteInventoryItem("rec123abc")).rejects.toThrow(
-        "Network error",
-      );
+      // 404 is treated as success — record is already gone
+      expect(result).toEqual({ id: "rec123abc", deleted: true });
     });
   });
 });
