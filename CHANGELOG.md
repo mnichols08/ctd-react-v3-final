@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enhance Airtable API tests with mocked Date.now for accurate timing in throttledFetch
 
+### Fixed
+
+ - Fix Math.random spy usage in retry tests
+
 ---
 
 ## [0.4.10] - 2026-03-06

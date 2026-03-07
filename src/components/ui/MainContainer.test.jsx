@@ -344,9 +344,6 @@ describe("MainContainer", () => {
 
     // Inventory sections should NOT be rendered
     expect(screen.queryByRole("heading", { name: "Fridge" })).toBeNull();
-
-    // Restore so other tests aren't affected
-    vi.spyOn(Math, "random").mockReturnValue(1);
   });
 
   it("Retry clears error and re-fetches", () => {
@@ -360,7 +357,7 @@ describe("MainContainer", () => {
     expect(screen.getByRole("alert")).toBeTruthy();
 
     // Now make the next load succeed
-    vi.spyOn(Math, "random").mockReturnValue(1);
+    vi.mocked(Math.random).mockReturnValue(1);
 
     // Click Retry
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
