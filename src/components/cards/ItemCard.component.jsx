@@ -34,11 +34,7 @@ function ItemCard({
   const handleCancel = () => {
     setIsEditing(false);
   };
-  const handleClickDeleteItem = (itemId) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
-      handleDeleteItem(itemId);
-    }
-  };
+
   // Build the list of dynamic fields to render (excluding ItemName, which is always the heading)
   const fieldsToRender = ALL_FIELDS.filter(
     ({ key }) =>
@@ -83,8 +79,11 @@ function ItemCard({
               </>
             )}
             {handleDeleteItem && (
-              <button onClick={() => handleClickDeleteItem(item.id)}>
-                Delete
+              <button
+                onClick={() => handleDeleteItem(item.id)}
+                disabled={item.isDeleting}
+              >
+                {item.isDeleting ? "Deleting…" : "Delete"}
               </button>
             )}
             {(handleAddToShoppingList || handleUpdateItemQuantity) && (

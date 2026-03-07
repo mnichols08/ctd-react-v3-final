@@ -21,6 +21,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.8] - 2026-03-06
+
+### Added
+
+- Implement deleteInventoryItem function to remove items from Airtable
+- Implement deleteItem handler to remove inventory items with confirmation and error handling
+- Handle 404 status in deleteInventoryItem function to treat missing records as successful deletions
+- Enhance delete item functionality with confirmation and disable button during deletion
+
+---
+
 ## [0.4.7] - 2026-03-06
 
 ### Added
