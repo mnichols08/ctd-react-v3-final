@@ -472,6 +472,72 @@ describe("Airtable API functions", () => {
       expect(setIsLoading).toHaveBeenLastCalledWith(false);
     });
 
+    it('404 error shows "Not found" message', async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 404,
+        statusText: "Not Found",
+      });
+
+      const setError = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems: vi.fn(),
+        setIsLoading: vi.fn(),
+        setError,
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+      });
+
+      expect(setError).toHaveBeenCalledWith(
+        "Not found: Invalid base or table name. Verify VITE_AIRTABLE_BASE_ID and VITE_AIRTABLE_TABLE_NAME.",
+      );
+    });
+
+    it('422 error shows "Bad request" message', async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 422,
+        statusText: "Unprocessable Entity",
+      });
+
+      const setError = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems: vi.fn(),
+        setIsLoading: vi.fn(),
+        setError,
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+      });
+
+      expect(setError).toHaveBeenCalledWith(
+        "Bad request: The request was invalid. Check your query parameters and field names.",
+      );
+    });
+
+    it('429 error shows "Rate limit exceeded" message', async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 429,
+        statusText: "Too Many Requests",
+      });
+
+      const setError = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems: vi.fn(),
+        setIsLoading: vi.fn(),
+        setError,
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+      });
+
+      expect(setError).toHaveBeenCalledWith(
+        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
+      );
+    });
+
     it("data maps correctly from Airtable shape to app shape", async () => {
       globalThis.fetch = createMockFetch(mockFetchResponse);
 
@@ -613,6 +679,30 @@ describe("Airtable API functions", () => {
       // saving lifecycle still completes
       expect(setIsSaving).toHaveBeenLastCalledWith(false);
     });
+
+    it('429 error shows "Rate limit exceeded" message', async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 429,
+        statusText: "Too Many Requests",
+      });
+
+      const addInventoryItem = vi.fn();
+      const setIsSaving = vi.fn();
+      const setError = vi.fn();
+
+      const result = await createInventoryItem({
+        item: { ItemName: "Test Item" },
+        addInventoryItem,
+        setIsSaving,
+        setError,
+      });
+
+      expect(result).toBe(false);
+      expect(addInventoryItem).not.toHaveBeenCalled();
+      expect(setError).toHaveBeenCalledWith(
+        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
+      );
+    });
   });
 
   // -- patchInventoryItem --------------------------------------------------
@@ -663,6 +753,29 @@ describe("Airtable API functions", () => {
       expect(body.fields).toHaveProperty("LastUpdated");
       expect(Object.keys(body.fields)).toHaveLength(2);
     });
+
+    it("throws on network failure", async () => {
+      globalThis.fetch = createMockFetch(null, { networkError: true });
+
+      await expect(
+        patchInventoryItem("rec123abc", { QtyOnHand: 5 }),
+      ).rejects.toThrow(
+        "Network error: Unable to reach the server. Check your internet connection.",
+      );
+    });
+
+    it('429 error shows "Rate limit exceeded" message', async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 429,
+        statusText: "Too Many Requests",
+      });
+
+      await expect(
+        patchInventoryItem("rec123abc", { QtyOnHand: 5 }),
+      ).rejects.toThrow(
+        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
+      );
+    });
   });
 
   // -- deleteInventoryItem -------------------------------------------------
@@ -699,6 +812,25 @@ describe("Airtable API functions", () => {
 
       // 404 is treated as success — record is already gone
       expect(result).toEqual({ id: "rec123abc", deleted: true });
+    });
+
+    it("throws on network failure", async () => {
+      globalThis.fetch = createMockFetch(null, { networkError: true });
+
+      await expect(deleteInventoryItem("rec123abc")).rejects.toThrow(
+        "Network error: Unable to reach the server. Check your internet connection.",
+      );
+    });
+
+    it('429 error shows "Rate limit exceeded" message', async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 429,
+        statusText: "Too Many Requests",
+      });
+
+      await expect(deleteInventoryItem("rec123abc")).rejects.toThrow(
+        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
+      );
     });
   });
 });

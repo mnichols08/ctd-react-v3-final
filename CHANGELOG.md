@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add update tests for success, failure revert, and PATCH body verification
 - Add delete tests for success, failure preservation, and 404 handling
 - Add loading/error UI tests for spinner, error message, and retry behavior
+- Add distinct error-type tests: 404, 422, 429 for fetch; 429 for create; network error and 429 for patch and delete
 
 ---
 
