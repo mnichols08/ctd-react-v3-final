@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 function EditInventoryItemForm({ item, onSave, onCancel }) {
   // Destructure item properties for easier access and initialize form state with existing item data
@@ -328,4 +328,4 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
   );
 }
 
-export default EditInventoryItemForm;
+export default memo(EditInventoryItemForm);

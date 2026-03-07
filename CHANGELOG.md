@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wrap handlers and callbacks in useCallback for performance optimization
 - Wrap handleChange and handleSubmit in useCallback for performance optimization
 - Wrap handleAdd, handleDecrement, and handleIncrement in useCallback for performance optimization
+- Wrap all components in memo for performance optimization
 
 ---
 

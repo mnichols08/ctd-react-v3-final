@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 function ErrorState({ error, onRetry }) {
   if (!error) return null;
 
@@ -13,4 +15,4 @@ function ErrorState({ error, onRetry }) {
   );
 }
 
-export default ErrorState;
+export default memo(ErrorState);

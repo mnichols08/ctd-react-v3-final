@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 
 // Unified shopping-list control for an inventory item.
 // Shows an "Add to Shopping List" button when the item isn't on the list,
@@ -90,4 +90,4 @@ function ShoppingListControl({
   );
 }
 
-export default ShoppingListControl;
+export default memo(ShoppingListControl);

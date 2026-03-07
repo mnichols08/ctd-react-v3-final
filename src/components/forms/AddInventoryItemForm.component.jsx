@@ -1,34 +1,34 @@
-import { useCallback, useRef, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
+
+// Initial form state with all fields set to empty or default values
+const initialFormState = {
+  ItemName: "",
+  ItemDescription: "",
+  Brand: "",
+  PackageSize: "",
+  UPC: "",
+  Category: "",
+  SubCategory: "",
+  Location: "",
+  QtyOnHand: "",
+  QtyUnit: "",
+  TargetQty: "",
+  NeedRestock: false,
+  ExpiresOn: "",
+  DatePurchased: "",
+  DateFrozen: "",
+  PurchasePrice: "",
+  Store: "",
+  UnitCost: "",
+  Notes: "",
+  Tags: "",
+  Allergens: "",
+  ImageRef: "",
+  Status: "",
+  ProductUrl: "",
+};
 
 function AddInventoryItemForm({ addInventoryItem }) {
-  // Initial form state with all fields set to empty or default values
-  const initialFormState = {
-    ItemName: "",
-    ItemDescription: "",
-    Brand: "",
-    PackageSize: "",
-    UPC: "",
-    Category: "",
-    SubCategory: "",
-    Location: "",
-    QtyOnHand: "",
-    QtyUnit: "",
-    TargetQty: "",
-    NeedRestock: false,
-    ExpiresOn: "",
-    DatePurchased: "",
-    DateFrozen: "",
-    PurchasePrice: "",
-    Store: "",
-    UnitCost: "",
-    Notes: "",
-    Tags: "",
-    Allergens: "",
-    ImageRef: "",
-    Status: "",
-    ProductUrl: "",
-  };
-
   // Form state to manage controlled inputs
   const [formData, setFormData] = useState(initialFormState);
   const itemNameRef = useRef(null);
@@ -323,4 +323,4 @@ function AddInventoryItemForm({ addInventoryItem }) {
   );
 }
 
-export default AddInventoryItemForm;
+export default memo(AddInventoryItemForm);

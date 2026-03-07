@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { countExpiringSoon } from "../../data/inventoryUtils";
 
 function QuickStatsBar({
@@ -40,4 +41,4 @@ function QuickStatsBar({
   );
 }
 
-export default QuickStatsBar;
+export default memo(QuickStatsBar);

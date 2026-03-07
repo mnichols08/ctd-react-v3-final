@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { memo, useCallback, useRef, useState } from "react";
 
 // This component is a simplified version of the AddInventoryItemForm, designed for quick addition of items with minimal required fields.
 // It focuses on essential information needed to add an item to the inventory, making it ideal for users who want to quickly log items without filling out a lengthy form.
@@ -176,4 +176,4 @@ function QuickAddForm({ addInventoryItem }) {
   );
 }
 
-export default QuickAddForm;
+export default memo(QuickAddForm);
