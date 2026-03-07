@@ -174,3 +174,45 @@ export const createInventoryItem = async ({
     setIsSaving(false);
   }
 };
+
+export const patchInventoryItem = async (id, fields) => {
+  const patchFields = {
+    ...fields,
+    LastUpdated: new Date().toISOString(),
+  };
+  const options = {
+    method: "PATCH",
+    headers: {
+      Authorization: AUTH_TOKEN,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ fields: patchFields }),
+  };
+  let resp;
+  try {
+    resp = await throttledFetch(
+      `${BASE_URL}/${encodeURIComponent(id)}`,
+      options,
+    );
+  } catch {
+    throw new Error(
+      "Network error: Unable to reach the server. Check your internet connection.",
+    );
+  }
+  if (!resp.ok) {
+    if (resp.status === 429) {
+      throw new Error(
+        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
+      );
+    }
+    const errorBody = await resp.json().catch(() => null);
+    const message =
+      errorBody?.error?.message || `${resp.status} ${resp.statusText}`;
+    throw new Error(message);
+  }
+  const record = await resp.json();
+  return {
+    id: record.id,
+    ...record.fields,
+  };
+};
