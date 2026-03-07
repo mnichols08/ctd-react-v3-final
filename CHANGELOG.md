@@ -25,8 +25,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add patchInventoryItem function to update existing inventory items in Airtable
-- Implement optimistic updates for inventory item changes with error handling
+- `updateInventoryItem(id, fields)` in `src/data/airtableUtils.js` — PATCHes only the changed fields to the Airtable API, and automatically includes `LastUpdated: new Date().toISOString()` in every patch
+
+### Changed
+
+- `addToShoppingList()` now PATCHes `{ NeedRestock: true, TargetQty: newQty }` to Airtable on add
+- `removeFromShoppingList()` now PATCHes `{ NeedRestock: false }` to Airtable on remove
+- Quantity stepper now PATCHes `{ TargetQty: newQty }` on change, and additionally `{ NeedRestock: false }` when stepping down removes the item from the shopping list
+- `archiveItem()` now PATCHes `{ Status: "archived" }` to Airtable
+- Unarchive now PATCHes `{ Status: null }` to Airtable
+- `EditInventoryItemForm` save now PATCHes only the fields that changed rather than the full record
+- All mutations optimistically update local state immediately, then reconcile with the API response on success
+
+### Fixed
+
+- Local state is reverted to its previous value and an error is shown if a PATCH request fails, preventing the UI and database from silently drifting out of sync
 
 ---
 
