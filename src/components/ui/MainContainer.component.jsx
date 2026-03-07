@@ -299,8 +299,13 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       });
       return cleanup;
     }
-    fetchInventoryItems({ setInventoryItems, setIsLoading, setError });
-  }, []);
+    fetchInventoryItems({
+      setInventoryItems,
+      setIsLoading,
+      setError,
+      sortConfig: { field: sortField, direction: sortDirection },
+    });
+  }, [sortField, sortDirection]);
 
   return (
     <main>
@@ -317,6 +322,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
                 setInventoryItems,
                 setIsLoading,
                 setError,
+                sortConfig: { field: sortField, direction: sortDirection },
               });
             }
           }}
