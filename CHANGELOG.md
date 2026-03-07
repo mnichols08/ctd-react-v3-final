@@ -21,6 +21,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.10] - 2026-03-06
+
+### Added
+
+- Add mock responses for Airtable API tests
+- Add tests for Airtable API functions including fetch, create, patch, and delete
+- Add fetch state, error handling, and data mapping tests
+- Add create item success, failure, and form persistence tests
+- Add update tests for success, failure revert, and PATCH body verification
+- Add delete tests for success, failure preservation, and 404 handling
+- Add loading/error UI tests for spinner, error message, and retry behavior
+- Add distinct error-type tests: 404, 422, 429 for fetch; 429 for create; network error and 429 for patch and delete
+
+---
+
 ## [0.4.9] - 2026-03-06
 
 ### Added
@@ -164,7 +179,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Migrates sorting logic into inventoryUtils and refactor expiration date calculation and enhance sorting logic to better handle empty values 
+- Migrates sorting logic into inventoryUtils and refactor expiration date calculation and enhance sorting logic to better handle empty values
 - Refactor sorting logic in MainContainer to utilize new sortItems utility function
 - Enhance QuickStatsBar component with default props for better usability
 - Refactor active filter count logic into a utility function for better code reuse
@@ -196,7 +211,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In inventoryUtils, adds countExpiringSoon function to filter items expiring within 14 days
 
 ### Changed
- 
+
 - Refactor QuickStatsBar tests to improve inventory handling and add zero state checks
 
 ---
@@ -333,7 +348,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.2.3]  - 2026-03-03
+## [0.2.3] - 2026-03-03
 
 ### Added
 
@@ -386,7 +401,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Creates a `dev:server` script to allow running the development server on the local network
-- Adds script `test:watch` for running Vitest tests in watch mode 
+- Adds script `test:watch` for running Vitest tests in watch mode
 
 ### Changed
 
