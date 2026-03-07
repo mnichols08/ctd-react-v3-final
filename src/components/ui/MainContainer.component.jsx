@@ -44,6 +44,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [_isSaving, setIsSaving] = useState(false);
   // State to track if there was an error loading or updating inventory items
   const [error, setError] = useState(null);
+  // State for save/create errors — shown inline near the form, not replacing the whole UI
+  const [saveError, setSaveError] = useState(null);
 
   // Filter inventory items by search term across searchable fields (case-insensitive, null-safe)
   const term = searchTerm.trim().toLowerCase();
@@ -250,17 +252,25 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             <button onClick={() => setShowQuickAdd((prev) => !prev)}>
               {showQuickAdd ? "Switch to Full Form" : "Switch to Quick Add"}
             </button>
+            {saveError && (
+              <div role="alert">
+                <p>Error: {saveError}</p>
+                <button type="button" onClick={() => setSaveError(null)}>
+                  Dismiss
+                </button>
+              </div>
+            )}
             {showQuickAdd ? (
               <QuickAddForm
                 addInventoryItem={addInventoryItem}
                 setIsSaving={setIsSaving}
-                setError={setError}
+                setError={setSaveError}
               />
             ) : (
               <AddInventoryItemForm
                 addInventoryItem={addInventoryItem}
                 setIsSaving={setIsSaving}
-                setError={setError}
+                setError={setSaveError}
               />
             )}
           </ToolSection>
