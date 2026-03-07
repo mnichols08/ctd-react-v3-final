@@ -305,4 +305,74 @@ describe("MainContainer", () => {
       screen.queryByRole("form", { name: "Add Inventory Item" }),
     ).toBeNull();
   });
+
+  // -- Loading / Error UI --------------------------------------------------
+
+  it("loading spinner renders while isLoading is true", () => {
+    render(<MainContainer />);
+
+    // Before timers resolve, the loading indicator should be visible
+    const loadingStatus = screen.getByRole("status");
+    expect(loadingStatus).toBeTruthy();
+    expect(loadingStatus.textContent).toContain("Loading...");
+
+    // Inventory sections should NOT be rendered yet
+    expect(screen.queryByRole("heading", { name: "Fridge" })).toBeNull();
+
+    // After loading completes, the spinner disappears
+    act(() => vi.runAllTimers());
+    expect(screen.queryByText("Loading...")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Fridge" })).toBeTruthy();
+  });
+
+  it("error message and Retry button render when error is set", () => {
+    // Make Math.random return 0 so loadSampleData triggers its failure branch
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    render(<MainContainer />);
+    act(() => vi.runAllTimers());
+
+    // Error alert should be visible with the failure message
+    const alertEl = screen.getByRole("alert");
+    expect(alertEl).toBeTruthy();
+    expect(alertEl.textContent).toContain(
+      "Failed to load sample data. Please try again.",
+    );
+
+    // Retry button should be present
+    expect(screen.getByRole("button", { name: "Retry" })).toBeTruthy();
+
+    // Inventory sections should NOT be rendered
+    expect(screen.queryByRole("heading", { name: "Fridge" })).toBeNull();
+
+    // Restore so other tests aren't affected
+    vi.spyOn(Math, "random").mockReturnValue(1);
+  });
+
+  it("Retry clears error and re-fetches", () => {
+    // First render triggers a failure
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    render(<MainContainer />);
+    act(() => vi.runAllTimers());
+
+    // Error is shown
+    expect(screen.getByRole("alert")).toBeTruthy();
+
+    // Now make the next load succeed
+    vi.spyOn(Math, "random").mockReturnValue(1);
+
+    // Click Retry
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+
+    // After retry triggers loadSampleData again, advance timers to resolve loading
+    act(() => vi.runAllTimers());
+
+    // Error should be cleared
+    expect(screen.queryByRole("alert")).toBeNull();
+
+    // Inventory sections should now render
+    expect(screen.getByRole("heading", { name: "Fridge" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Pantry" })).toBeTruthy();
+  });
 });
