@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add sorting and filtering parameters for Airtable queries
 - Pass sorting configuration to fetchInventoryItems for improved data retrieval
 - Refine search term handling and enhance filter options in buildAirtableParams
+- Enhance client-side filtering and sorting in fetchInventoryItems; add fallback for Airtable query errors
 
 ---
 
