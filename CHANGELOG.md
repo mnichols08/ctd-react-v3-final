@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Enhance Airtable API tests with mocked Date.now for accurate timing in throttledFetch
+- Refactor handleAddItem to clear previous save errors and return success status for item addition
 
 ### Fixed
 
