@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 
 function AddInventoryItemForm({ addInventoryItem }) {
   // Initial form state with all fields set to empty or default values
@@ -34,39 +34,42 @@ function AddInventoryItemForm({ addInventoryItem }) {
   const itemNameRef = useRef(null);
 
   // Handle input changes for all form fields
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
     }));
-  };
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newItem = {
-      id: Date.now(),
-      ...formData,
-      LastUpdated: new Date().toISOString(),
-    };
-    // Coerce numeric fields from strings to numbers (or null for empty fields)
-    const numericFields = [
-      "QtyOnHand",
-      "TargetQty",
-      "PurchasePrice",
-      "UnitCost",
-    ];
-    numericFields.forEach((field) => {
-      if (Object.prototype.hasOwnProperty.call(newItem, field)) {
-        const value = newItem[field];
-        newItem[field] = value === "" ? null : Number(value);
-      }
-    });
-    const success = await addInventoryItem(newItem);
-    if (success === false) return;
-    setFormData(initialFormState);
-    itemNameRef.current?.focus();
-  };
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      const newItem = {
+        id: Date.now(),
+        ...formData,
+        LastUpdated: new Date().toISOString(),
+      };
+      // Coerce numeric fields from strings to numbers (or null for empty fields)
+      const numericFields = [
+        "QtyOnHand",
+        "TargetQty",
+        "PurchasePrice",
+        "UnitCost",
+      ];
+      numericFields.forEach((field) => {
+        if (Object.prototype.hasOwnProperty.call(newItem, field)) {
+          const value = newItem[field];
+          newItem[field] = value === "" ? null : Number(value);
+        }
+      });
+      const success = await addInventoryItem(newItem);
+      if (success === false) return;
+      setFormData(initialFormState);
+      itemNameRef.current?.focus();
+    },
+    [formData, addInventoryItem],
+  );
   return (
     <form onSubmit={handleSubmit} aria-label="Add Inventory Item">
       <fieldset>
