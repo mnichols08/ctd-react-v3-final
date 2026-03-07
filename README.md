@@ -55,11 +55,13 @@ This app connects to Airtable and requires a few environment variables.
 
 2. Open `.env.local` and fill in your values:
 
-   | Variable                   | Description                                      |
-   | -------------------------- | ------------------------------------------------ |
-   | `VITE_AIRTABLE_PAT`       | Your Airtable Personal Access Token               |
-   | `VITE_AIRTABLE_BASE_ID`   | The Base ID from your Airtable base URL or API docs |
-   | `VITE_AIRTABLE_TABLE_NAME`| The name of the table to read/write               |
+   | Variable                   | Description                                                                                                          |
+   | -------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+   | `VITE_AIRTABLE_PAT`        | Your Airtable Personal Access Token                                                                                  |
+   | `VITE_AIRTABLE_BASE_ID`    | The Base ID from your Airtable base URL or API docs                                                                  |
+   | `VITE_AIRTABLE_TABLE_NAME` | The name of the table to read/write                                                                                  |
+   | `VITE_SAMPLE_DATA`         | Set to `true` to use local sample data instead of Airtable                                                           |
+   | `VITE_SERVER_FILTER`       | Set to `true` to enable server-side sorting/filtering via Airtable query params (default: `false`, uses client-side) |
 
 > **Note:** `.env.local` is git-ignored and will not be committed. If any variable is missing at startup, a warning will be logged to the browser console.
 
