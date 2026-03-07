@@ -288,7 +288,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     );
   }, [inventoryItems, setArchivedItemsExist]);
 
-  // Initial load effect to fetch inventory items from Airtable API
+  // Initial load effect — fetch inventory items once on mount
   useEffect(() => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       // Load sample data from local JSON file for development/testing
@@ -307,8 +307,25 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       filterConfig: filters,
       searchTerm,
     });
-    // Client-side filtering is the default; when VITE_SERVER_FILTER is enabled,
-    // sort/filter/search changes trigger a re-fetch with server-side params.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // When server-side filtering is enabled, re-fetch on sort/filter/search changes
+  useEffect(() => {
+    if (
+      import.meta.env.VITE_SAMPLE_DATA === "true" ||
+      import.meta.env.VITE_SERVER_FILTER !== "true"
+    ) {
+      return;
+    }
+    fetchInventoryItems({
+      setInventoryItems,
+      setIsLoading,
+      setError,
+      sortConfig: { field: sortField, direction: sortDirection },
+      filterConfig: filters,
+      searchTerm,
+    });
   }, [sortField, sortDirection, filters, searchTerm]);
 
   return (

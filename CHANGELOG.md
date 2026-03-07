@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Refactor fetchInventoryItems to support server-side filtering and remove unused client-side filter logic
+- Refactor initial load effect and add server-side filtering for inventory items
 
 ---
 
