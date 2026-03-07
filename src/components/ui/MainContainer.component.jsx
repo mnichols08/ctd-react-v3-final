@@ -40,6 +40,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [showArchived, setShowArchived] = useState(false);
   // State to tell if the inventory is loading (e.g., fetching from API)
   const [isLoading, setIsLoading] = useState(true);
+  // State to track if an inventory item is being saved to the API
+  const [_isSaving, setIsSaving] = useState(false);
   // State to track if there was an error loading or updating inventory items
   const [error, setError] = useState(null);
 
@@ -249,9 +251,17 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
               {showQuickAdd ? "Switch to Full Form" : "Switch to Quick Add"}
             </button>
             {showQuickAdd ? (
-              <QuickAddForm addInventoryItem={addInventoryItem} />
+              <QuickAddForm
+                addInventoryItem={addInventoryItem}
+                setIsSaving={setIsSaving}
+                setError={setError}
+              />
             ) : (
-              <AddInventoryItemForm addInventoryItem={addInventoryItem} />
+              <AddInventoryItemForm
+                addInventoryItem={addInventoryItem}
+                setIsSaving={setIsSaving}
+                setError={setError}
+              />
             )}
           </ToolSection>
           <InventorySection
