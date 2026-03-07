@@ -519,7 +519,7 @@ describe("Airtable API functions", () => {
   // -- createInventoryItem -------------------------------------------------
 
   describe("createInventoryItem", () => {
-    it("calls addInventoryItem with the saved record on success", async () => {
+    it("successful create adds item to state with Airtable-generated ID", async () => {
       globalThis.fetch = createMockFetch(mockCreateResponse);
 
       const addInventoryItem = vi.fn();
@@ -527,22 +527,65 @@ describe("Airtable API functions", () => {
       const setError = vi.fn();
 
       const result = await createInventoryItem({
-        item: { ItemName: "Cheddar Cheese", Category: "Dairy" },
+        item: {
+          id: "temp-local-id",
+          ItemName: "Cheddar Cheese",
+          Category: "Dairy",
+        },
         addInventoryItem,
         setIsSaving,
         setError,
       });
 
+      // returns true so the caller knows the form can be cleared
       expect(result).toBe(true);
+
+      // addInventoryItem receives the Airtable-generated id, not the local temp id
       expect(addInventoryItem).toHaveBeenCalledTimes(1);
-      expect(addInventoryItem.mock.calls[0][0]).toMatchObject({
-        id: "recNewItem1",
-        ItemName: "Cheddar Cheese",
+      const savedItem = addInventoryItem.mock.calls[0][0];
+      expect(savedItem.id).toBe("recNewItem1");
+      expect(savedItem.id).not.toBe("temp-local-id");
+      expect(savedItem.ItemName).toBe("Cheddar Cheese");
+
+      // saving lifecycle completes
+      expect(setIsSaving).toHaveBeenCalledWith(true);
+      expect(setIsSaving).toHaveBeenLastCalledWith(false);
+      expect(setError).not.toHaveBeenCalled();
+    });
+
+    it("failed create does not add item and shows error", async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 422,
+        statusText: "Unprocessable Entity",
       });
+
+      const addInventoryItem = vi.fn();
+      const setIsSaving = vi.fn();
+      const setError = vi.fn();
+
+      const result = await createInventoryItem({
+        item: { ItemName: "Bad Item" },
+        addInventoryItem,
+        setIsSaving,
+        setError,
+      });
+
+      // returns false so the caller knows it failed
+      expect(result).toBe(false);
+
+      // item was NOT added to state
+      expect(addInventoryItem).not.toHaveBeenCalled();
+
+      // error message from JSON body is shown
+      expect(setError).toHaveBeenCalledWith(
+        "Could not find field 'BadField' in table",
+      );
+
+      // saving lifecycle still completes
       expect(setIsSaving).toHaveBeenLastCalledWith(false);
     });
 
-    it("returns false and sets error on network failure", async () => {
+    it("form doesn't clear on failure (returns false on network error)", async () => {
       globalThis.fetch = createMockFetch(null, { networkError: true });
 
       const addInventoryItem = vi.fn();
@@ -550,17 +593,25 @@ describe("Airtable API functions", () => {
       const setError = vi.fn();
 
       const result = await createInventoryItem({
-        item: { ItemName: "Test" },
+        item: { ItemName: "Test Item", Category: "Dairy" },
         addInventoryItem,
         setIsSaving,
         setError,
       });
 
+      // returns false — the calling form checks this to decide whether to reset
       expect(result).toBe(false);
+
+      // item was NOT added, so form state should be preserved by the caller
       expect(addInventoryItem).not.toHaveBeenCalled();
+
+      // error is communicated to the user
       expect(setError).toHaveBeenCalledWith(
-        expect.stringContaining("Network error"),
+        "Network error: Unable to reach the server. Check your internet connection.",
       );
+
+      // saving lifecycle still completes
+      expect(setIsSaving).toHaveBeenLastCalledWith(false);
     });
   });
 
