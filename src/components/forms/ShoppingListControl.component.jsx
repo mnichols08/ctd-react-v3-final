@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+
 // Unified shopping-list control for an inventory item.
 // Shows an "Add to Shopping List" button when the item isn't on the list,
 // and a quantity stepper ([ - ] count [ + ]) when it is.
@@ -17,20 +19,20 @@ function ShoppingListControl({
 
   const isInShoppingList = needRestock && targetQty > qtyOnHand;
 
-  const handleAdd = () => {
+  const handleAdd = useCallback(() => {
     if (typeof handleAddToShoppingList !== "function") return;
     handleAddToShoppingList({ itemId: id, quantity: 1 });
-  };
+  }, [handleAddToShoppingList, id]);
 
-  const handleDecrement = () => {
+  const handleDecrement = useCallback(() => {
     if (typeof handleUpdateItemQuantity !== "function") return;
     handleUpdateItemQuantity(id, targetQty - 1);
-  };
+  }, [handleUpdateItemQuantity, id, targetQty]);
 
-  const handleIncrement = () => {
+  const handleIncrement = useCallback(() => {
     if (typeof handleUpdateItemQuantity !== "function") return;
     handleUpdateItemQuantity(id, targetQty + 1);
-  };
+  }, [handleUpdateItemQuantity, id, targetQty]);
   const componentHeading = handleAddToShoppingList ? (
     <h3>Shopping List Controls</h3>
   ) : (
