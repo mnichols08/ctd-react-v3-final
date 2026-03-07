@@ -132,25 +132,45 @@ export const fetchInventoryItems = async ({
       );
     }
     if (!resp.ok) {
-      switch (resp.status) {
-        case 401:
+      // On 422 with server-side params, fall back to fetching all records
+      // and let client-side filtering handle it
+      if (resp.status === 422 && useServerFilter && params.toString()) {
+        console.warn(
+          "Airtable returned 422 for query params — falling back to unfiltered fetch.",
+        );
+        let fallbackResp;
+        try {
+          fallbackResp = await throttledFetch(BASE_URL, options);
+        } catch {
           throw new Error(
-            "Authentication failed: Invalid API token. Verify your VITE_AIRTABLE_PAT.",
+            "Network error: Unable to reach the server. Check your internet connection.",
           );
-        case 404:
-          throw new Error(
-            "Not found: Invalid base or table name. Verify VITE_AIRTABLE_BASE_ID and VITE_AIRTABLE_TABLE_NAME.",
-          );
-        case 422:
-          throw new Error(
-            "Bad request: The request was invalid. Check your query parameters and field names.",
-          );
-        case 429:
-          throw new Error(
-            "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
-          );
-        default:
-          throw new Error(`${resp.status} ${resp.statusText}`);
+        }
+        if (!fallbackResp.ok) {
+          throw new Error(`${fallbackResp.status} ${fallbackResp.statusText}`);
+        }
+        resp = fallbackResp;
+      } else {
+        switch (resp.status) {
+          case 401:
+            throw new Error(
+              "Authentication failed: Invalid API token. Verify your VITE_AIRTABLE_PAT.",
+            );
+          case 404:
+            throw new Error(
+              "Not found: Invalid base or table name. Verify VITE_AIRTABLE_BASE_ID and VITE_AIRTABLE_TABLE_NAME.",
+            );
+          case 422:
+            throw new Error(
+              "Bad request: The request was invalid. Check your query parameters and field names.",
+            );
+          case 429:
+            throw new Error(
+              "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
+            );
+          default:
+            throw new Error(`${resp.status} ${resp.statusText}`);
+        }
       }
     }
     const { records } = await resp.json();
