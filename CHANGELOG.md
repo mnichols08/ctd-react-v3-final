@@ -21,11 +21,187 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.11] - 2026-03-06
+
+### Added
+
+- Add resetThrottle function to clear request timestamps for testing
+
+### Changed
+
+- Enhance Airtable API tests with mocked Date.now for accurate timing in throttledFetch
+- Refactor handleAddItem to clear previous save errors and return success status for item addition
+- Refactor form submission in AddInventoryItemForm and QuickAddForm to handle async operations and improve item creation logic
+- Clear previous error state before saving in createInventoryItem
+- Update changedFields to include TargetQty in MainContainer
+
+### Fixed
+
+ - Fix Math.random spy usage in retry tests
+ - Fix condition for loading sample data in MainContainer
+ - Fix formatting in comments for clarity in FilterBarForm tests
+
+---
+
+## [0.4.10] - 2026-03-06
+
+### Added
+
+- Add mock responses for Airtable API tests
+- Add tests for Airtable API functions including fetch, create, patch, and delete
+- Add fetch state, error handling, and data mapping tests
+- Add create item success, failure, and form persistence tests
+- Add update tests for success, failure revert, and PATCH body verification
+- Add delete tests for success, failure preservation, and 404 handling
+- Add loading/error UI tests for spinner, error message, and retry behavior
+- Add distinct error-type tests: 404, 422, 429 for fetch; 429 for create; network error and 429 for patch and delete
+
+---
+
+## [0.4.9] - 2026-03-06
+
+### Added
+
+- Add sorting and filtering parameters for Airtable queries
+- Pass sorting configuration to fetchInventoryItems for improved data retrieval
+- Refine search term handling and enhance filter options in buildAirtableParams
+- Enhance client-side filtering and sorting in fetchInventoryItems; add fallback for Airtable query errors
+- Keep client-side filtering as the primary approach; server-side is an optimization
+- Add fallback for 422 errors in fetchInventoryItems to support client-side filtering
+- Add comprehensive tests for buildAirtableParams to validate sorting and filtering logic
+
+### Changed
+
+- Refactor fetchInventoryItems to support server-side filtering and remove unused client-side filter logic
+- Refactor initial load effect and add server-side filtering for inventory items
+
+---
+
+## [0.4.8] - 2026-03-06
+
+### Added
+
+- Implement deleteInventoryItem function to remove items from Airtable
+- Implement deleteItem handler to remove inventory items with confirmation and error handling
+- Handle 404 status in deleteInventoryItem function to treat missing records as successful deletions
+- Enhance delete item functionality with confirmation and disable button during deletion
+
+---
+
+## [0.4.7] - 2026-03-06
+
+### Added
+
+- `updateInventoryItem(id, fields)` in `src/data/airtableUtils.js` — PATCHes only the changed fields to the Airtable API, and automatically includes `LastUpdated: new Date().toISOString()` in every patch
+
+### Changed
+
+- `addToShoppingList()` now PATCHes `{ NeedRestock: true, TargetQty: newQty }` to Airtable on add
+- `removeFromShoppingList()` now PATCHes `{ NeedRestock: false }` to Airtable on remove
+- Quantity stepper now PATCHes `{ TargetQty: newQty }` on change, and additionally `{ NeedRestock: false }` when stepping down removes the item from the shopping list
+- `archiveItem()` now PATCHes `{ Status: "archived" }` to Airtable
+- Unarchive now PATCHes `{ Status: null }` to Airtable
+- `EditInventoryItemForm` save now PATCHes only the fields that changed rather than the full record
+- All mutations optimistically update local state immediately, then reconcile with the API response on success
+
+### Fixed
+
+- Local state is reverted to its previous value and an error is shown if a PATCH request fails, preventing the UI and database from silently drifting out of sync
+
+---
+
+## [0.4.6] - 2026-03-06
+
+### Added
+
+- Add createInventoryItem function to handle item creation in Airtable
+- Add saving state management to QuickAddForm and AddInventoryItemForm
+- Implement throttled fetch for Airtable API to manage rate limits and handle errors
+- Add saveError state management to handle inline error messages in forms
+- Display saving status message in MainContainer when saving an item to Airtable
+- Integrate createInventoryItem function to handle item submissions in MainContainer
+
+### Changed
+
+- Refactor AddInventoryItemForm and QuickAddForm to integrate createInventoryItem function for handling submissions
+- Refactor AddInventoryItemForm and QuickAddForm to simplify item addition and remove unused state management
+
+---
+
+## [0.4.5] - 2026-03-06
+
+### Fixed
+
+- Fix cleanup function in useEffect for MainContainer and ensure VITE_SAMPLE_DATA is checked as a string
+- Reset error state before fetching inventory items to prevent stale errors
+- Encode Airtable table name in BASE_URL for proper URL formatting
+
+---
+
+## [0.4.4] - 2026-03-06
+
+### Added
+
+- Add sample data configuration to .env.example for development
+- Implement fetchInventoryItems and loadSampleData functions for Airtable integration
+- Implement inventory fetching from Airtable API and load sample data for development
+
+### Fixed
+
+- Fix typos throughout repository: corrected "ItemDescripton" to "ItemDescription" for consistency
+
+---
+
+## [0.4.3] - 2026-03-05
+
+### Changed
+
+- Refactor tests to use vi.runAllTimers for consistent timer handling
+- Refactor effect that called simulateLoading to only trigger random error if in DEV_MODE
+- Remove unnecessary aria-live attributes from loading and error state components
+
+---
+
+## [0.4.2] - 2026-03-05
+
+### Added
+
+- Add LoadingState component for handling loading states
+- Add ErrorState component for handling error states
+- Add loading and error handling states to MainContainer component
+- Add global test setup for loading and error states
+- Add simulated load and random error on initial mount
+- Add timer duration in tests to handle simulated load and random error
+
+---
+
+## [0.4.1] - 2026-03-05
+
+### Added
+
+- Add security note regarding exposure of Airtable environment variables
+
+### Changed
+
+- Update example Airtable environment variables for clarity
+
+---
+
+## [0.4.0] - 2026-03-05
+
+### Added
+
+- Add example environment variables for Airtable integration
+- Add environment variable checks for Airtable integration
+- Add detailed environment variable setup instructions for Airtable integration
+
+---
+
 ## [0.3.6] - 2026-03-05
 
 ### Changed
 
-- Migrates sorting logic into inventoryUtils and refactor expiration date calculation and enhance sorting logic to better handle empty values 
+- Migrates sorting logic into inventoryUtils and refactor expiration date calculation and enhance sorting logic to better handle empty values
 - Refactor sorting logic in MainContainer to utilize new sortItems utility function
 - Enhance QuickStatsBar component with default props for better usability
 - Refactor active filter count logic into a utility function for better code reuse
@@ -57,7 +233,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - In inventoryUtils, adds countExpiringSoon function to filter items expiring within 14 days
 
 ### Changed
- 
+
 - Refactor QuickStatsBar tests to improve inventory handling and add zero state checks
 
 ---
@@ -194,7 +370,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.2.3]  - 2026-03-03
+## [0.2.3] - 2026-03-03
 
 ### Added
 
@@ -247,7 +423,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Creates a `dev:server` script to allow running the development server on the local network
-- Adds script `test:watch` for running Vitest tests in watch mode 
+- Adds script `test:watch` for running Vitest tests in watch mode
 
 ### Changed
 

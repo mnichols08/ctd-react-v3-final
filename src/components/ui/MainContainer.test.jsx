@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -91,6 +92,7 @@ describe("MainContainer", () => {
     ).length;
 
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     const fridgeSection = screen
       .getByRole("heading", { name: "Fridge" })
@@ -130,6 +132,7 @@ describe("MainContainer", () => {
     ).length;
 
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     // Locate the "Add Item" ToolSection and the default QuickAddForm by its accessible name
     const addItemSection = screen
@@ -177,6 +180,7 @@ describe("MainContainer", () => {
     expect(pantryCandidate).toBeTruthy();
 
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     fireEvent.change(screen.getByLabelText("mock-qty-Pantry"), {
       target: { value: "2" },
@@ -205,6 +209,7 @@ describe("MainContainer", () => {
     expect(shoppingItemToRemove).toBeTruthy();
 
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     fireEvent.click(
       screen.getByRole("button", { name: "mock-remove-Shopping List" }),
@@ -238,6 +243,7 @@ describe("MainContainer", () => {
         : "Pantry";
 
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     fireEvent.click(
       screen.getByRole("button", { name: "mock-remove-Shopping List" }),
@@ -254,6 +260,7 @@ describe("MainContainer", () => {
   });
   it("toggles between QuickAddForm and AddInventoryItemForm", () => {
     render(<MainContainer />);
+    act(() => vi.runAllTimers());
 
     // QuickAddForm should be visible by default
     expect(
@@ -297,5 +304,72 @@ describe("MainContainer", () => {
     expect(
       screen.queryByRole("form", { name: "Add Inventory Item" }),
     ).toBeNull();
+  });
+
+  // -- Loading / Error UI --------------------------------------------------
+
+  it("loading spinner renders while isLoading is true", () => {
+    render(<MainContainer />);
+
+    // Before timers resolve, the loading indicator should be visible
+    const loadingStatus = screen.getByRole("status");
+    expect(loadingStatus).toBeTruthy();
+    expect(loadingStatus.textContent).toContain("Loading...");
+
+    // Inventory sections should NOT be rendered yet
+    expect(screen.queryByRole("heading", { name: "Fridge" })).toBeNull();
+
+    // After loading completes, the spinner disappears
+    act(() => vi.runAllTimers());
+    expect(screen.queryByText("Loading...")).toBeNull();
+    expect(screen.getByRole("heading", { name: "Fridge" })).toBeTruthy();
+  });
+
+  it("error message and Retry button render when error is set", () => {
+    // Make Math.random return 0 so loadSampleData triggers its failure branch
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    render(<MainContainer />);
+    act(() => vi.runAllTimers());
+
+    // Error alert should be visible with the failure message
+    const alertEl = screen.getByRole("alert");
+    expect(alertEl).toBeTruthy();
+    expect(alertEl.textContent).toContain(
+      "Failed to load sample data. Please try again.",
+    );
+
+    // Retry button should be present
+    expect(screen.getByRole("button", { name: "Retry" })).toBeTruthy();
+
+    // Inventory sections should NOT be rendered
+    expect(screen.queryByRole("heading", { name: "Fridge" })).toBeNull();
+  });
+
+  it("Retry clears error and re-fetches", () => {
+    // First render triggers a failure
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    render(<MainContainer />);
+    act(() => vi.runAllTimers());
+
+    // Error is shown
+    expect(screen.getByRole("alert")).toBeTruthy();
+
+    // Now make the next load succeed
+    vi.mocked(Math.random).mockReturnValue(1);
+
+    // Click Retry
+    fireEvent.click(screen.getByRole("button", { name: "Retry" }));
+
+    // After retry triggers loadSampleData again, advance timers to resolve loading
+    act(() => vi.runAllTimers());
+
+    // Error should be cleared
+    expect(screen.queryByRole("alert")).toBeNull();
+
+    // Inventory sections should now render
+    expect(screen.getByRole("heading", { name: "Fridge" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Pantry" })).toBeTruthy();
   });
 });

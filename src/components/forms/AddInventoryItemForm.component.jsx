@@ -4,7 +4,7 @@ function AddInventoryItemForm({ addInventoryItem }) {
   // Initial form state with all fields set to empty or default values
   const initialFormState = {
     ItemName: "",
-    ItemDescripton: "",
+    ItemDescription: "",
     Brand: "",
     PackageSize: "",
     UPC: "",
@@ -42,9 +42,13 @@ function AddInventoryItemForm({ addInventoryItem }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newItem = { ...formData };
+    const newItem = {
+      id: Date.now(),
+      ...formData,
+      LastUpdated: new Date().toISOString(),
+    };
     // Coerce numeric fields from strings to numbers (or null for empty fields)
     const numericFields = [
       "QtyOnHand",
@@ -58,10 +62,9 @@ function AddInventoryItemForm({ addInventoryItem }) {
         newItem[field] = value === "" ? null : Number(value);
       }
     });
-    newItem.LastUpdated = new Date().toISOString();
-    newItem.id = new Date().getTime(); // Use timestamp as unique ID for simplicity
-    addInventoryItem(newItem);
-    setFormData(initialFormState); // Reset form after submission
+    const success = await addInventoryItem(newItem);
+    if (success === false) return;
+    setFormData(initialFormState);
     itemNameRef.current?.focus();
   };
   return (
@@ -79,12 +82,12 @@ function AddInventoryItemForm({ addInventoryItem }) {
           required
         />
 
-        <label htmlFor="ItemDescripton">Item Description:</label>
+        <label htmlFor="ItemDescription">Item Description:</label>
         <textarea
-          value={formData.ItemDescripton}
+          value={formData.ItemDescription}
           onChange={handleChange}
-          id="ItemDescripton"
-          name="ItemDescripton"
+          id="ItemDescription"
+          name="ItemDescription"
         />
 
         <label htmlFor="Brand">Brand:</label>

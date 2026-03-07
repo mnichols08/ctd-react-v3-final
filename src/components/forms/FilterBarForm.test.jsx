@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   act,
   cleanup,
@@ -87,7 +87,7 @@ describe("Search", () => {
 
   it("typing a search term filters items to only matches", () => {
     render(<App />);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.runAllTimers());
 
     typeSearch("pearl");
 
@@ -100,7 +100,7 @@ describe("Search", () => {
 
   it("search matches across all 5 searchable fields", () => {
     render(<App />);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.runAllTimers());
 
     // ItemName field
     typeSearch("Apple");
@@ -114,12 +114,12 @@ describe("Search", () => {
     typeSearch("Dairy");
     expect(getSectionItemNames("Fridge")).toEqual(["Low Fat Vanilla Yogurt"]);
 
-    // Tags and Notes are null for all sample items — covered by the null-safe test
+    // Tags and Notes are null for all sample items â€” covered by the null-safe test
   });
 
   it("search is case-insensitive", () => {
     render(<App />);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.runAllTimers());
 
     typeSearch("PEARL");
     expect(screen.getByText(/Showing 1 of 5 items/)).toBeTruthy();
@@ -132,7 +132,7 @@ describe("Search", () => {
 
   it("clearing search restores all items", () => {
     render(<App />);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.runAllTimers());
 
     typeSearch("pearl");
     expect(screen.getByText(/Showing 1 of 5 items/)).toBeTruthy();
@@ -146,7 +146,7 @@ describe("Search", () => {
 
   it("items with null fields don't crash the search", () => {
     render(<App />);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.runAllTimers());
 
     // All sample items have null Tags and Notes; search must not crash
     typeSearch("nonexistent");
@@ -160,6 +160,7 @@ describe("Search", () => {
 describe("Sort", () => {
   it("sorting by ItemName A-Z orders alphabetically", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     // Default sort is ItemName asc
     expect(getSectionItemNames("Fridge")).toEqual([
@@ -174,6 +175,7 @@ describe("Sort", () => {
 
   it("sorting by ItemName Z-A reverses order", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     fireEvent.change(screen.getByLabelText("Sort Direction:"), {
       target: { value: "desc" },
@@ -191,6 +193,7 @@ describe("Sort", () => {
 
   it("sorting by QtyOnHand orders numerically", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     fireEvent.change(screen.getByLabelText("Sort by:"), {
       target: { value: "QtyOnHand" },
@@ -210,6 +213,7 @@ describe("Sort", () => {
 
   it("sorting by ExpiresOn puts earliest first, nulls last", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     // Add an item without ExpiresOn to Fridge
     quickAddItem({
@@ -233,8 +237,9 @@ describe("Sort", () => {
 
   it("selecting None restores original order", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
-    // Default ItemName asc — Fridge: Apple Sauce, Yogurt
+    // Default ItemName asc â€” Fridge: Apple Sauce, Yogurt
     expect(getSectionItemNames("Fridge")).toEqual([
       "Apple Sauce",
       "Low Fat Vanilla Yogurt",
@@ -259,6 +264,7 @@ describe("Sort", () => {
 describe("Filter", () => {
   it("filtering by single category shows only matching items", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
 
@@ -273,6 +279,7 @@ describe("Filter", () => {
 
   it("filtering by multiple categories shows union of matches", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
     fireEvent.click(screen.getByRole("checkbox", { name: /Dairy/ }));
@@ -285,6 +292,7 @@ describe("Filter", () => {
 
   it("filtering by NeedRestock=true shows only shopping list items", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     // Sesame Oil has NeedRestock=true and TargetQty(1) > QtyOnHand(0.1)
     const shoppingNames = getSectionItemNames("Shopping List");
@@ -298,6 +306,7 @@ describe("Filter", () => {
 
   it("filtering by Low Stock shows only low-stock items", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     // Add a high-stock item (QtyOnHand >= 5)
     quickAddItem({
@@ -321,7 +330,7 @@ describe("Filter", () => {
     vi.setSystemTime(new Date("2026-03-10T00:00:00Z"));
 
     render(<App />);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.runAllTimers());
 
     // Category "Fresh" + Expiring Soon → no items satisfy both
     fireEvent.click(screen.getByRole("checkbox", { name: /Fresh/ }));
@@ -343,6 +352,7 @@ describe("Filter", () => {
 
   it("Clear All Filters restores all items", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
     expect(screen.getByText(/Showing 2 of 5 items/)).toBeTruthy();
@@ -361,6 +371,7 @@ describe("Filter", () => {
 describe("Archived view", () => {
   it("toggle shows and hides the archived section", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     // Show
     fireEvent.click(
@@ -381,6 +392,7 @@ describe("Archived view", () => {
 
   it("unarchive moves item back to correct section", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     fireEvent.click(
       screen.getByRole("button", { name: /Show Archived Items/ }),
@@ -408,6 +420,7 @@ describe("Archived view", () => {
 
   it("archived count updates correctly", () => {
     render(<App />);
+    act(() => vi.runAllTimers());
 
     // Initial: 1 archived item
     const toggleBtn = screen.getByRole("button", { name: /Archived Items/i });
@@ -440,7 +453,7 @@ describe("Combined search, sort, and filter", () => {
 
   it("search + sort + filter work together correctly", () => {
     render(<App />);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.runAllTimers());
 
     // Filter by Dry + Dairy categories
     fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
@@ -467,7 +480,7 @@ describe("Combined search, sort, and filter", () => {
 
   it("clearing one doesn't affect others", () => {
     render(<App />);
-    act(() => vi.advanceTimersByTime(300));
+    act(() => vi.runAllTimers());
 
     // 1. Sort by QtyOnHand asc
     fireEvent.change(screen.getByLabelText("Sort by:"), {

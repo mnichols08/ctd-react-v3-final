@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
+  act,
   cleanup,
   createEvent,
   fireEvent,
@@ -44,7 +45,7 @@ describe("AddInventoryItemForm", () => {
     expect(screen.getByLabelText("Quantity on Hand:").required).toBe(true);
   });
 
-  it("clears form and focuses Item Name input after successful submit", () => {
+  it("clears form and focuses Item Name input after successful submit", async () => {
     const addInventoryItem = vi.fn();
 
     const { container } = render(
@@ -64,7 +65,7 @@ describe("AddInventoryItemForm", () => {
 
     const form = container.querySelector("form");
     const submitEvent = createEvent.submit(form);
-    fireEvent(form, submitEvent);
+    await act(async () => fireEvent(form, submitEvent));
 
     expect(addInventoryItem).toHaveBeenCalledTimes(1);
     expect(itemNameInput.value).toBe("");
@@ -426,7 +427,7 @@ describe("QuickAddForm", () => {
     const expectedKeys = [
       "id",
       "ItemName",
-      "ItemDescripton",
+      "ItemDescription",
       "Brand",
       "PackageSize",
       "UPC",
@@ -481,7 +482,7 @@ describe("QuickAddForm", () => {
     expect(addInventoryItem).not.toHaveBeenCalled();
   });
 
-  it("form resets after successful submit", () => {
+  it("form resets after successful submit", async () => {
     const addInventoryItem = vi.fn();
 
     const { container } = render(
@@ -499,7 +500,7 @@ describe("QuickAddForm", () => {
     fireEvent.change(qtyInput, { target: { value: "5" } });
 
     const form = container.querySelector("form");
-    fireEvent(form, createEvent.submit(form));
+    await act(async () => fireEvent(form, createEvent.submit(form)));
 
     expect(addInventoryItem).toHaveBeenCalledTimes(1);
     // After submit the form should reset
@@ -562,7 +563,7 @@ describe("EditInventoryItemForm", () => {
   const baseItem = {
     id: 10,
     ItemName: "Blueberries",
-    ItemDescripton: "Organic",
+    ItemDescription: "Organic",
     Brand: "Nature's Best",
     PackageSize: "16oz",
     UPC: "123456789",
@@ -799,7 +800,7 @@ describe("Controlled forms – typing updates displayed value immediately", () =
 // M2 – Controlled forms: clear + resubmit sends defaults
 // ---------------------------------------------------------------------------
 describe("Controlled forms – clearing and resubmitting sends empty/default values", () => {
-  it("QuickAddForm: clearing fields and submitting sends defaults for non-name fields", () => {
+  it("QuickAddForm: clearing fields and submitting sends defaults for non-name fields", async () => {
     const handler = vi.fn();
     const { container } = render(<QuickAddForm addInventoryItem={handler} />);
 
@@ -818,7 +819,7 @@ describe("Controlled forms – clearing and resubmitting sends empty/default val
     });
 
     const form = container.querySelector("form");
-    fireEvent(form, createEvent.submit(form));
+    await act(async () => fireEvent(form, createEvent.submit(form)));
     expect(handler).toHaveBeenCalledTimes(1);
 
     // Form resets — now submit again with only required Item Name
@@ -828,7 +829,7 @@ describe("Controlled forms – clearing and resubmitting sends empty/default val
     fireEvent.change(screen.getByLabelText("Location:"), {
       target: { value: "Pantry" },
     });
-    fireEvent(form, createEvent.submit(form));
+    await act(async () => fireEvent(form, createEvent.submit(form)));
 
     expect(handler).toHaveBeenCalledTimes(2);
     const payload = handler.mock.calls[1][0];
@@ -866,7 +867,7 @@ describe("Controlled forms – clearing and resubmitting sends empty/default val
 // M2 – Controlled forms: form state resets after submit
 // ---------------------------------------------------------------------------
 describe("Controlled forms – form state resets correctly after submit", () => {
-  it("AddInventoryItemForm: form resets and focuses Item Name after submit", () => {
+  it("AddInventoryItemForm: form resets and focuses Item Name after submit", async () => {
     const handler = vi.fn();
     const { container } = render(
       <AddInventoryItemForm addInventoryItem={handler} lastId={0} />,
@@ -881,7 +882,7 @@ describe("Controlled forms – form state resets correctly after submit", () => 
     fireEvent.change(locSelect, { target: { value: "Pantry" } });
 
     const form = container.querySelector("form");
-    fireEvent(form, createEvent.submit(form));
+    await act(async () => fireEvent(form, createEvent.submit(form)));
 
     expect(handler).toHaveBeenCalledTimes(1);
     expect(nameInput.value).toBe("");
@@ -1084,7 +1085,7 @@ describe("Integration: EditInventoryItemForm in ItemCard", () => {
     DateFrozen: null,
     Notes: "Sharp cheddar",
     Category: "Dairy",
-    ItemDescripton: null,
+    ItemDescription: null,
     Brand: null,
     PackageSize: null,
     UPC: null,
