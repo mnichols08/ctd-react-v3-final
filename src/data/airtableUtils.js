@@ -85,3 +85,64 @@ export const loadSampleData = ({
     clearTimeout(simulateLoad);
   };
 };
+
+export const createInventoryItem = async ({
+  item,
+  addInventoryItem,
+  setIsSaving,
+  setError,
+}) => {
+  const { id: _id, ...fields } = item;
+  const newFields = {
+    ...fields,
+    LastUpdated: new Date().toISOString(),
+  };
+  const payload = {
+    records: [
+      {
+        fields: newFields,
+      },
+    ],
+  };
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: AUTH_TOKEN,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  };
+
+  try {
+    setIsSaving(true);
+    let resp;
+    try {
+      resp = await fetch(BASE_URL, options);
+    } catch {
+      throw new Error(
+        "Network error: Unable to reach the server. Check your internet connection.",
+      );
+    }
+    if (!resp.ok) {
+      const errorBody = await resp.json().catch(() => null);
+      const message =
+        errorBody?.error?.message || `${resp.status} ${resp.statusText}`;
+      throw new Error(message);
+    }
+    const { records } = await resp.json();
+    const savedItem = {
+      id: records[0].id,
+      ...records[0].fields,
+    };
+    if (!records[0].fields.isCompleted) {
+      savedItem.isCompleted = false;
+    }
+    addInventoryItem(savedItem);
+    return true;
+  } catch (error) {
+    setError(error.message);
+    return false;
+  } finally {
+    setIsSaving(false);
+  }
+};

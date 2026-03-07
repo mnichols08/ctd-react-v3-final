@@ -20,6 +20,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 --- -->
+## [0.4.6] - 2026-03-06
+
+### Added
+
+- Add createInventoryItem function to handle item creation in Airtable
+
+---
 
 ## [0.4.5] - 2026-03-06
 
