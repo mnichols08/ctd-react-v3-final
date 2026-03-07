@@ -26,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add createInventoryItem function to handle item creation in Airtable
 - Add saving state management to QuickAddForm and AddInventoryItemForm
-
+- Implement throttled fetch for Airtable API to manage rate limits and handle errors
 
 ### Changed
 
