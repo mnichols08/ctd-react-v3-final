@@ -60,7 +60,7 @@ function QuickAddForm({ addInventoryItem }) {
       ProductUrl: null,
       LastUpdated: new Date().toISOString(),
     };
-    // Call the addInventoryItem function passed as a prop to add the new item to the inventory
+    // Call addInventoryItem to add the new item to the inventory
     addInventoryItem(newItem);
     // Reset the form and focus the item name input for quick entry of the next item
     setFormData({

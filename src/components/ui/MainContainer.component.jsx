@@ -5,7 +5,11 @@ import {
   isLowStock,
   sortItems,
 } from "../../data/inventoryUtils";
-import { fetchInventoryItems, loadSampleData } from "../../data/airtableUtils";
+import {
+  fetchInventoryItems,
+  loadSampleData,
+  createInventoryItem,
+} from "../../data/airtableUtils";
 import LoadingState from "./LoadingState.component";
 import ErrorState from "./ErrorState.component";
 import ToolSection from "../sections/ToolSection.component";
@@ -40,8 +44,12 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [showArchived, setShowArchived] = useState(false);
   // State to tell if the inventory is loading (e.g., fetching from API)
   const [isLoading, setIsLoading] = useState(true);
+  // State to track if an inventory item is being saved to the API
+  const [isSaving, setIsSaving] = useState(false);
   // State to track if there was an error loading or updating inventory items
   const [error, setError] = useState(null);
+  // State for save/create errors — shown inline near the form, not replacing the whole UI
+  const [saveError, setSaveError] = useState(null);
 
   // Filter inventory items by search term across searchable fields (case-insensitive, null-safe)
   const term = searchTerm.trim().toLowerCase();
@@ -71,9 +79,23 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Count of active filters for display
   const activeFilterCount = getActiveFilterCount(filters);
 
-  // Handler to add a new inventory item
+  // Handler to add a new inventory item to local state
   const addInventoryItem = (newItem) => {
     setInventoryItems((prevItems) => [...prevItems, newItem]);
+  };
+
+  // Wrapper that persists to Airtable when connected, or adds directly in sample-data mode
+  const handleAddItem = (item) => {
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      addInventoryItem(item);
+    } else {
+      createInventoryItem({
+        item,
+        addInventoryItem,
+        setIsSaving,
+        setError: setSaveError,
+      });
+    }
   };
   // Handler to add an item to the shopping list (mark as NeedRestock and update TargetQty)
   const addToShoppingList = ({ itemId, quantity }) => {
@@ -248,10 +270,19 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             <button onClick={() => setShowQuickAdd((prev) => !prev)}>
               {showQuickAdd ? "Switch to Full Form" : "Switch to Quick Add"}
             </button>
+            {isSaving && <p role="status">Saving item to Airtable…</p>}
+            {saveError && (
+              <div role="alert">
+                <p>Error: {saveError}</p>
+                <button type="button" onClick={() => setSaveError(null)}>
+                  Dismiss
+                </button>
+              </div>
+            )}
             {showQuickAdd ? (
-              <QuickAddForm addInventoryItem={addInventoryItem} />
+              <QuickAddForm addInventoryItem={handleAddItem} />
             ) : (
-              <AddInventoryItemForm addInventoryItem={addInventoryItem} />
+              <AddInventoryItemForm addInventoryItem={handleAddItem} />
             )}
           </ToolSection>
           <InventorySection
