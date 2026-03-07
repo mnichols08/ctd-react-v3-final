@@ -27,6 +27,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add createInventoryItem function to handle item creation in Airtable
 - Add saving state management to QuickAddForm and AddInventoryItemForm
 
+
+### Changed
+
+- Refactor AddInventoryItemForm and QuickAddForm to integrate createInventoryItem function for handling submissions
+
 ---
 
 ## [0.4.5] - 2026-03-06

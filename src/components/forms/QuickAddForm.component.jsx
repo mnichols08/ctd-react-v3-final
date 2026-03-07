@@ -1,8 +1,10 @@
 import { useRef, useState } from "react";
 
+import { createInventoryItem } from "../../data/airtableUtils";
+
 // This component is a simplified version of the AddInventoryItemForm, designed for quick addition of items with minimal required fields.
 // It focuses on essential information needed to add an item to the inventory, making it ideal for users who want to quickly log items without filling out a lengthy form.
-function QuickAddForm({ addInventoryItem }) {
+function QuickAddForm({ addInventoryItem, setIsSaving, setError }) {
   // Refs for item name input to reset and focus after submission
   const itemNameRef = useRef(null);
 
@@ -24,7 +26,7 @@ function QuickAddForm({ addInventoryItem }) {
     }));
   };
   // Handle form submission by creating a new item object with the provided data and default values for other fields
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Extract only the necessary fields for quick addition, and set defaults for the rest
     const { ItemName, Category, ExpiresOn, Location, QtyOnHand, QtyUnit } =
@@ -33,7 +35,6 @@ function QuickAddForm({ addInventoryItem }) {
     if (!ItemName.trim()) return;
     // Create a new item object with the provided data and default values for other fields
     const newItem = {
-      id: Date.now(),
       ItemName: ItemName.trim(),
       ItemDescription: null,
       Brand: null,
@@ -58,20 +59,26 @@ function QuickAddForm({ addInventoryItem }) {
       ImageRef: null,
       Status: null,
       ProductUrl: null,
-      LastUpdated: new Date().toISOString(),
     };
-    // Call the addInventoryItem function passed as a prop to add the new item to the inventory
-    addInventoryItem(newItem);
-    // Reset the form and focus the item name input for quick entry of the next item
-    setFormData({
-      ItemName: "",
-      Category: "",
-      ExpiresOn: "",
-      Location: "",
-      QtyOnHand: "",
-      QtyUnit: "",
+    // Call the createInventoryItem function to add the new item to the inventory
+    const success = await createInventoryItem({
+      item: newItem,
+      addInventoryItem,
+      setIsSaving,
+      setError,
     });
-    itemNameRef.current?.focus();
+    // Reset the form and focus the item name input for quick entry of the next item
+    if (success) {
+      setFormData({
+        ItemName: "",
+        Category: "",
+        ExpiresOn: "",
+        Location: "",
+        QtyOnHand: "",
+        QtyUnit: "",
+      });
+      itemNameRef.current?.focus();
+    }
   };
   return (
     <form onSubmit={handleSubmit} aria-label="Quick add inventory item">
