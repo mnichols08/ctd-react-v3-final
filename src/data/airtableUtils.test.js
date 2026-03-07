@@ -355,16 +355,28 @@ function createMockFetch(body, opts = {}) {
 
 describe("Airtable API functions", () => {
   let originalFetch;
-
+  let originalDateNow;
+  let dateNowSpy;
+  let fakeNow;
   beforeEach(() => {
     // The global test-setup enables fake timers for loading-simulation tests.
     // API tests need real timers so throttledFetch's Date.now / setTimeout work.
     vi.useRealTimers();
     originalFetch = globalThis.fetch;
+    // Mock Date.now so the throttledFetch rate limiter sees time advancing
+    // between tests, avoiding real 1s sleeps due to module-level state.
+    originalDateNow = Date.now;
+    const realNow = originalDateNow();
+    fakeNow = (fakeNow || realNow) + 2000; // advance 2s between tests
+    dateNowSpy = vi.spyOn(Date, "now").mockImplementation(() => fakeNow);
   });
-
   afterEach(() => {
     globalThis.fetch = originalFetch;
+    if (dateNowSpy) {
+      dateNowSpy.mockRestore();
+    } else if (originalDateNow) {
+      Date.now = originalDateNow;
+    }
   });
 
   // -- fetchInventoryItems -------------------------------------------------
