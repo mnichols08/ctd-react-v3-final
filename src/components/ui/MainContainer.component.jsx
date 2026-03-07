@@ -41,7 +41,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // State to tell if the inventory is loading (e.g., fetching from API)
   const [isLoading, setIsLoading] = useState(true);
   // State to track if an inventory item is being saved to the API
-  const [_isSaving, setIsSaving] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   // State to track if there was an error loading or updating inventory items
   const [error, setError] = useState(null);
   // State for save/create errors — shown inline near the form, not replacing the whole UI
@@ -252,6 +252,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             <button onClick={() => setShowQuickAdd((prev) => !prev)}>
               {showQuickAdd ? "Switch to Full Form" : "Switch to Quick Add"}
             </button>
+            {isSaving && <p role="status">Saving item to Airtable…</p>}
             {saveError && (
               <div role="alert">
                 <p>Error: {saveError}</p>
