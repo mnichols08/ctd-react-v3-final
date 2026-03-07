@@ -26,12 +26,12 @@ export function buildAirtableParams(sortConfig, filterConfig, searchTerm) {
   // Build filterByFormula
   const formulaParts = [];
 
-  // Search term — case-insensitive search across multiple fields
+  // Search term — case-insensitive substring match across multiple fields
   const term = searchTerm?.trim();
   if (term) {
-    const escaped = escapeFormulaString(term.toLowerCase());
+    const escaped = escapeFormulaString(term);
     const clauses = SEARCHABLE_FIELDS.map(
-      (f) => `SEARCH("${escaped}", LOWER({${f}}) & "")`,
+      (f) => `FIND(LOWER("${escaped}"), LOWER({${f}}))`,
     );
     formulaParts.push(`OR(${clauses.join(", ")})`);
   }
@@ -39,11 +39,23 @@ export function buildAirtableParams(sortConfig, filterConfig, searchTerm) {
   // Category filter
   if (filterConfig?.categories?.length > 0) {
     const catClauses = filterConfig.categories.map(
-      (cat) => `{Category} = "${escapeFormulaString(cat)}"`,
+      (cat) => `{Category}="${escapeFormulaString(cat)}"`,
     );
     formulaParts.push(
       catClauses.length === 1 ? catClauses[0] : `OR(${catClauses.join(", ")})`,
     );
+  }
+
+  // NeedRestock filter
+  if (filterConfig?.needRestock) {
+    formulaParts.push(`{NeedRestock}=TRUE()`);
+  }
+
+  // Status filter — "archived" shows only archived, otherwise exclude archived
+  if (filterConfig?.status === "archived") {
+    formulaParts.push(`{Status}="archived"`);
+  } else if (filterConfig?.status === "active") {
+    formulaParts.push(`OR({Status}=BLANK(), {Status}!="archived")`);
   }
 
   // Expiring soon filter
