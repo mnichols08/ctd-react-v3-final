@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.8] - 2026-03-06
+
+### Added
+
+- Implement deleteInventoryItem function to remove items from Airtable
+
+---
+
 ## [0.4.7] - 2026-03-06
 
 ### Added
