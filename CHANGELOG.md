@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.4.11] - 2026-03-06
 
+### Added
+
+- Add resetThrottle function to clear request timestamps for testing
+
 ### Changed
 
 - Enhance Airtable API tests with mocked Date.now for accurate timing in throttledFetch
