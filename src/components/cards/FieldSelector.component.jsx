@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { ALL_FIELDS } from "../../data/fieldConfig";
 
 function FieldSelector({
@@ -46,4 +47,4 @@ function FieldSelector({
   );
 }
 
-export default FieldSelector;
+export default memo(FieldSelector);
