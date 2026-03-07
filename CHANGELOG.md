@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 --- -->
+
+## [0.4.7] - 2026-03-06
+
+### Added
+
+- Add patchInventoryItem function to update existing inventory items in Airtable
+
+---
+
 ## [0.4.6] - 2026-03-06
 
 ### Added
