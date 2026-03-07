@@ -1,7 +1,71 @@
 import sampleData from "./inventorySample.json";
+import { EXPIRING_SOON_MS, LOW_STOCK_THRESHOLD } from "./inventoryUtils";
 
 const BASE_URL = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${encodeURIComponent(import.meta.env.VITE_AIRTABLE_TABLE_NAME)}`;
 const AUTH_TOKEN = `Bearer ${import.meta.env.VITE_AIRTABLE_PAT}`;
+
+const SEARCHABLE_FIELDS = ["ItemName", "Brand", "Category", "Tags", "Notes"];
+const EXPIRING_SOON_DAYS = EXPIRING_SOON_MS / (24 * 60 * 60 * 1000);
+
+function escapeFormulaString(value) {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+export function buildAirtableParams(sortConfig, filterConfig, searchTerm) {
+  const params = new URLSearchParams();
+
+  // Sort params
+  if (sortConfig?.field) {
+    params.append("sort[0][field]", sortConfig.field);
+    params.append(
+      "sort[0][direction]",
+      sortConfig.direction === "desc" ? "desc" : "asc",
+    );
+  }
+
+  // Build filterByFormula
+  const formulaParts = [];
+
+  // Search term — case-insensitive search across multiple fields
+  const term = searchTerm?.trim();
+  if (term) {
+    const escaped = escapeFormulaString(term.toLowerCase());
+    const clauses = SEARCHABLE_FIELDS.map(
+      (f) => `SEARCH("${escaped}", LOWER({${f}}) & "")`,
+    );
+    formulaParts.push(`OR(${clauses.join(", ")})`);
+  }
+
+  // Category filter
+  if (filterConfig?.categories?.length > 0) {
+    const catClauses = filterConfig.categories.map(
+      (cat) => `{Category} = "${escapeFormulaString(cat)}"`,
+    );
+    formulaParts.push(
+      catClauses.length === 1 ? catClauses[0] : `OR(${catClauses.join(", ")})`,
+    );
+  }
+
+  // Expiring soon filter
+  if (filterConfig?.expiringSoon) {
+    formulaParts.push(
+      `AND({ExpiresOn} != '', {ExpiresOn} >= TODAY(), {ExpiresOn} <= DATEADD(TODAY(), ${EXPIRING_SOON_DAYS}, 'days'))`,
+    );
+  }
+
+  // Low stock filter
+  if (filterConfig?.lowStock) {
+    formulaParts.push(`{QtyOnHand} < ${LOW_STOCK_THRESHOLD}`);
+  }
+
+  if (formulaParts.length === 1) {
+    params.append("filterByFormula", formulaParts[0]);
+  } else if (formulaParts.length > 1) {
+    params.append("filterByFormula", `AND(${formulaParts.join(", ")})`);
+  }
+
+  return params;
+}
 
 // --- Client-side rate limiter (Airtable allows 5 requests/sec) ---
 const MAX_REQUESTS_PER_SECOND = 3; // Set to 3 to be safe and avoid hitting the limit
@@ -26,9 +90,14 @@ export const fetchInventoryItems = async ({
   setInventoryItems,
   setIsLoading,
   setError,
+  sortConfig,
+  filterConfig,
+  searchTerm,
 }) => {
   setIsLoading(true);
   setError(null);
+  const params = buildAirtableParams(sortConfig, filterConfig, searchTerm);
+  const url = params.toString() ? `${BASE_URL}?${params.toString()}` : BASE_URL;
   const options = {
     method: "GET",
     headers: {
@@ -38,7 +107,7 @@ export const fetchInventoryItems = async ({
   try {
     let resp;
     try {
-      resp = await throttledFetch(BASE_URL, options);
+      resp = await throttledFetch(url, options);
     } catch {
       throw new Error(
         "Network error: Unable to reach the server. Check your internet connection.",
