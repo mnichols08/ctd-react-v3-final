@@ -1,11 +1,5 @@
 import sampleData from "./inventorySample.json";
-import {
-  EXPIRING_SOON_MS,
-  LOW_STOCK_THRESHOLD,
-  isExpiringSoon,
-  isLowStock,
-  sortItems,
-} from "./inventoryUtils";
+import { EXPIRING_SOON_MS, LOW_STOCK_THRESHOLD } from "./inventoryUtils";
 
 const BASE_URL = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${encodeURIComponent(import.meta.env.VITE_AIRTABLE_TABLE_NAME)}`;
 const AUTH_TOKEN = `Bearer ${import.meta.env.VITE_AIRTABLE_PAT}`;
@@ -104,69 +98,6 @@ const throttledFetch = async (url, options) => {
   return fetch(url, options);
 };
 
-const FALLBACK_SEARCHABLE_FIELDS = [
-  "ItemName",
-  "Brand",
-  "Category",
-  "Tags",
-  "Notes",
-];
-
-function parseRecords(records) {
-  return records.map((record) => {
-    const item = {
-      id: record.id,
-      ...record.fields,
-    };
-    if (!record.fields.isCompleted) {
-      item.isCompleted = false;
-    }
-    return item;
-  });
-}
-
-function applyClientSideFilters(items, filterConfig, searchTerm, sortConfig) {
-  let result = items;
-
-  const term = searchTerm?.trim()?.toLowerCase();
-  if (term) {
-    result = result.filter((item) =>
-      FALLBACK_SEARCHABLE_FIELDS.some((f) => {
-        const val = item[f];
-        return val != null && String(val).toLowerCase().includes(term);
-      }),
-    );
-  }
-
-  if (filterConfig?.categories?.length > 0) {
-    result = result.filter((item) =>
-      filterConfig.categories.includes(item.Category),
-    );
-  }
-  if (filterConfig?.needRestock) {
-    result = result.filter((item) => item.NeedRestock);
-  }
-  if (filterConfig?.status === "archived") {
-    result = result.filter((item) => item.Status === "archived");
-  } else if (filterConfig?.status === "active") {
-    result = result.filter(
-      (item) => !item.Status || item.Status !== "archived",
-    );
-  }
-  if (filterConfig?.expiringSoon) {
-    result = result.filter(isExpiringSoon);
-  }
-  if (filterConfig?.lowStock) {
-    result = result.filter(isLowStock);
-  }
-
-  if (sortConfig?.field) {
-    result = sortItems(result, sortConfig.field, sortConfig.direction ?? "asc");
-  }
-
-  return result;
-}
-
 export const fetchInventoryItems = async ({
   setInventoryItems,
   setIsLoading,
@@ -177,8 +108,14 @@ export const fetchInventoryItems = async ({
 }) => {
   setIsLoading(true);
   setError(null);
-  const params = buildAirtableParams(sortConfig, filterConfig, searchTerm);
+
+  // When server-side filtering is enabled, append sort/filter params to the URL
+  const useServerFilter = import.meta.env.VITE_SERVER_FILTER === "true";
+  const params = useServerFilter
+    ? buildAirtableParams(sortConfig, filterConfig, searchTerm)
+    : new URLSearchParams();
   const url = params.toString() ? `${BASE_URL}?${params.toString()}` : BASE_URL;
+
   const options = {
     method: "GET",
     headers: {
@@ -194,32 +131,6 @@ export const fetchInventoryItems = async ({
         "Network error: Unable to reach the server. Check your internet connection.",
       );
     }
-
-    // On 422 (formula syntax error), fall back to fetching all records
-    // and applying filters client-side
-    if (resp.status === 422 && params.toString()) {
-      console.warn(
-        "Airtable returned 422 for query params — falling back to client-side filtering.",
-      );
-      let fallbackResp;
-      try {
-        fallbackResp = await throttledFetch(BASE_URL, options);
-      } catch {
-        throw new Error(
-          "Network error: Unable to reach the server. Check your internet connection.",
-        );
-      }
-      if (!fallbackResp.ok) {
-        throw new Error(`${fallbackResp.status} ${fallbackResp.statusText}`);
-      }
-      const { records } = await fallbackResp.json();
-      const items = parseRecords(records);
-      setInventoryItems(
-        applyClientSideFilters(items, filterConfig, searchTerm, sortConfig),
-      );
-      return;
-    }
-
     if (!resp.ok) {
       switch (resp.status) {
         case 401:
@@ -230,6 +141,10 @@ export const fetchInventoryItems = async ({
           throw new Error(
             "Not found: Invalid base or table name. Verify VITE_AIRTABLE_BASE_ID and VITE_AIRTABLE_TABLE_NAME.",
           );
+        case 422:
+          throw new Error(
+            "Bad request: The request was invalid. Check your query parameters and field names.",
+          );
         case 429:
           throw new Error(
             "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
@@ -239,7 +154,18 @@ export const fetchInventoryItems = async ({
       }
     }
     const { records } = await resp.json();
-    setInventoryItems(parseRecords(records));
+    setInventoryItems(
+      records.map((record) => {
+        const item = {
+          id: record.id,
+          ...record.fields,
+        };
+        if (!record.fields.isCompleted) {
+          item.isCompleted = false;
+        }
+        return item;
+      }),
+    );
   } catch (error) {
     console.error(error);
     setError(error.message);

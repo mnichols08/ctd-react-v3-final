@@ -304,8 +304,12 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       setIsLoading,
       setError,
       sortConfig: { field: sortField, direction: sortDirection },
+      filterConfig: filters,
+      searchTerm,
     });
-  }, [sortField, sortDirection]);
+    // Client-side filtering is the default; when VITE_SERVER_FILTER is enabled,
+    // sort/filter/search changes trigger a re-fetch with server-side params.
+  }, [sortField, sortDirection, filters, searchTerm]);
 
   return (
     <main>
@@ -323,6 +327,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
                 setIsLoading,
                 setError,
                 sortConfig: { field: sortField, direction: sortDirection },
+                filterConfig: filters,
+                searchTerm,
               });
             }
           }}
