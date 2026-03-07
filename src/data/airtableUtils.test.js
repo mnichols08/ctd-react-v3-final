@@ -628,7 +628,9 @@ describe("Airtable API functions", () => {
       // saving lifecycle completes
       expect(setIsSaving).toHaveBeenCalledWith(true);
       expect(setIsSaving).toHaveBeenLastCalledWith(false);
-      expect(setError).not.toHaveBeenCalled();
+      // Clears any previous error at the start; never sets an actual error
+      expect(setError).toHaveBeenCalledWith(null);
+      expect(setError).toHaveBeenCalledTimes(1);
     });
 
     it("failed create does not add item and shows error", async () => {

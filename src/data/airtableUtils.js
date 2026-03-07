@@ -244,6 +244,7 @@ export const createInventoryItem = async ({
   };
 
   try {
+    setError(null);
     setIsSaving(true);
     let resp;
     try {
