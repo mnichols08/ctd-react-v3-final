@@ -10,6 +10,7 @@ import {
   loadSampleData,
   createInventoryItem,
   patchInventoryItem,
+  deleteInventoryItem,
 } from "../../data/airtableUtils";
 import LoadingState from "./LoadingState.component";
 import ErrorState from "./ErrorState.component";
@@ -235,10 +236,40 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   };
 
   // Handler to delete an item permanently from the inventory
-  const deleteItem = (itemId) => {
+  const deleteItem = async (itemId) => {
+    const item = inventoryItems.find((i) => i.id === itemId);
+    if (!item || item.isDeleting) return;
+
+    if (!window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)) {
+      return;
+    }
+
+    // Set deleting indicator on the item
     setInventoryItems((prevItems) =>
-      prevItems.filter((item) => item.id !== itemId),
+      prevItems.map((i) => (i.id === itemId ? { ...i, isDeleting: true } : i)),
     );
+
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      setInventoryItems((prevItems) =>
+        prevItems.filter((i) => i.id !== itemId),
+      );
+      return;
+    }
+
+    try {
+      await deleteInventoryItem(itemId);
+      setInventoryItems((prevItems) =>
+        prevItems.filter((i) => i.id !== itemId),
+      );
+    } catch (error) {
+      // Remove deleting indicator and show error
+      setInventoryItems((prevItems) =>
+        prevItems.map((i) =>
+          i.id === itemId ? { ...i, isDeleting: false } : i,
+        ),
+      );
+      setSaveError(error.message);
+    }
   };
 
   // Handler to update sort field and direction (sorting is derived, not mutated)

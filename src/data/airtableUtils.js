@@ -216,3 +216,40 @@ export const patchInventoryItem = async (id, fields) => {
     ...record.fields,
   };
 };
+
+export const deleteInventoryItem = async (id) => {
+  const options = {
+    method: "DELETE",
+    headers: {
+      Authorization: AUTH_TOKEN,
+    },
+  };
+  let resp;
+  try {
+    resp = await throttledFetch(
+      `${BASE_URL}/${encodeURIComponent(id)}`,
+      options,
+    );
+  } catch {
+    throw new Error(
+      "Network error: Unable to reach the server. Check your internet connection.",
+    );
+  }
+  // 404 means the record is already gone — treat as success
+  if (resp.status === 404) {
+    return { id, deleted: true };
+  }
+  if (!resp.ok) {
+    if (resp.status === 429) {
+      throw new Error(
+        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
+      );
+    }
+    const errorBody = await resp.json().catch(() => null);
+    const message =
+      errorBody?.error?.message || `${resp.status} ${resp.statusText}`;
+    throw new Error(message);
+  }
+  const result = await resp.json();
+  return result;
+};

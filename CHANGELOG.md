@@ -21,12 +21,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.4.8] - 2026-03-06
+
+### Added
+
+- Implement deleteInventoryItem function to remove items from Airtable
+- Implement deleteItem handler to remove inventory items with confirmation and error handling
+- Handle 404 status in deleteInventoryItem function to treat missing records as successful deletions
+- Enhance delete item functionality with confirmation and disable button during deletion
+
+---
+
 ## [0.4.7] - 2026-03-06
 
 ### Added
 
-- Add patchInventoryItem function to update existing inventory items in Airtable
-- Implement optimistic updates for inventory item changes with error handling
+- `updateInventoryItem(id, fields)` in `src/data/airtableUtils.js` — PATCHes only the changed fields to the Airtable API, and automatically includes `LastUpdated: new Date().toISOString()` in every patch
+
+### Changed
+
+- `addToShoppingList()` now PATCHes `{ NeedRestock: true, TargetQty: newQty }` to Airtable on add
+- `removeFromShoppingList()` now PATCHes `{ NeedRestock: false }` to Airtable on remove
+- Quantity stepper now PATCHes `{ TargetQty: newQty }` on change, and additionally `{ NeedRestock: false }` when stepping down removes the item from the shopping list
+- `archiveItem()` now PATCHes `{ Status: "archived" }` to Airtable
+- Unarchive now PATCHes `{ Status: null }` to Airtable
+- `EditInventoryItemForm` save now PATCHes only the fields that changed rather than the full record
+- All mutations optimistically update local state immediately, then reconcile with the API response on success
+
+### Fixed
+
+- Local state is reverted to its previous value and an error is shown if a PATCH request fails, preventing the UI and database from silently drifting out of sync
 
 ---
 
