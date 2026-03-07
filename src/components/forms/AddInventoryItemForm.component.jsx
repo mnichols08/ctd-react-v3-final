@@ -42,9 +42,13 @@ function AddInventoryItemForm({ addInventoryItem }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newItem = { ...formData };
+    const newItem = {
+      id: Date.now(),
+      ...formData,
+      LastUpdated: new Date().toISOString(),
+    };
     // Coerce numeric fields from strings to numbers (or null for empty fields)
     const numericFields = [
       "QtyOnHand",
@@ -58,7 +62,8 @@ function AddInventoryItemForm({ addInventoryItem }) {
         newItem[field] = value === "" ? null : Number(value);
       }
     });
-    addInventoryItem(newItem);
+    const success = await addInventoryItem(newItem);
+    if (success === false) return;
     setFormData(initialFormState);
     itemNameRef.current?.focus();
   };
