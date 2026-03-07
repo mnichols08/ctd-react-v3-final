@@ -9,6 +9,7 @@ import {
   fetchInventoryItems,
   loadSampleData,
   createInventoryItem,
+  patchInventoryItem,
 } from "../../data/airtableUtils";
 import LoadingState from "./LoadingState.component";
 import ErrorState from "./ErrorState.component";
@@ -97,25 +98,44 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       });
     }
   };
+  // Persist field changes to Airtable with optimistic rollback on failure
+  const persistUpdate = async (itemId, changedFields, previousItem) => {
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
+    try {
+      const savedItem = await patchInventoryItem(itemId, changedFields);
+      setInventoryItems((prev) =>
+        prev.map((i) => (i.id === itemId ? { ...i, ...savedItem } : i)),
+      );
+    } catch (error) {
+      setInventoryItems((prev) =>
+        prev.map((i) => (i.id === itemId ? previousItem : i)),
+      );
+      setSaveError(error.message);
+    }
+  };
+
   // Handler to add an item to the shopping list (mark as NeedRestock and update TargetQty)
-  const addToShoppingList = ({ itemId, quantity }) => {
-    setInventoryItems((prevItems) => {
-      const item = prevItems.find((i) => i.id === itemId);
-      if (!item) {
-        return prevItems;
-      }
-      const qty = Number(quantity);
-      if (!Number.isFinite(qty)) return prevItems;
-      const updatedItem = {
-        ...item,
-        NeedRestock: true,
-        TargetQty: item.QtyOnHand + qty,
-      };
-      return prevItems.map((i) => (i.id === itemId ? updatedItem : i));
-    });
+  const addToShoppingList = async ({ itemId, quantity }) => {
+    const item = inventoryItems.find((i) => i.id === itemId);
+    if (!item) return;
+    const qty = Number(quantity);
+    if (!Number.isFinite(qty)) return;
+
+    const changedFields = {
+      NeedRestock: true,
+      TargetQty: item.QtyOnHand + qty,
+    };
+    setInventoryItems((prevItems) =>
+      prevItems.map((i) => (i.id === itemId ? { ...i, ...changedFields } : i)),
+    );
+    await persistUpdate(itemId, changedFields, item);
   };
   // Handler to remove an item from the shopping list (mark as not NeedRestock and reset TargetQty to QtyOnHand)
-  const removeFromShoppingList = (itemId) => {
+  const removeFromShoppingList = async (itemId) => {
+    const item = inventoryItems.find((i) => i.id === itemId);
+    if (!item) return;
+
+    const changedFields = { NeedRestock: false };
     setInventoryItems((prevItems) =>
       prevItems.map((i) =>
         i.id === itemId
@@ -123,62 +143,95 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
           : i,
       ),
     );
+    await persistUpdate(itemId, changedFields, item);
   };
   // Handler to update the TargetQty for a shopping-list item.
   // Automatically removes from shopping list when newTargetQty <= QtyOnHand.
-  const updateItemQuantity = (itemId, newTargetQty) => {
-    setInventoryItems((prevItems) => {
-      const item = prevItems.find((i) => i.id === itemId);
-      if (!item) return prevItems;
-      const qty = Number(newTargetQty);
-      if (!Number.isFinite(qty)) return prevItems;
-      // If the new target is at or below what's on hand, remove from list
-      if (qty <= item.QtyOnHand) {
-        return prevItems.map((i) =>
+  const updateItemQuantity = async (itemId, newTargetQty) => {
+    const item = inventoryItems.find((i) => i.id === itemId);
+    if (!item) return;
+    const qty = Number(newTargetQty);
+    if (!Number.isFinite(qty)) return;
+
+    let changedFields;
+    if (qty <= item.QtyOnHand) {
+      changedFields = { NeedRestock: false, TargetQty: item.QtyOnHand };
+      setInventoryItems((prevItems) =>
+        prevItems.map((i) =>
           i.id === itemId
             ? { ...i, NeedRestock: false, TargetQty: i.QtyOnHand }
             : i,
-        );
-      }
-      return prevItems.map((i) =>
-        i.id === itemId ? { ...i, TargetQty: qty } : i,
+        ),
       );
-    });
+    } else {
+      changedFields = { TargetQty: qty };
+      setInventoryItems((prevItems) =>
+        prevItems.map((i) => (i.id === itemId ? { ...i, TargetQty: qty } : i)),
+      );
+    }
+    await persistUpdate(itemId, changedFields, item);
   };
-  // Handler to update an existing inventory item
-  const updateInventoryItem = (updatedItem) => {
+  // Handler to update an existing inventory item (edit form save)
+  const updateInventoryItem = async (updatedItem) => {
+    const previousItem = inventoryItems.find((i) => i.id === updatedItem.id);
+    if (!previousItem) return;
+
+    // Compute only the changed fields (exclude id and LastUpdated)
+    const changedFields = {};
+    for (const key of Object.keys(updatedItem)) {
+      if (key === "id" || key === "LastUpdated") continue;
+      if (updatedItem[key] !== previousItem[key]) {
+        changedFields[key] = updatedItem[key];
+      }
+    }
+
+    // Optimistic update
     setInventoryItems((prevItems) =>
       prevItems.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
     );
+
+    if (Object.keys(changedFields).length > 0) {
+      await persistUpdate(updatedItem.id, changedFields, previousItem);
+    }
   };
 
   // Handler to archive an item (mark as Status: "archived" and remove from shopping list)
-  const archiveItem = (itemId) => {
+  const archiveItem = async (itemId) => {
+    const item = inventoryItems.find((i) => i.id === itemId);
+    if (!item || item.Status === "archived") return;
+
+    const changedFields = { Status: "archived", NeedRestock: false };
     setInventoryItems((prevItems) =>
-      prevItems.map((item) => {
-        if (item.id !== itemId || item.Status === "archived") return item;
+      prevItems.map((i) => {
+        if (i.id !== itemId) return i;
         return {
-          ...item,
+          ...i,
           Status: "archived",
           NeedRestock: false,
           LastUpdated: new Date().toISOString(),
         };
       }),
     );
+    await persistUpdate(itemId, changedFields, item);
   };
 
-  // Handler to unarchive an item (mark as Status: "active" and keep in shopping list if it was previously there)
-  const unarchiveItem = (itemId) => {
+  // Handler to unarchive an item
+  const unarchiveItem = async (itemId) => {
+    const item = inventoryItems.find((i) => i.id === itemId);
+    if (!item || item.Status !== "archived") return;
+
+    const changedFields = { Status: null };
     setInventoryItems((prevItems) =>
-      prevItems.map((item) => {
-        if (item.id !== itemId || item.Status !== "archived") return item;
+      prevItems.map((i) => {
+        if (i.id !== itemId) return i;
         return {
-          ...item,
-          Status: "active",
+          ...i,
+          Status: null,
           LastUpdated: new Date().toISOString(),
         };
       }),
     );
+    await persistUpdate(itemId, changedFields, item);
   };
 
   // Handler to delete an item permanently from the inventory

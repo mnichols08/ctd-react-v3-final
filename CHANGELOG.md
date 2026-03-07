@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add patchInventoryItem function to update existing inventory items in Airtable
+- Implement optimistic updates for inventory item changes with error handling
 
 ---
 
