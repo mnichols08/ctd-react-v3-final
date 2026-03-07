@@ -618,23 +618,50 @@ describe("Airtable API functions", () => {
   // -- patchInventoryItem --------------------------------------------------
 
   describe("patchInventoryItem", () => {
-    it("returns the updated record on success", async () => {
+    it("successful update modifies item in state", async () => {
       globalThis.fetch = createMockFetch(mockPatchResponse);
 
-      const result = await patchInventoryItem("rec123abc", { QtyOnHand: 5 });
+      const result = await patchInventoryItem("rec123abc", {
+        QtyOnHand: 5,
+        NeedRestock: false,
+      });
 
+      // returns the full updated record flattened for state
       expect(result).toMatchObject({
         id: "rec123abc",
+        ItemName: "Whole Milk",
         QtyOnHand: 5,
+        NeedRestock: false,
+        LastUpdated: "2026-03-06T14:30:00.000Z",
       });
     });
 
-    it("throws on network failure", async () => {
-      globalThis.fetch = createMockFetch(null, { networkError: true });
+    it("failed update reverts item to previous state (throws so caller can revert)", async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 422,
+        statusText: "Unprocessable Entity",
+      });
 
+      // caller would optimistically update before calling patchInventoryItem,
+      // then revert when it throws
       await expect(
         patchInventoryItem("rec123abc", { QtyOnHand: 5 }),
-      ).rejects.toThrow("Network error");
+      ).rejects.toThrow("Could not find field 'BadField' in table");
+    });
+
+    it("only changed fields are included in PATCH body", async () => {
+      globalThis.fetch = createMockFetch(mockPatchResponse);
+
+      await patchInventoryItem("rec123abc", { QtyOnHand: 5 });
+
+      // inspect the body sent to fetch
+      const fetchCall = globalThis.fetch.mock.calls[0];
+      const body = JSON.parse(fetchCall[1].body);
+
+      // only QtyOnHand + auto-added LastUpdated — no other fields
+      expect(body.fields).toHaveProperty("QtyOnHand", 5);
+      expect(body.fields).toHaveProperty("LastUpdated");
+      expect(Object.keys(body.fields)).toHaveLength(2);
     });
   });
 
