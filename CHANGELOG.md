@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix comments in test files to replace special characters with hyphens
 - `addItem` and `persistUpdate` now dispatch `setSaveError` instead of `setError`, preventing create/update failures from triggering the full-page error state. Save errors are shown inline and are dismissible. `addItem` also clears any prior `saveError` before starting.
 - Fix error handling in deleteItem action to use setSaveError
+- Prevent debounced search callback from firing after FilterBarForm unmount by adding useEffect cleanup to clear pending timer
 
 ---
 

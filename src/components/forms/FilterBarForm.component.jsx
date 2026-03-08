@@ -1,4 +1,4 @@
-import { memo, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 
 const DEFAULT_FILTERS = {
   categories: [],
@@ -20,6 +20,10 @@ function FilterBarForm({
 }) {
   const searchInputRef = useRef(null);
   const debounceTimer = useRef(null);
+
+  useEffect(() => {
+    return () => clearTimeout(debounceTimer.current);
+  }, []);
 
   // Derive available categories from inventory items
   const availableCategories = useMemo(
