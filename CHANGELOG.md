@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor ItemCard to rename shopping list handlers for consistency
 - Refactor ShoppingListControl to replace handler props with direct function references and to use optional chaining for addToShoppingList
 - Refactor ShoppingListControl test and ItemCard test to replace handler props with more descriptive names
+- Refactor InventorySection test to rename updateItemQuantity prop to updateTargetQty
 
 ---
 

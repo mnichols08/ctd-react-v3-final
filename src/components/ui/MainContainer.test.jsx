@@ -68,7 +68,7 @@ vi.mock("../forms/FilterBarForm.component", () => ({
 vi.mock("../sections/InventorySection.component", () => ({
   default: (props) => {
     sectionRenderLog.push(props);
-    const { title, items, addToShoppingList, updateItemQuantity } = props;
+    const { title, items, addToShoppingList, updateTargetQty } = props;
     return (
       <section>
         <h2>{title}</h2>
@@ -88,10 +88,10 @@ vi.mock("../sections/InventorySection.component", () => ({
             onSubmit={(e) => {
               e.preventDefault();
               const formData = new FormData(e.target);
-              addToShoppingList?.({
-                itemId: items[0].id,
-                quantity: formData.get("quantity"),
-              });
+              addToShoppingList?.(
+                items[0].id,
+                formData.get("quantity"),
+              );
             }}
           >
             <input
@@ -102,10 +102,10 @@ vi.mock("../sections/InventorySection.component", () => ({
             <button type="submit">{`mock-add-${title}`}</button>
           </form>
         )}
-        {updateItemQuantity && items[0] && (
+        {updateTargetQty && items[0] && (
           <button
             onClick={() =>
-              updateItemQuantity?.(items[0].id, items[0].QtyOnHand)
+              updateTargetQty?.(items[0].id, items[0].QtyOnHand)
             }
           >
             {`mock-remove-${title}`}
