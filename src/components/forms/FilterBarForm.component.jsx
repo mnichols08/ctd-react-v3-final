@@ -1,5 +1,4 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { getActiveFilterCount } from "../../data/inventoryUtils";
 
 const DEFAULT_FILTERS = {
   categories: [],
