@@ -29,6 +29,39 @@ const DEFAULT_FILTERS = {
   lowStock: false,
 };
 
+/** Shallow-compare two arrays by length + strict element equality. */
+function arraysEqual(a, b) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+/** Deep-compare two fetch-param objects ({sortField, sortDirection, filters, searchTerm}). */
+function fetchParamsEqual(a, b) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (
+    a.sortField !== b.sortField ||
+    a.sortDirection !== b.sortDirection ||
+    a.searchTerm !== b.searchTerm
+  )
+    return false;
+  const fa = a.filters;
+  const fb = b.filters;
+  if (fa === fb) return true;
+  if (!fa || !fb) return false;
+  if (
+    fa.expiringSoon !== fb.expiringSoon ||
+    fa.lowStock !== fb.lowStock ||
+    fa.needRestock !== fb.needRestock ||
+    fa.status !== fb.status
+  )
+    return false;
+  return arraysEqual(fa.categories ?? [], fb.categories ?? []);
+}
+
 function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Initialize inventory items from sample data, ensuring we have a fresh copy of each item
   const [inventoryItems, setInventoryItems] = useState([]);
@@ -396,8 +429,12 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       });
       return cleanup;
     }
-    const params = { sortField, sortDirection, filters, searchTerm };
-    lastFetchedParamsRef.current = JSON.stringify(params);
+    lastFetchedParamsRef.current = {
+      sortField,
+      sortDirection,
+      filters,
+      searchTerm,
+    };
     fetchInventoryItems({
       setInventoryItems,
       setIsLoading,
@@ -414,12 +451,12 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       loadSampleData({ setInventoryItems, setIsLoading, setError });
     } else {
-      lastFetchedParamsRef.current = JSON.stringify({
+      lastFetchedParamsRef.current = {
         sortField,
         sortDirection,
         filters,
         searchTerm,
-      });
+      };
       fetchInventoryItems({
         setInventoryItems,
         setIsLoading,
@@ -440,13 +477,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       return;
     }
     // Skip fetch if params haven't changed since the last request
-    const params = JSON.stringify({
-      sortField,
-      sortDirection,
-      filters,
-      searchTerm,
-    });
-    if (params === lastFetchedParamsRef.current) {
+    const params = { sortField, sortDirection, filters, searchTerm };
+    if (fetchParamsEqual(params, lastFetchedParamsRef.current)) {
       return;
     }
     lastFetchedParamsRef.current = params;
