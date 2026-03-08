@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Refactor useInventory hook to replace useState with useReducer for lastFetchedAt management 
+- Refactor MainContainer to utilize custom hooks for inventory and filters, replacing local state management with useInventory and useFilters
 
 ---
 

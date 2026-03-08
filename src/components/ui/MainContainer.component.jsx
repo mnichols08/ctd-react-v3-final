@@ -5,13 +5,9 @@ import {
   isLowStock,
   sortItems,
 } from "../../data/inventoryUtils";
-import {
-  fetchInventoryItems,
-  loadSampleData,
-  createInventoryItem,
-  patchInventoryItem,
-  deleteInventoryItem,
-} from "../../data/airtableUtils";
+import useInventory from "../../hooks/useInventory";
+import useFilters from "../../hooks/useFilters";
+import useShoppingList from "../../hooks/useShoppingList";
 import LoadingState from "./LoadingState.component";
 import ErrorState from "./ErrorState.component";
 import ToolSection from "../sections/ToolSection.component";
@@ -23,13 +19,6 @@ import FilterBarForm from "../forms/FilterBarForm.component";
 
 // Searchable fields for filtering inventory items
 const SEARCHABLE_FIELDS = ["ItemName", "Brand", "Category", "Tags", "Notes"];
-const DEFAULT_FILTERS = {
-  categories: [],
-  expiringSoon: false,
-  lowStock: false,
-  needRestock: false,
-  status: "",
-};
 
 // Auto-refresh if data is older than this threshold (5 minutes)
 const STALE_TIME_MS = 5 * 60 * 1000;
@@ -78,37 +67,43 @@ function fetchParamsEqual(a, b) {
 }
 
 function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
-  // Initialize inventory items from sample data, ensuring we have a fresh copy of each item
-  const [inventoryItems, setInventoryItems] = useState([]);
-  // State to toggle between Quick Add and Full Form
-  const [showQuickAdd, setShowQuickAdd] = useState(true);
-  // Search term state (updated via debounced callback from FilterBarForm)
-  const [searchTerm, setSearchTerm] = useState("");
-  // Sorting state (default to sorting by ItemName)
-  const [sortField, setSortField] = useState("ItemName");
-  // Sort direction state (asc default, can be toggled to desc)
-  const [sortDirection, setSortDirection] = useState("asc");
-  // Filter state for category, location, restock, and status filters
-  const [filters, setFilters] = useState(DEFAULT_FILTERS);
-  // Toggle state for showing/hiding the archived items section (session only)
-  const [showArchived, setShowArchived] = useState(false);
-  // State to tell if the inventory is loading (e.g., fetching from API)
-  const [isLoading, setIsLoading] = useState(true);
-  // State to track if an inventory item is being saved to the API
-  const [isSaving, setIsSaving] = useState(false);
-  // State to track if there was an error loading or updating inventory items
-  const [error, setError] = useState(null);
-  // State for save/create errors — shown inline near the form, not replacing the whole UI
-  const [saveError, setSaveError] = useState(null);
-  // Track the last-fetched sort/filter/search params to avoid redundant API calls
-  const lastFetchedParamsRef = useRef(null);
-  // Track the timestamp of the last successful fetch to help with debugging and ensuring data freshness
-  const [lastFetchedAt, setLastFetchedAt] = useState(null);
-  // AbortController for cancelling in-flight fetch requests
-  const abortControllerRef = useRef(null);
+  // --- Custom hooks ---
+  const {
+    items: inventoryItems,
+    isLoading,
+    error,
+    dispatch,
+    addItem,
+    deleteItem,
+    updateItem,
+    archiveItem,
+    unarchiveItem,
+    refetch,
+    lastFetchedAt,
+  } = useInventory();
 
-  // Keep a ref to the latest inventoryItems so handlers can read current
-  // state without needing inventoryItems in their dependency arrays.
+  const {
+    searchTerm,
+    sortConfig,
+    filters,
+    setSearch,
+    setSort,
+    setFilters,
+  } = useFilters();
+
+  const {
+    addToShoppingList: rawAddToShoppingList,
+    removeFromShoppingList,
+    updateTargetQty,
+  } = useShoppingList({ items: inventoryItems, dispatch });
+
+  // --- UI-only state ---
+  const [showQuickAdd, setShowQuickAdd] = useState(true);
+  const [showArchived, setShowArchived] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+
+  // Ref for stable callbacks that need current items
   const inventoryItemsRef = useRef(inventoryItems);
   useEffect(() => {
     inventoryItemsRef.current = inventoryItems;
@@ -151,176 +146,15 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     [filters],
   );
 
-  // Ref that always holds the latest fetch-relevant params so the
-  // pending-retry path can read current values instead of stale closures.
-  const fetchParamsRef = useRef({
-    sortField,
-    sortDirection,
-    filters,
-    searchTerm,
-  });
-  useEffect(() => {
-    fetchParamsRef.current = { sortField, sortDirection, filters, searchTerm };
-  }, [sortField, sortDirection, filters, searchTerm]);
+  // --- Adapters / handlers ---
 
-  // Cancels the in-flight request (if any) and starts a fresh fetch using the
-  // latest params from fetchParamsRef.  Callers can pass { setIsLoading: () => {} }
-  // to suppress the loading indicator (e.g. background auto-refresh).
-  const doFetch = useCallback(
-    (overrides = {}) => {
-      // Cancel any in-flight request so its response never updates state
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-
-      // Read current params from the ref so we always use the most
-      // up-to-date values regardless of when this callback was created.
-      const {
-        sortField: sf,
-        sortDirection: sd,
-        filters: f,
-        searchTerm: st,
-      } = fetchParamsRef.current;
-
-      lastFetchedParamsRef.current = {
-        sortField: sf,
-        sortDirection: sd,
-        filters: f,
-        searchTerm: st,
-      };
-
-      fetchInventoryItems({
-        setInventoryItems,
-        setIsLoading: overrides.setIsLoading ?? setIsLoading,
-        setError,
-        sortConfig: { field: sf, direction: sd },
-        filterConfig: f,
-        searchTerm: st,
-        setLastFetchedAt,
-        signal: controller.signal,
-      });
-    },
-    [], // stable — reads everything from refs
-  );
-
-  // Handler to add a new inventory item to local state
-  const addInventoryItem = useCallback((newItem) => {
-    setInventoryItems((prevItems) => [...prevItems, newItem]);
-  }, []);
-
-  // Wrapper that persists to Airtable when connected, or adds directly in sample-data mode
-  const handleAddItem = useCallback(
-    async (item) => {
-      // Clear any previous save error at the start of a new submission
-      setSaveError(null);
-      if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-        addInventoryItem(item);
-        // In sample-data mode we treat local add as a successful save
-        return true;
-      }
-      // Propagate the boolean success/failure result to callers
-      return await createInventoryItem({
-        item,
-        addInventoryItem,
-        setIsSaving,
-        setError: setSaveError,
-      });
-    },
-    [addInventoryItem],
-  );
-  // Persist field changes to Airtable with optimistic rollback on failure
-  const persistUpdate = useCallback(
-    async (itemId, changedFields, previousItem) => {
-      if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
-      try {
-        const savedItem = await patchInventoryItem(itemId, changedFields);
-        setInventoryItems((prev) =>
-          prev.map((i) => (i.id === itemId ? { ...i, ...savedItem } : i)),
-        );
-      } catch (error) {
-        setInventoryItems((prev) =>
-          prev.map((i) => (i.id === itemId ? previousItem : i)),
-        );
-        setSaveError(error.message);
-      }
-    },
-    [],
-  );
-
-  // Handler to add an item to the shopping list (mark as NeedRestock and update TargetQty)
+  // Adapter: ShoppingListControl passes { itemId, quantity } object
   const addToShoppingList = useCallback(
-    async ({ itemId, quantity }) => {
-      const item = inventoryItemsRef.current.find((i) => i.id === itemId);
-      if (!item) return;
-      const qty = Number(quantity);
-      if (!Number.isFinite(qty)) return;
-
-      const changedFields = {
-        NeedRestock: true,
-        TargetQty: item.QtyOnHand + qty,
-      };
-      setInventoryItems((prevItems) =>
-        prevItems.map((i) =>
-          i.id === itemId ? { ...i, ...changedFields } : i,
-        ),
-      );
-      await persistUpdate(itemId, changedFields, item);
-    },
-    [persistUpdate],
+    ({ itemId, quantity }) => rawAddToShoppingList(itemId, quantity),
+    [rawAddToShoppingList],
   );
-  // Handler to remove an item from the shopping list (mark as not NeedRestock and reset TargetQty to QtyOnHand)
-  const removeFromShoppingList = useCallback(
-    async (itemId) => {
-      const item = inventoryItemsRef.current.find((i) => i.id === itemId);
-      if (!item) return;
 
-      const changedFields = { NeedRestock: false, TargetQty: item.QtyOnHand };
-      setInventoryItems((prevItems) =>
-        prevItems.map((i) =>
-          i.id === itemId
-            ? { ...i, NeedRestock: false, TargetQty: i.QtyOnHand }
-            : i,
-        ),
-      );
-      await persistUpdate(itemId, changedFields, item);
-    },
-    [persistUpdate],
-  );
-  // Handler to update the TargetQty for a shopping-list item.
-  // Automatically removes from shopping list when newTargetQty <= QtyOnHand.
-  const updateItemQuantity = useCallback(
-    async (itemId, newTargetQty) => {
-      const item = inventoryItemsRef.current.find((i) => i.id === itemId);
-      if (!item) return;
-      const qty = Number(newTargetQty);
-      if (!Number.isFinite(qty)) return;
-
-      let changedFields;
-      if (qty <= item.QtyOnHand) {
-        changedFields = { NeedRestock: false, TargetQty: item.QtyOnHand };
-        setInventoryItems((prevItems) =>
-          prevItems.map((i) =>
-            i.id === itemId
-              ? { ...i, NeedRestock: false, TargetQty: i.QtyOnHand }
-              : i,
-          ),
-        );
-      } else {
-        changedFields = { TargetQty: qty };
-        setInventoryItems((prevItems) =>
-          prevItems.map((i) =>
-            i.id === itemId ? { ...i, TargetQty: qty } : i,
-          ),
-        );
-      }
-      await persistUpdate(itemId, changedFields, item);
-    },
-    [persistUpdate],
-  );
-  // Handler to update an existing inventory item (edit form save)
+  // Adapter: EditForm passes full item object; compute changed fields
   const updateInventoryItem = useCallback(
     async (updatedItem) => {
       const previousItem = inventoryItemsRef.current.find(
@@ -328,7 +162,6 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       );
       if (!previousItem) return;
 
-      // Compute only the changed fields (exclude id and LastUpdated)
       const changedFields = {};
       for (const key of Object.keys(updatedItem)) {
         if (key === "id" || key === "LastUpdated") continue;
@@ -337,110 +170,59 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         }
       }
 
-      // Optimistic update
-      setInventoryItems((prevItems) =>
-        prevItems.map((i) => (i.id === updatedItem.id ? updatedItem : i)),
-      );
-
       if (Object.keys(changedFields).length > 0) {
-        await persistUpdate(updatedItem.id, changedFields, previousItem);
+        await updateItem(updatedItem.id, changedFields);
       }
     },
-    [persistUpdate],
+    [updateItem],
   );
 
-  // Handler to archive an item (mark as Status: "archived" and remove from shopping list)
-  const archiveItem = useCallback(
+  // Adapter: Add item with save-error handling
+  const handleAddItem = useCallback(
+    async (item) => {
+      setSaveError(null);
+      setIsSaving(true);
+      try {
+        const success = await addItem(item);
+        return success;
+      } catch (err) {
+        setSaveError(err.message);
+        return false;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [addItem],
+  );
+
+  // Adapter: Delete with confirmation dialog
+  const handleDeleteItem = useCallback(
     async (itemId) => {
       const item = inventoryItemsRef.current.find((i) => i.id === itemId);
-      if (!item || item.Status === "archived") return;
+      if (!item || item.isDeleting) return;
 
-      const changedFields = { Status: "archived", NeedRestock: false };
-      setInventoryItems((prevItems) =>
-        prevItems.map((i) => {
-          if (i.id !== itemId) return i;
-          return {
-            ...i,
-            Status: "archived",
-            NeedRestock: false,
-            LastUpdated: new Date().toISOString(),
-          };
-        }),
-      );
-      await persistUpdate(itemId, changedFields, item);
+      if (
+        !window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)
+      ) {
+        return;
+      }
+      await deleteItem(itemId);
     },
-    [persistUpdate],
+    [deleteItem],
   );
 
-  // Handler to unarchive an item
-  const unarchiveItem = useCallback(
-    async (itemId) => {
-      const item = inventoryItemsRef.current.find((i) => i.id === itemId);
-      if (!item || item.Status !== "archived") return;
-
-      const changedFields = { Status: null };
-      setInventoryItems((prevItems) =>
-        prevItems.map((i) => {
-          if (i.id !== itemId) return i;
-          return {
-            ...i,
-            Status: null,
-            LastUpdated: new Date().toISOString(),
-          };
-        }),
-      );
-      await persistUpdate(itemId, changedFields, item);
+  // Handler to update sort field and direction
+  const handleSort = useCallback(
+    (field, direction) => {
+      setSort(field, direction);
     },
-    [persistUpdate],
+    [setSort],
   );
-
-  // Handler to delete an item permanently from the inventory
-  const deleteItem = useCallback(async (itemId) => {
-    const item = inventoryItemsRef.current.find((i) => i.id === itemId);
-    if (!item || item.isDeleting) return;
-
-    if (!window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)) {
-      return;
-    }
-
-    // Set deleting indicator on the item
-    setInventoryItems((prevItems) =>
-      prevItems.map((i) => (i.id === itemId ? { ...i, isDeleting: true } : i)),
-    );
-
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      setInventoryItems((prevItems) =>
-        prevItems.filter((i) => i.id !== itemId),
-      );
-      return;
-    }
-
-    try {
-      await deleteInventoryItem(itemId);
-      setInventoryItems((prevItems) =>
-        prevItems.filter((i) => i.id !== itemId),
-      );
-    } catch (error) {
-      // Remove deleting indicator and show error
-      setInventoryItems((prevItems) =>
-        prevItems.map((i) =>
-          i.id === itemId ? { ...i, isDeleting: false } : i,
-        ),
-      );
-      setSaveError(error.message);
-    }
-  }, []);
-
-  // Handler to update sort field and direction (sorting is derived, not mutated)
-  const handleSort = useCallback((field, direction) => {
-    setSortField(field);
-    setSortDirection(direction);
-  }, []);
 
   // Sort filtered items by the selected field and direction
   const sortedItems = useMemo(
-    () => sortItems(filterAppliedItems, sortField, sortDirection),
-    [filterAppliedItems, sortField, sortDirection],
+    () => sortItems(filterAppliedItems, sortConfig.field, sortConfig.direction),
+    [filterAppliedItems, sortConfig.field, sortConfig.direction],
   );
 
   // Partition sorted items by location and status for each section
@@ -479,10 +261,10 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     () =>
       sortItems(
         inventoryItems.filter((item) => item.Status === "archived"),
-        sortField,
-        sortDirection,
+        sortConfig.field,
+        sortConfig.direction,
       ),
-    [inventoryItems, sortField, sortDirection],
+    [inventoryItems, sortConfig.field, sortConfig.direction],
   );
 
   // Effect to check for archived items whenever the inventory changes and update the state in App accordingly
@@ -492,47 +274,13 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     );
   }, [inventoryItems, setArchivedItemsExist]);
 
-  // Initial load effect — fetch inventory items once on mount
-  useEffect(() => {
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      // Load sample data from local JSON file for development/testing
-      const cleanup = loadSampleData({
-        setInventoryItems,
-        setIsLoading,
-        setError,
-      });
-      return cleanup;
-    }
-    doFetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Cancel in-flight fetch on unmount to prevent state updates after cleanup
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
-
-  // Retry handler for error state — re-fetches or reloads sample data
-  const handleRetry = useCallback(() => {
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      loadSampleData({ setInventoryItems, setIsLoading, setError });
-    } else {
-      doFetch();
-    }
-  }, [doFetch]);
-
-  // Force a re-fetch — cancels any in-flight request and starts fresh
-  const handleRefresh = useCallback(() => {
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      loadSampleData({ setInventoryItems, setIsLoading, setError });
-    } else {
-      doFetch();
-    }
-  }, [doFetch]);
+  // Track last-fetched params to prevent redundant server-side re-fetches
+  const lastFetchedParamsRef = useRef({
+    sortField: sortConfig.field,
+    sortDirection: sortConfig.direction,
+    filters,
+    searchTerm,
+  });
 
   // When server-side filtering is enabled, re-fetch on sort/filter/search changes
   useEffect(() => {
@@ -543,12 +291,22 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       return;
     }
     // Skip fetch if params haven't changed since the last request
-    const params = { sortField, sortDirection, filters, searchTerm };
+    const params = {
+      sortField: sortConfig.field,
+      sortDirection: sortConfig.direction,
+      filters,
+      searchTerm,
+    };
     if (fetchParamsEqual(params, lastFetchedParamsRef.current)) {
       return;
     }
-    doFetch();
-  }, [sortField, sortDirection, filters, searchTerm, doFetch]);
+    lastFetchedParamsRef.current = params;
+    refetch({
+      sortConfig,
+      filterConfig: filters,
+      searchTerm,
+    });
+  }, [sortConfig.field, sortConfig.direction, filters, searchTerm, refetch, sortConfig]);
 
   // Auto-refresh when the tab regains focus and data is stale
   useEffect(() => {
@@ -560,14 +318,14 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         isDataStale(lastFetchedAt) &&
         !isLoading
       ) {
-        doFetch({ setIsLoading: () => {} });
+        refetch({ silent: true });
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [lastFetchedAt, isLoading, doFetch]);
+  }, [lastFetchedAt, isLoading, refetch]);
 
   // Periodic stale-check while the tab stays visible
   useEffect(() => {
@@ -579,12 +337,21 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         isDataStale(lastFetchedAt) &&
         !isLoading
       ) {
-        doFetch({ setIsLoading: () => {} });
+        refetch({ silent: true });
       }
     }, STALE_CHECK_INTERVAL_MS);
 
     return () => clearInterval(id);
-  }, [lastFetchedAt, isLoading, doFetch]);
+  }, [lastFetchedAt, isLoading, refetch]);
+
+  // Retry/Refresh handlers
+  const handleRetry = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  const handleRefresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   return (
     <main>
@@ -605,11 +372,11 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
           </ToolSection>
           <ToolSection id="filter" title="Filter & Sort">
             <FilterBarForm
-              onSearch={setSearchTerm}
+              onSearch={setSearch}
               onSort={handleSort}
               onFilter={setFilters}
-              sortField={sortField}
-              sortDirection={sortDirection}
+              sortField={sortConfig.field}
+              sortDirection={sortConfig.direction}
               filters={filters}
               inventoryItems={inventoryItems}
               handleRefresh={handleRefresh}
@@ -652,7 +419,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             visibleFields={visibleFields}
             items={fridgeItems}
             archiveItem={archiveItem}
-            deleteItem={deleteItem}
+            deleteItem={handleDeleteItem}
           />
           <InventorySection
             id="freezer"
@@ -663,7 +430,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             visibleFields={visibleFields}
             items={freezerItems}
             archiveItem={archiveItem}
-            deleteItem={deleteItem}
+            deleteItem={handleDeleteItem}
           />
           <InventorySection
             id="pantry"
@@ -674,13 +441,13 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             visibleFields={visibleFields}
             items={pantryItems}
             archiveItem={archiveItem}
-            deleteItem={deleteItem}
+            deleteItem={handleDeleteItem}
           />
           {/* Render Shopping List based upon NeedRestock and TargetQty vs QtyOnHand */}
           <InventorySection
             id="shopping-list"
             title="Shopping List"
-            updateItemQuantity={updateItemQuantity}
+            updateItemQuantity={updateTargetQty}
             items={shoppingListItems}
           />
           {/* Archived Items Toggle & Section */}
@@ -698,7 +465,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
                   title="Archived Items"
                   items={archivedItems}
                   unarchiveItem={unarchiveItem}
-                  deleteItem={deleteItem}
+                  deleteItem={handleDeleteItem}
                 />
               )}
             </div>
