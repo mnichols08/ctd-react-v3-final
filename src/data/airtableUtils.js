@@ -110,10 +110,11 @@ export const fetchInventoryItems = async ({
   sortConfig,
   filterConfig,
   searchTerm,
+  setLastFetchedAt = () => {},
+  signal,
 }) => {
   setIsLoading(true);
   setError(null);
-
   // When server-side filtering is enabled, append sort/filter params to the URL
   const useServerFilter = import.meta.env.VITE_SERVER_FILTER === "true";
   const params = useServerFilter
@@ -126,6 +127,7 @@ export const fetchInventoryItems = async ({
     headers: {
       Authorization: AUTH_TOKEN,
     },
+    ...(signal && { signal }),
   };
   try {
     let resp;
@@ -191,11 +193,15 @@ export const fetchInventoryItems = async ({
         return item;
       }),
     );
+    setLastFetchedAt(new Date());
   } catch (error) {
+    if (signal?.aborted) return; // Request was intentionally cancelled
     console.error(error);
     setError(error.message);
   } finally {
-    setIsLoading(false);
+    if (!signal?.aborted) {
+      setIsLoading(false);
+    }
   }
 };
 

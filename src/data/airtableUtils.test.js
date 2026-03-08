@@ -581,6 +581,46 @@ describe("Airtable API functions", () => {
       // no nested "fields" key remains on the flattened items
       expect(items[0]).not.toHaveProperty("fields");
     });
+
+    it("successful fetch calls setLastFetchedAt with a Date", async () => {
+      globalThis.fetch = createMockFetch(mockFetchResponse);
+
+      const setLastFetchedAt = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems: vi.fn(),
+        setIsLoading: vi.fn(),
+        setError: vi.fn(),
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+        setLastFetchedAt,
+      });
+
+      expect(setLastFetchedAt).toHaveBeenCalledTimes(1);
+      expect(setLastFetchedAt.mock.calls[0][0]).toBeInstanceOf(Date);
+    });
+
+    it("failed fetch does not call setLastFetchedAt", async () => {
+      globalThis.fetch = createMockFetch(mockErrorResponse, {
+        status: 500,
+        statusText: "Internal Server Error",
+      });
+
+      const setLastFetchedAt = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems: vi.fn(),
+        setIsLoading: vi.fn(),
+        setError: vi.fn(),
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+        setLastFetchedAt,
+      });
+
+      expect(setLastFetchedAt).not.toHaveBeenCalled();
+    });
   });
 
   // -- createInventoryItem -------------------------------------------------
