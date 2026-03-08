@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add inventory reducer with actions and initial state
+- Implement inventory reducer to handle actions and state changes
 
 ---
 
