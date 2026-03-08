@@ -6,11 +6,11 @@ import inventoryReducer, {
 import {
   fetchInventoryItems,
   loadSampleData,
-  createInventoryItem,
-  deleteInventoryItem,
 } from "../data/airtableUtils";
-import usePersistUpdate from "./usePersistUpdate";
 import useFilters from "./useFilters";
+import useFieldVisibility from "./useFieldVisibility";
+import useUIToggles from "./useUIToggles";
+import useInventoryActions from "./useInventoryActions";
 import useShoppingList from "./useShoppingList";
 
 export default function useInventory() {
@@ -30,17 +30,15 @@ export default function useInventory() {
     visibleFields,
   } = state;
 
-  // Refs for reading current state in callbacks without stale closures
-  const itemsRef = useRef(items);
+  // Refs for reading current state in refetch without stale closures
   const sortConfigRef = useRef(state.sortConfig);
   const filtersRef = useRef(state.filters);
   const searchTermRef = useRef(state.searchTerm);
   useEffect(() => {
-    itemsRef.current = items;
     sortConfigRef.current = state.sortConfig;
     filtersRef.current = state.filters;
     searchTermRef.current = state.searchTerm;
-  }, [items, state.sortConfig, state.filters, state.searchTerm]);
+  }, [state.sortConfig, state.filters, state.searchTerm]);
 
   // AbortController for cancelling in-flight fetches
   const abortControllerRef = useRef(null);
@@ -89,102 +87,6 @@ export default function useInventory() {
     };
   }, []);
 
-  // --- Optimistic update helper with rollback ---
-  const persistUpdate = usePersistUpdate(dispatch);
-
-  // --- Action functions ---
-
-  const addItem = useCallback(async (item) => {
-    dispatch({ type: actions.setSaveError, payload: null });
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      dispatch({ type: actions.addItem, payload: item });
-      return true;
-    }
-    try {
-      const success = await createInventoryItem({
-        item,
-        addInventoryItem: (savedItem) =>
-          dispatch({ type: actions.addItem, payload: savedItem }),
-        setIsSaving: (val) =>
-          dispatch({ type: actions.setIsSaving, payload: val }),
-        setError: (msg) =>
-          dispatch({ type: actions.setSaveError, payload: msg }),
-      });
-      return success;
-    } catch (err) {
-      dispatch({ type: actions.setSaveError, payload: err.message });
-      return false;
-    }
-  }, []);
-
-  const deleteItem = useCallback(async (id) => {
-    const item = itemsRef.current.find((i) => i.id === id);
-    if (!item || item.isDeleting) return;
-
-    if (!window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)) {
-      return;
-    }
-
-    dispatch({ type: actions.setDeleting, payload: { id, value: true } });
-
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      dispatch({ type: actions.deleteItem, payload: id });
-      return;
-    }
-
-    try {
-      await deleteInventoryItem(id);
-      dispatch({ type: actions.deleteItem, payload: id });
-    } catch (err) {
-      dispatch({ type: actions.setDeleting, payload: { id, value: false } });
-      dispatch({ type: actions.setSaveError, payload: err.message });
-    }
-  }, []);
-
-  const updateItem = useCallback(
-    async (id, fields) => {
-      const previousItem = itemsRef.current.find((i) => i.id === id);
-      if (!previousItem) return;
-
-      // Optimistic update
-      dispatch({
-        type: actions.updateItem,
-        payload: { id, fields },
-      });
-
-      await persistUpdate(id, fields, previousItem);
-    },
-    [persistUpdate],
-  );
-
-  const archiveItem = useCallback(
-    async (id) => {
-      const item = itemsRef.current.find((i) => i.id === id);
-      if (!item || item.Status === "archived") return;
-
-      // Optimistic update
-      dispatch({ type: actions.archiveItem, payload: id });
-
-      const changedFields = { Status: "archived", NeedRestock: false };
-      await persistUpdate(id, changedFields, item);
-    },
-    [persistUpdate],
-  );
-
-  const unarchiveItem = useCallback(
-    async (id) => {
-      const item = itemsRef.current.find((i) => i.id === id);
-      if (!item || item.Status !== "archived") return;
-
-      // Optimistic update
-      dispatch({ type: actions.unarchiveItem, payload: id });
-
-      const changedFields = { Status: null };
-      await persistUpdate(id, changedFields, item);
-    },
-    [persistUpdate],
-  );
-
   // Re-run the fetch/load logic (for retry, refresh, or re-fetch with new params)
   const refetch = useCallback((options = {}) => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
@@ -218,7 +120,7 @@ export default function useInventory() {
     });
   }, []);
 
-  // --- Filter / sort / search dispatchers ---
+  // --- Composed hooks ---
 
   const { setSearch, setSort, setFilters, clearFilters } = useFilters({
     searchTerm,
@@ -227,25 +129,13 @@ export default function useInventory() {
     dispatch,
   });
 
-  const toggleField = useCallback((key) => {
-    dispatch({ type: actions.toggleField, payload: key });
-  }, []);
+  const { toggleField, resetFields } = useFieldVisibility({ dispatch });
 
-  const resetFields = useCallback(() => {
-    dispatch({ type: actions.resetFields });
-  }, []);
+  const { toggleQuickAdd, toggleShowArchived, dismissSaveError } =
+    useUIToggles({ dispatch });
 
-  const toggleQuickAdd = useCallback(() => {
-    dispatch({ type: actions.toggleQuickAdd });
-  }, []);
-
-  const toggleShowArchived = useCallback(() => {
-    dispatch({ type: actions.toggleShowArchived });
-  }, []);
-
-  const dismissSaveError = useCallback(() => {
-    dispatch({ type: actions.setSaveError, payload: null });
-  }, []);
+  const { addItem, deleteItem, updateItem, archiveItem, unarchiveItem } =
+    useInventoryActions({ items, dispatch });
 
   const {
     shoppingListItems,
