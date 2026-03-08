@@ -17,6 +17,7 @@ function FilterBarForm({
   sortDirection,
   filters = DEFAULT_FILTERS,
   inventoryItems = [],
+  handleRefresh = () => {},
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const debounceTimer = useRef(null);
@@ -151,6 +152,9 @@ function FilterBarForm({
       </label>
       <button type="button" onClick={handleClearFilters}>
         Clear All Filters
+      </button>
+      <button type="button" onClick={handleRefresh}>
+        Refresh
       </button>
     </form>
   );

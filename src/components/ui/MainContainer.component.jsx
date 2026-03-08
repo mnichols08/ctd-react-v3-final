@@ -612,10 +612,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
               sortDirection={sortDirection}
               filters={filters}
               inventoryItems={inventoryItems}
+              handleRefresh={handleRefresh}
             />
-            <button type="button" onClick={handleRefresh}>
-              Refresh
-            </button>
             {(searchTerm.trim() || activeFilterCount > 0) && (
               <p>
                 Showing {filterAppliedItems.length} of {inventoryItems.length}{" "}
