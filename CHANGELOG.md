@@ -30,13 +30,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Refactor useInventory hook to replace useState with useReducer for lastFetchedAt management 
+- Refactor useInventory hook to replace useState with useReducer for lastFetchedAt management
 - Refactor MainContainer to utilize custom hooks for inventory and filters, replacing local state management with useInventory and useFilters
 - Update LastUpdated field handling in inventoryReducer to use action payload if available
 - Update persistUpdate function to dispatch updated item after patching inventory
 - Refactor useInventory hook to improve state reference handling and avoid stale closures
 - Refactor inventory state management to use useReducer for UI state and add new actions for toggling quick add and archived item visibility
 - Refactor useInventory and inventoryReducer to manage lastFetchedAt state with useReducer
+- Refactor FilterBarForm to replace useState with useRef for search term management and implement debouncing directly in the search handler
 
 ---
 
