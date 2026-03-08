@@ -17,6 +17,7 @@ export const actions = {
   toggleShowArchived: "toggleShowArchived",
   setIsSaving: "setIsSaving",
   setSaveError: "setSaveError",
+  setLastFetchedAt: "setLastFetchedAt",
 };
 
 export const initialState = {
@@ -27,6 +28,7 @@ export const initialState = {
   showArchived: false,
   isSaving: false,
   saveError: null,
+  lastFetchedAt: null,
   searchTerm: "",
   sortConfig: { field: "ItemName", direction: "asc" },
   filters: {
@@ -179,6 +181,9 @@ export default function inventoryReducer(state, action) {
 
     case actions.setSaveError:
       return { ...state, saveError: action.payload };
+
+    case actions.setLastFetchedAt:
+      return { ...state, lastFetchedAt: action.payload };
 
     default:
       throw new Error(`Unknown action type: ${action.type}`);

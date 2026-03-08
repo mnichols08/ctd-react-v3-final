@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 import inventoryReducer, {
   actions,
   initialState,
@@ -13,8 +13,7 @@ import {
 
 export default function useInventory() {
   const [state, dispatch] = useReducer(inventoryReducer, initialState);
-  const { items, isLoading, error, showQuickAdd, showArchived, isSaving, saveError } = state;
-  const [lastFetchedAt, setLastFetchedAt] = useState(null);
+  const { items, isLoading, error, showQuickAdd, showArchived, isSaving, saveError, lastFetchedAt } = state;
 
   // Refs for reading current state in callbacks without stale closures
   const itemsRef = useRef(items);
@@ -56,7 +55,8 @@ export default function useInventory() {
       sortConfig: state.sortConfig,
       filterConfig: state.filters,
       searchTerm: state.searchTerm,
-      setLastFetchedAt,
+      setLastFetchedAt: (date) =>
+        dispatch({ type: actions.setLastFetchedAt, payload: date }),
       signal: controller.signal,
     });
 
@@ -206,7 +206,8 @@ export default function useInventory() {
       sortConfig: options.sortConfig ?? sortConfigRef.current,
       filterConfig: options.filterConfig ?? filtersRef.current,
       searchTerm: options.searchTerm ?? searchTermRef.current,
-      setLastFetchedAt,
+      setLastFetchedAt: (date) =>
+        dispatch({ type: actions.setLastFetchedAt, payload: date }),
       signal: controller.signal,
     });
   }, []);
