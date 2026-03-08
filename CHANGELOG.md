@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wrap handleAdd, handleDecrement, and handleIncrement in useCallback for performance optimization
 - Wrap all components in memo for performance optimization
 - Wrap toggleField and resetFields in useCallback for performance optimization
+- Refactor MainContainer to use useRef for inventoryItems in callbacks for improved performance
 
 ---
 

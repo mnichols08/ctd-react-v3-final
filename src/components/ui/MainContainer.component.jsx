@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getActiveFilterCount,
   isExpiringSoon,
@@ -52,6 +52,13 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [error, setError] = useState(null);
   // State for save/create errors — shown inline near the form, not replacing the whole UI
   const [saveError, setSaveError] = useState(null);
+
+  // Keep a ref to the latest inventoryItems so handlers can read current
+  // state without needing inventoryItems in their dependency arrays.
+  const inventoryItemsRef = useRef(inventoryItems);
+  useEffect(() => {
+    inventoryItemsRef.current = inventoryItems;
+  }, [inventoryItems]);
 
   // Filter inventory items by search term across searchable fields (case-insensitive, null-safe)
   const filteredItems = useMemo(() => {
@@ -137,7 +144,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Handler to add an item to the shopping list (mark as NeedRestock and update TargetQty)
   const addToShoppingList = useCallback(
     async ({ itemId, quantity }) => {
-      const item = inventoryItems.find((i) => i.id === itemId);
+      const item = inventoryItemsRef.current.find((i) => i.id === itemId);
       if (!item) return;
       const qty = Number(quantity);
       if (!Number.isFinite(qty)) return;
@@ -153,12 +160,12 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       );
       await persistUpdate(itemId, changedFields, item);
     },
-    [inventoryItems, persistUpdate],
+    [persistUpdate],
   );
   // Handler to remove an item from the shopping list (mark as not NeedRestock and reset TargetQty to QtyOnHand)
   const removeFromShoppingList = useCallback(
     async (itemId) => {
-      const item = inventoryItems.find((i) => i.id === itemId);
+      const item = inventoryItemsRef.current.find((i) => i.id === itemId);
       if (!item) return;
 
       const changedFields = { NeedRestock: false, TargetQty: item.QtyOnHand };
@@ -171,13 +178,13 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       );
       await persistUpdate(itemId, changedFields, item);
     },
-    [inventoryItems, persistUpdate],
+    [persistUpdate],
   );
   // Handler to update the TargetQty for a shopping-list item.
   // Automatically removes from shopping list when newTargetQty <= QtyOnHand.
   const updateItemQuantity = useCallback(
     async (itemId, newTargetQty) => {
-      const item = inventoryItems.find((i) => i.id === itemId);
+      const item = inventoryItemsRef.current.find((i) => i.id === itemId);
       if (!item) return;
       const qty = Number(newTargetQty);
       if (!Number.isFinite(qty)) return;
@@ -202,12 +209,14 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       }
       await persistUpdate(itemId, changedFields, item);
     },
-    [inventoryItems, persistUpdate],
+    [persistUpdate],
   );
   // Handler to update an existing inventory item (edit form save)
   const updateInventoryItem = useCallback(
     async (updatedItem) => {
-      const previousItem = inventoryItems.find((i) => i.id === updatedItem.id);
+      const previousItem = inventoryItemsRef.current.find(
+        (i) => i.id === updatedItem.id,
+      );
       if (!previousItem) return;
 
       // Compute only the changed fields (exclude id and LastUpdated)
@@ -228,13 +237,13 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         await persistUpdate(updatedItem.id, changedFields, previousItem);
       }
     },
-    [inventoryItems, persistUpdate],
+    [persistUpdate],
   );
 
   // Handler to archive an item (mark as Status: "archived" and remove from shopping list)
   const archiveItem = useCallback(
     async (itemId) => {
-      const item = inventoryItems.find((i) => i.id === itemId);
+      const item = inventoryItemsRef.current.find((i) => i.id === itemId);
       if (!item || item.Status === "archived") return;
 
       const changedFields = { Status: "archived", NeedRestock: false };
@@ -251,13 +260,13 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       );
       await persistUpdate(itemId, changedFields, item);
     },
-    [inventoryItems, persistUpdate],
+    [persistUpdate],
   );
 
   // Handler to unarchive an item
   const unarchiveItem = useCallback(
     async (itemId) => {
-      const item = inventoryItems.find((i) => i.id === itemId);
+      const item = inventoryItemsRef.current.find((i) => i.id === itemId);
       if (!item || item.Status !== "archived") return;
 
       const changedFields = { Status: null };
@@ -273,52 +282,45 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       );
       await persistUpdate(itemId, changedFields, item);
     },
-    [inventoryItems, persistUpdate],
+    [persistUpdate],
   );
 
   // Handler to delete an item permanently from the inventory
-  const deleteItem = useCallback(
-    async (itemId) => {
-      const item = inventoryItems.find((i) => i.id === itemId);
-      if (!item || item.isDeleting) return;
+  const deleteItem = useCallback(async (itemId) => {
+    const item = inventoryItemsRef.current.find((i) => i.id === itemId);
+    if (!item || item.isDeleting) return;
 
-      if (
-        !window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)
-      ) {
-        return;
-      }
+    if (!window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)) {
+      return;
+    }
 
-      // Set deleting indicator on the item
+    // Set deleting indicator on the item
+    setInventoryItems((prevItems) =>
+      prevItems.map((i) => (i.id === itemId ? { ...i, isDeleting: true } : i)),
+    );
+
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      setInventoryItems((prevItems) =>
+        prevItems.filter((i) => i.id !== itemId),
+      );
+      return;
+    }
+
+    try {
+      await deleteInventoryItem(itemId);
+      setInventoryItems((prevItems) =>
+        prevItems.filter((i) => i.id !== itemId),
+      );
+    } catch (error) {
+      // Remove deleting indicator and show error
       setInventoryItems((prevItems) =>
         prevItems.map((i) =>
-          i.id === itemId ? { ...i, isDeleting: true } : i,
+          i.id === itemId ? { ...i, isDeleting: false } : i,
         ),
       );
-
-      if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-        setInventoryItems((prevItems) =>
-          prevItems.filter((i) => i.id !== itemId),
-        );
-        return;
-      }
-
-      try {
-        await deleteInventoryItem(itemId);
-        setInventoryItems((prevItems) =>
-          prevItems.filter((i) => i.id !== itemId),
-        );
-      } catch (error) {
-        // Remove deleting indicator and show error
-        setInventoryItems((prevItems) =>
-          prevItems.map((i) =>
-            i.id === itemId ? { ...i, isDeleting: false } : i,
-          ),
-        );
-        setSaveError(error.message);
-      }
-    },
-    [inventoryItems],
-  );
+      setSaveError(error.message);
+    }
+  }, []);
 
   // Handler to update sort field and direction (sorting is derived, not mutated)
   const handleSort = useCallback((field, direction) => {
