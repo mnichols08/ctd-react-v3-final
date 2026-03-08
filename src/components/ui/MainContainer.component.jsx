@@ -52,6 +52,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [error, setError] = useState(null);
   // State for save/create errors — shown inline near the form, not replacing the whole UI
   const [saveError, setSaveError] = useState(null);
+  // Track the last-fetched sort/filter/search params to avoid redundant API calls
+  const lastFetchedParamsRef = useRef(null);
 
   // Keep a ref to the latest inventoryItems so handlers can read current
   // state without needing inventoryItems in their dependency arrays.
@@ -394,6 +396,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       });
       return cleanup;
     }
+    const params = { sortField, sortDirection, filters, searchTerm };
+    lastFetchedParamsRef.current = JSON.stringify(params);
     fetchInventoryItems({
       setInventoryItems,
       setIsLoading,
@@ -410,6 +414,12 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       loadSampleData({ setInventoryItems, setIsLoading, setError });
     } else {
+      lastFetchedParamsRef.current = JSON.stringify({
+        sortField,
+        sortDirection,
+        filters,
+        searchTerm,
+      });
       fetchInventoryItems({
         setInventoryItems,
         setIsLoading,
@@ -429,6 +439,17 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     ) {
       return;
     }
+    // Skip fetch if params haven't changed since the last request
+    const params = JSON.stringify({
+      sortField,
+      sortDirection,
+      filters,
+      searchTerm,
+    });
+    if (params === lastFetchedParamsRef.current) {
+      return;
+    }
+    lastFetchedParamsRef.current = params;
     fetchInventoryItems({
       setInventoryItems,
       setIsLoading,
