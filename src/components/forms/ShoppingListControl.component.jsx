@@ -5,9 +5,9 @@ import { memo, useCallback } from "react";
 // and a quantity stepper ([ - ] count [ + ]) when it is.
 function ShoppingListControl({
   item,
-  handleAddToShoppingList,
-  handleRemoveFromShoppingList,
-  handleUpdateItemQuantity,
+  addToShoppingList,
+  removeFromShoppingList,
+  updateTargetQty,
 }) {
   const {
     id,
@@ -20,26 +20,25 @@ function ShoppingListControl({
   const isInShoppingList = needRestock && targetQty > qtyOnHand;
 
   const handleAdd = useCallback(() => {
-    if (typeof handleAddToShoppingList !== "function") return;
-    handleAddToShoppingList({ itemId: id, quantity: 1 });
-  }, [handleAddToShoppingList, id]);
+    addToShoppingList(id, 1);
+  }, [addToShoppingList, id]);
 
   const handleDecrement = useCallback(() => {
-    if (typeof handleUpdateItemQuantity !== "function") return;
-    handleUpdateItemQuantity(id, targetQty - 1);
-  }, [handleUpdateItemQuantity, id, targetQty]);
+    updateTargetQty(id, targetQty - 1);
+  }, [updateTargetQty, id, targetQty]);
 
   const handleIncrement = useCallback(() => {
-    if (typeof handleUpdateItemQuantity !== "function") return;
-    handleUpdateItemQuantity(id, targetQty + 1);
-  }, [handleUpdateItemQuantity, id, targetQty]);
-  const componentHeading = handleAddToShoppingList ? (
+    updateTargetQty(id, targetQty + 1);
+  }, [updateTargetQty, id, targetQty]);
+
+  const componentHeading = addToShoppingList ? (
     <h3>Shopping List Controls</h3>
   ) : (
     <p>Qty on Hand: {qtyOnHand}</p>
   );
+
   // Case 1: On shopping list AND has stepper handler → render stepper
-  if (isInShoppingList && typeof handleUpdateItemQuantity === "function") {
+  if (isInShoppingList && updateTargetQty) {
     const willRemove = targetQty - 1 <= qtyOnHand;
     return (
       <div>
@@ -62,14 +61,14 @@ function ShoppingListControl({
     );
   }
 
-  // Case 2: Already on shopping list but no stepper (location sections) → render "Remove from Shopping List" button (if handler provided) or static text
+  // Case 2: On shopping list but no stepper → "Remove from Shopping List" button or static text
   if (isInShoppingList) {
     return (
       <div>
         {componentHeading}
-        {typeof handleRemoveFromShoppingList === "function" ? (
+        {removeFromShoppingList ? (
           <button
-            onClick={() => handleRemoveFromShoppingList(id)}
+            onClick={() => removeFromShoppingList(id)}
             aria-label={`Remove ${itemName} from shopping list`}
           >
             Remove from Shopping List

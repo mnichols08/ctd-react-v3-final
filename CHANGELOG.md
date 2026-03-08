@@ -41,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor MainContainer to streamline useShoppingList integration
 - Refactor InventorySection to rename updateItemQuantity prop to updateTargetQty
 - Refactor ItemCard to rename shopping list handlers for consistency
+- Refactor ShoppingListControl to replace handler props with direct function references
 
 ---
 
