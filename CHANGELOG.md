@@ -64,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed unused `isCompleted` field that was being defaulted to `false` in `fetchInventoryItems` and `createInventoryItem`, and stripped in `patchInventoryItem`. The field was never read by any component or hook. `isDeleting` (which is actively used) is still stripped before patching.
 - Removed `NeedRestock` checkbox from `AddInventoryItemForm` and `EditInventoryItemForm`. This field is managed programmatically by the shopping list actions and should not be manually toggled by users. New items default to `false`; edits preserve the existing value.
 - Remove unused needRestock filter flag from reducer initial state, clearFilters, buildAirtableParams, and fetchParamsEqual — it had no UI toggle and was only a leftover from early prototyping. The NeedRestock field on inventory items (used by shopping list logic) is unchanged.
+- Remove redundant handleClick wrapper in InventorySection — pass toggleCollapsed directly to onClick handlers
 
 ---
 
