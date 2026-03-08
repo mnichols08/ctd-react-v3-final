@@ -133,7 +133,13 @@ export default function useInventory() {
 
   const deleteItem = useCallback(async (id) => {
     const item = itemsRef.current.find((i) => i.id === id);
-    if (!item) return;
+    if (!item || item.isDeleting) return;
+
+    if (!window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)) {
+      return;
+    }
+
+    dispatch({ type: actions.setDeleting, payload: { id, value: true } });
 
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       dispatch({ type: actions.deleteItem, payload: id });
@@ -144,6 +150,7 @@ export default function useInventory() {
       await deleteInventoryItem(id);
       dispatch({ type: actions.deleteItem, payload: id });
     } catch (err) {
+      dispatch({ type: actions.setDeleting, payload: { id, value: false } });
       dispatch({ type: actions.setError, payload: err.message });
     }
   }, []);

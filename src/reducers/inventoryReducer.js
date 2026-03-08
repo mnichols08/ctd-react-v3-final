@@ -23,6 +23,7 @@ export const actions = {
   toggleField: "toggleField",
   resetFields: "resetFields",
   clearFilters: "clearFilters",
+  setDeleting: "setDeleting",
 };
 
 export const initialState = {
@@ -154,6 +155,16 @@ export default function inventoryReducer(state, action) {
         }),
       };
     }
+
+    case actions.setDeleting:
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.payload.id
+            ? { ...item, isDeleting: action.payload.value }
+            : item,
+        ),
+      };
 
     case actions.setItems:
       return { ...state, items: action.payload };
