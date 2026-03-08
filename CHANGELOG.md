@@ -55,6 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Remove inline styles from heading in InventorySection component
+- - Removed unused `isCompleted` field that was being defaulted to `false` in `fetchInventoryItems` and `createInventoryItem`, and stripped in `patchInventoryItem`. The field was never read by any component or hook. `isDeleting` (which is actively used) is still stripped before patching.
 
 ---
 

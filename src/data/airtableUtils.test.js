@@ -572,9 +572,6 @@ describe("Airtable API functions", () => {
       expect(items[0].NeedRestock).toBe(true);
       expect(items[0].ExpiresOn).toBe("2026-03-15");
 
-      // isCompleted defaults to false when absent from fields
-      expect(items[0].isCompleted).toBe(false);
-
       // second record also mapped correctly
       expect(items[1]).toMatchObject({
         id: "rec456def",

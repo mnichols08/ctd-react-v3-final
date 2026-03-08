@@ -186,9 +186,6 @@ export const fetchInventoryItems = async ({
           id: record.id,
           ...record.fields,
         };
-        if (!record.fields.isCompleted) {
-          item.isCompleted = false;
-        }
         return item;
       }),
     );
@@ -280,9 +277,6 @@ export const createInventoryItem = async ({
       id: records[0].id,
       ...records[0].fields,
     };
-    if (!records[0].fields.isCompleted) {
-      savedItem.isCompleted = false;
-    }
     addInventoryItem(savedItem);
     return true;
   } catch (error) {
@@ -294,7 +288,7 @@ export const createInventoryItem = async ({
 };
 
 export const patchInventoryItem = async (id, fields) => {
-  const { isCompleted: _ic, isDeleting: _id, ...airtableFields } = fields;
+  const { isDeleting: _id, ...airtableFields } = fields;
   // Coerce empty date strings to null (Airtable rejects "")
   ["ExpiresOn", "DatePurchased", "DateFrozen"].forEach((field) => {
     if (field in airtableFields && !airtableFields[field]) {
