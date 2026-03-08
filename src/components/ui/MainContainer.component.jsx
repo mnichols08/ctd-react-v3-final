@@ -27,6 +27,8 @@ const DEFAULT_FILTERS = {
   categories: [],
   expiringSoon: false,
   lowStock: false,
+  needRestock: false,
+  status: "",
 };
 
 // Auto-refresh if data is older than this threshold (5 minutes)

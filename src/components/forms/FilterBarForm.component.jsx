@@ -5,6 +5,8 @@ const DEFAULT_FILTERS = {
   categories: [],
   expiringSoon: false,
   lowStock: false,
+  needRestock: false,
+  status: "",
 };
 
 function FilterBarForm({
