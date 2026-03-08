@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simplify updateItem in useInventoryActions to accept a single full item object { id, ...fields } instead of a dual-signature (idOrItem, maybeFields) with an IIFE destructure — all callers (ItemCard, EditInventoryItemForm) already pass a full item
 - Add "Need Restock" checkbox to AddInventoryItemForm after Target Qty, allowing users to place a new item directly on the shopping list at creation time (defaults to unchecked)
 - Wire orphaned `clearFilters` action through `MainContainer` into `FilterBarForm`. The reset button now dispatches the reducer's `clearFilters` action via a new `onClearFilters` prop instead of manually calling `onSearch("")` and `onFilter(DEFAULT_FILTERS)` separately.
+- Diff form fields against the previous item in `updateItem` before sending to Airtable, so PATCH requests only include changed fields instead of all 25+ form fields. Skips the network call entirely when nothing changed.
 
 ### Fixed
 

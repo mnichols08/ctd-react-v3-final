@@ -76,12 +76,22 @@ export default function useInventoryActions({ items, dispatch }) {
       const previousItem = itemsRef.current.find((i) => i.id === id);
       if (!previousItem) return;
 
+      // Optimistic UI update with all fields
       dispatch({
         type: actions.updateItem,
         payload: { id, fields },
       });
 
-      await persistUpdate(id, fields, previousItem);
+      // Only send changed fields to Airtable
+      const changedFields = {};
+      for (const key of Object.keys(fields)) {
+        if (fields[key] !== previousItem[key]) {
+          changedFields[key] = fields[key];
+        }
+      }
+      if (Object.keys(changedFields).length === 0) return;
+
+      await persistUpdate(id, changedFields, previousItem);
     },
     [dispatch, persistUpdate],
   );
