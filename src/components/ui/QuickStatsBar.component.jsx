@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import {
   countExpiringSoon,
-  formateRelativeTime,
+  formatRelativeTime,
 } from "../../data/inventoryUtils";
 
 function QuickStatsBar({
@@ -27,7 +27,7 @@ function QuickStatsBar({
   useEffect(() => {
     if (lastFetchedAt) {
       const updateDisplay = () => {
-        setLastFetchedAtDisplay(formateRelativeTime(lastFetchedAt));
+        setLastFetchedAtDisplay(formatRelativeTime(lastFetchedAt));
         if (staleTimeMs) {
           setIsStale(Date.now() - lastFetchedAt.getTime() >= staleTimeMs);
         }

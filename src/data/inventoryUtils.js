@@ -60,7 +60,7 @@ export function sortItems(items, sortField, sortDirection) {
   });
 }
 
-export function formateRelativeTime(timestamp) {
+export function formatRelativeTime(timestamp) {
   if ((timestamp === null || timestamp === undefined) && timestamp !== 0) {
     return null;
   }
