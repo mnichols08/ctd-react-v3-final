@@ -7,6 +7,7 @@ import {
   screen,
   within,
 } from "@testing-library/react";
+import { memo, useCallback, useState } from "react";
 
 import MainContainer from "./MainContainer.component";
 import inventorySampleData from "../../data/inventorySample.json";
@@ -56,8 +57,9 @@ vi.mock("../forms/FilterBarForm.component", () => ({
 }));
 
 vi.mock("../sections/InventorySection.component", () => ({
-  default: ({ title, items, addToShoppingList, updateItemQuantity }) => {
-    sectionRenderLog.push({ title, items });
+  default: (props) => {
+    sectionRenderLog.push(props);
+    const { title, items, addToShoppingList, updateItemQuantity } = props;
     return (
       <section>
         <h2>{title}</h2>
@@ -581,6 +583,91 @@ describe("MainContainer", () => {
 
       expect(totalAfter).toBe(totalBefore + 1);
       expect(filteredAfter).toBe(filteredBefore + 1);
+    });
+  });
+
+  describe("useCallback behavior", () => {
+    it("handler functions maintain same reference across renders when deps unchanged", () => {
+      render(<MainContainer />);
+      act(() => vi.runAllTimers());
+
+      const pantryBefore = sectionRenderLog
+        .filter((r) => r.title === "Pantry")
+        .pop();
+
+      // Toggle showQuickAdd — an unrelated state change that does not
+      // affect any useCallback dependency array
+      fireEvent.click(
+        screen.getByRole("button", { name: "Switch to Full Form" }),
+      );
+
+      const pantryAfter = sectionRenderLog
+        .filter((r) => r.title === "Pantry")
+        .pop();
+
+      // useCallback should return the cached function — same reference
+      expect(pantryAfter.addToShoppingList).toBe(
+        pantryBefore.addToShoppingList,
+      );
+      expect(pantryAfter.removeFromShoppingList).toBe(
+        pantryBefore.removeFromShoppingList,
+      );
+      expect(pantryAfter.updateItem).toBe(pantryBefore.updateItem);
+      expect(pantryAfter.archiveItem).toBe(pantryBefore.archiveItem);
+      expect(pantryAfter.deleteItem).toBe(pantryBefore.deleteItem);
+    });
+
+    it("handler functions get new reference when deps change", () => {
+      const renderLog = [];
+
+      function TestParent() {
+        const [count, setCount] = useState(0);
+        const handler = useCallback(() => count, [count]);
+        renderLog.push({ handler });
+        return (
+          <button onClick={() => setCount((c) => c + 1)}>increment</button>
+        );
+      }
+
+      render(<TestParent />);
+      fireEvent.click(screen.getByRole("button", { name: "increment" }));
+
+      // After the state change, useCallback should produce a new reference
+      expect(renderLog).toHaveLength(2);
+      expect(renderLog[1].handler).not.toBe(renderLog[0].handler);
+    });
+
+    it("child components don't re-render when parent re-renders with stable callbacks", () => {
+      const childRenderCount = { current: 0 };
+
+      const MemoChild = memo(function MemoChild({ onClick }) {
+        childRenderCount.current += 1;
+        return <button onClick={onClick}>child-action</button>;
+      });
+
+      function TestParent() {
+        const [count, setCount] = useState(0);
+        const stableHandler = useCallback(() => {}, []);
+        return (
+          <div>
+            <span>{count}</span>
+            <button onClick={() => setCount((c) => c + 1)}>
+              parent-action
+            </button>
+            <MemoChild onClick={stableHandler} />
+          </div>
+        );
+      }
+
+      render(<TestParent />);
+      expect(childRenderCount.current).toBe(1);
+
+      // Trigger parent re-render with unrelated state change
+      fireEvent.click(screen.getByRole("button", { name: "parent-action" }));
+
+      // MemoChild should NOT have re-rendered because stableHandler
+      // is the same reference thanks to useCallback
+      expect(childRenderCount.current).toBe(1);
     });
   });
 });

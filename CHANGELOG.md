@@ -23,8 +23,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.5.3] - 2026-03-07
 
+### Added
+
+- Add `useCallback` behavior tests to MainContainer verifying:
+  - Handler functions maintain same reference across renders when deps unchanged
+  - Handler functions get new reference when deps change
+  - Memoized child components skip re-render when parent re-renders with stable callbacks
+- Add tests for useCallback behavior in MainContainer
+
 ### Changed
 
+- Extend InventorySection mock to capture all props in render log for callback reference assertions
 - Enhance MainContainer tests with useMemo and useCallback behavior checks
 
 ---
