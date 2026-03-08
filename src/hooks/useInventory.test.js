@@ -1,13 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import useInventory from "./useInventory";
-import {
-  patchInventoryItem,
-  createInventoryItem,
-  deleteInventoryItem,
-  loadSampleData,
-  fetchInventoryItems,
-} from "../data/airtableUtils";
+import { loadSampleData, fetchInventoryItems } from "../data/airtableUtils";
 
 // Mock airtableUtils — sample-data mode is active in tests (VITE_SAMPLE_DATA=true)
 // so most API functions won't be called, but loadSampleData will.
@@ -74,6 +68,7 @@ describe("useInventory", () => {
   });
 
   it("deleteItem removes an item in sample-data mode", async () => {
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const result = await renderAndLoad();
     const firstItem = result.current.items[0];
     const initialCount = result.current.items.length;
@@ -81,6 +76,8 @@ describe("useInventory", () => {
     await act(async () => {
       await result.current.deleteItem(firstItem.id);
     });
+
+    confirmSpy.mockRestore();
 
     expect(result.current.items).toHaveLength(initialCount - 1);
     expect(result.current.items.find((i) => i.id === firstItem.id)).toBeFalsy();

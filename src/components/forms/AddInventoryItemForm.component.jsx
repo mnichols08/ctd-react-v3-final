@@ -1,4 +1,5 @@
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useRef } from "react";
+import useFormData from "../../hooks/useFormData";
 
 // Initial form state with all fields set to empty or default values
 const initialFormState = {
@@ -30,17 +31,8 @@ const initialFormState = {
 
 function AddInventoryItemForm({ addInventoryItem }) {
   // Form state to manage controlled inputs
-  const [formData, setFormData] = useState(initialFormState);
+  const { formData, handleChange, resetForm } = useFormData(initialFormState);
   const itemNameRef = useRef(null);
-
-  // Handle input changes for all form fields
-  const handleChange = useCallback((e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  }, []);
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -65,7 +57,7 @@ function AddInventoryItemForm({ addInventoryItem }) {
       });
       const success = await addInventoryItem(newItem);
       if (success === false) return;
-      setFormData(initialFormState);
+      resetForm();
       itemNameRef.current?.focus();
     },
     [formData, addInventoryItem],

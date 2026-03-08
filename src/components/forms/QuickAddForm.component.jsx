@@ -1,4 +1,14 @@
-import { memo, useCallback, useRef, useState } from "react";
+import { memo, useCallback, useRef } from "react";
+import useFormData from "../../hooks/useFormData";
+
+const initialFormState = {
+  ItemName: "",
+  Category: "",
+  ExpiresOn: "",
+  Location: "",
+  QtyOnHand: "",
+  QtyUnit: "",
+};
 
 // This component is a simplified version of the AddInventoryItemForm, designed for quick addition of items with minimal required fields.
 // It focuses on essential information needed to add an item to the inventory, making it ideal for users who want to quickly log items without filling out a lengthy form.
@@ -7,22 +17,7 @@ function QuickAddForm({ addInventoryItem }) {
   const itemNameRef = useRef(null);
 
   // State to manage form data, initialized with empty values for the required fields
-  const [formData, setFormData] = useState({
-    ItemName: "",
-    Category: "",
-    ExpiresOn: "",
-    Location: "",
-    QtyOnHand: "",
-    QtyUnit: "",
-  });
-  // Handle input changes for controlled components, updating the formData state accordingly
-  const handleChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  }, []);
+  const { formData, handleChange, resetForm } = useFormData(initialFormState);
   // Handle form submission by creating a new item object with the provided data and default values for other fields
   const handleSubmit = useCallback(
     async (e) => {
@@ -65,14 +60,7 @@ function QuickAddForm({ addInventoryItem }) {
       const success = await addInventoryItem(newItem);
       if (success === false) return;
       // Reset the form and focus the item name input for quick entry of the next item
-      setFormData({
-        ItemName: "",
-        Category: "",
-        ExpiresOn: "",
-        Location: "",
-        QtyOnHand: "",
-        QtyUnit: "",
-      });
+      resetForm();
       itemNameRef.current?.focus();
     },
     [formData, addInventoryItem],

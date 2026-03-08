@@ -37,10 +37,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extract shared constants and utilities (SEARCHABLE_FIELDS, staleness helpers, comparison helpers) into fieldConfig.js and inventoryUtils.js
 - Update MainContainer and component tests to reflect new prop-driven architecture and renamed handlers
 - Refactor MainContainer to simplify state management and remove unused handlers
+- - Refactored `useToggle`, `useFormData`, and `useStaleFetchDisplay` hooks from `useState` to `useReducer` for consistent state management across the codebase.
 
 ### Removed
 
 - Remove useFilters hook usage and separate visibleFields/archivedItemsExist useState instances from App and MainContainer in favor of the unified reducer
+
+### Fixed
+- Restored missing `useCallback` declaration for `handleSubmit` in `EditInventoryItemForm`, which caused a parse error breaking five test suites.
+- Added `window.confirm` mock in `useInventory` delete test to support jsdom environment.
 
 ---
 

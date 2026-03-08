@@ -20,7 +20,7 @@ import QuickAddForm from "../forms/QuickAddForm.component";
 import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
 
-function MainContainer({ inventory }) {
+function MainContainer({inventory}) {
   const {
     items: inventoryItems,
     isLoading,
