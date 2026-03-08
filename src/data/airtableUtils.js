@@ -110,10 +110,10 @@ export const fetchInventoryItems = async ({
   sortConfig,
   filterConfig,
   searchTerm,
+  setLastFetchedAt,
 }) => {
   setIsLoading(true);
   setError(null);
-
   // When server-side filtering is enabled, append sort/filter params to the URL
   const useServerFilter = import.meta.env.VITE_SERVER_FILTER === "true";
   const params = useServerFilter
@@ -191,6 +191,7 @@ export const fetchInventoryItems = async ({
         return item;
       }),
     );
+    setLastFetchedAt(new Date());
   } catch (error) {
     console.error(error);
     setError(error.message);

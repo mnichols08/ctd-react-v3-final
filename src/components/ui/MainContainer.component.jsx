@@ -46,8 +46,9 @@ function fetchParamsEqual(a, b) {
     a.sortField !== b.sortField ||
     a.sortDirection !== b.sortDirection ||
     a.searchTerm !== b.searchTerm
-  )
+  ) {
     return false;
+  }
   const fa = a.filters;
   const fb = b.filters;
   if (fa === fb) return true;
@@ -57,8 +58,9 @@ function fetchParamsEqual(a, b) {
     fa.lowStock !== fb.lowStock ||
     fa.needRestock !== fb.needRestock ||
     fa.status !== fb.status
-  )
+  ) {
     return false;
+  }
   return arraysEqual(fa.categories ?? [], fb.categories ?? []);
 }
 
@@ -87,6 +89,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [saveError, setSaveError] = useState(null);
   // Track the last-fetched sort/filter/search params to avoid redundant API calls
   const lastFetchedParamsRef = useRef(null);
+  // Track the timestamp of the last successful fetch to help with debugging and ensuring data freshness
+  const [lastFetchedAt, setLastFetchedAt] = useState(null);
 
   // Keep a ref to the latest inventoryItems so handlers can read current
   // state without needing inventoryItems in their dependency arrays.
@@ -442,6 +446,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       sortConfig: { field: sortField, direction: sortDirection },
       filterConfig: filters,
       searchTerm,
+      setLastFetchedAt
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -464,6 +469,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         sortConfig: { field: sortField, direction: sortDirection },
         filterConfig: filters,
         searchTerm,
+        setLastFetchedAt
       });
     }
   }, [sortField, sortDirection, filters, searchTerm]);
@@ -486,6 +492,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         sortConfig: { field: sortField, direction: sortDirection },
         filterConfig: filters,
         searchTerm,
+        setLastFetchedAt
       });
     }
   }, [sortField, sortDirection, filters, searchTerm]);
@@ -511,6 +518,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       sortConfig: { field: sortField, direction: sortDirection },
       filterConfig: filters,
       searchTerm,
+      setLastFetchedAt
     });
   }, [sortField, sortDirection, filters, searchTerm]);
 
@@ -527,6 +535,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
               inventoryItems={inventoryItems}
               filteredItems={filterAppliedItems}
               isFiltered={searchTerm.trim() !== "" || activeFilterCount > 0}
+              lastFetchedAt={lastFetchedAt}
             />
           </ToolSection>
           <ToolSection id="filter" title="Filter & Sort">

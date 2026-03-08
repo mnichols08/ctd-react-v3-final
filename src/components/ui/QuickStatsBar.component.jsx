@@ -1,10 +1,14 @@
-import { memo } from "react";
-import { countExpiringSoon } from "../../data/inventoryUtils";
+import { memo, useEffect, useState } from "react";
+import {
+  countExpiringSoon,
+  formateRelativeTime,
+} from "../../data/inventoryUtils";
 
 function QuickStatsBar({
   inventoryItems = [],
   filteredItems = [],
   isFiltered = false,
+  lastFetchedAt,
 } = {}) {
   const sourceItems = isFiltered ? filteredItems : inventoryItems;
   const activeItems = sourceItems.filter((item) => item.Status !== "archived");
@@ -17,7 +21,19 @@ function QuickStatsBar({
   const shoppingList = activeItems.filter(
     (item) => item.NeedRestock === true && item.TargetQty > item.QtyOnHand,
   ).length;
-
+  const [lastFetchedAtDisplay, setLastFetchedAtDisplay] = useState("");
+  useEffect(() => {
+    if (lastFetchedAt) {
+      const updateDisplay = () => {
+        setLastFetchedAtDisplay(formateRelativeTime(lastFetchedAt));
+      };
+      updateDisplay();
+      const interval = setInterval(() => {
+        updateDisplay();
+      }, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [lastFetchedAt]);
   return (
     <>
       {isFiltered && <p>Showing stats for filtered items</p>}
@@ -37,6 +53,7 @@ function QuickStatsBar({
         <h3>Shopping List</h3>
         <p>{shoppingList}</p>
       </div>
+      {lastFetchedAtDisplay && <p>Last updated: {lastFetchedAtDisplay}</p>}
     </>
   );
 }
