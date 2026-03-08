@@ -33,7 +33,7 @@ describe("useShoppingList", () => {
       makeItem({ id: "d", NeedRestock: true, TargetQty: 10, QtyOnHand: 3 }),
     ];
 
-    const { result } = renderHook(() => useShoppingList(items, dispatch));
+    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     expect(result.current.shoppingListItems).toHaveLength(2);
     expect(result.current.shoppingListItems.map((i) => i.id)).toEqual([
@@ -48,7 +48,7 @@ describe("useShoppingList", () => {
       makeItem({ id: "b", NeedRestock: false }),
     ];
 
-    const { result } = renderHook(() => useShoppingList(items, dispatch));
+    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     expect(result.current.shoppingListCount).toBe(1);
   });
@@ -59,7 +59,7 @@ describe("useShoppingList", () => {
       makeItem({ id: "b", NeedRestock: true, TargetQty: 3, QtyOnHand: 3 }),
     ];
 
-    const { result } = renderHook(() => useShoppingList(items, dispatch));
+    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     expect(result.current.shoppingListItems).toHaveLength(0);
     expect(result.current.shoppingListCount).toBe(0);
@@ -68,7 +68,7 @@ describe("useShoppingList", () => {
   it("updates derived state when items prop changes", () => {
     const initialItems = [makeItem({ id: "a", NeedRestock: false })];
     const { result, rerender } = renderHook(
-      ({ items }) => useShoppingList(items, dispatch),
+      ({ items }) => useShoppingList({ items, dispatch }),
       { initialProps: { items: initialItems } },
     );
 
@@ -86,7 +86,7 @@ describe("useShoppingList", () => {
 
   it("addToShoppingList dispatches addToShoppingList action", async () => {
     const items = [makeItem({ id: "item-1", QtyOnHand: 2 })];
-    const { result } = renderHook(() => useShoppingList(items, dispatch));
+    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     await act(async () => {
       await result.current.addToShoppingList("item-1", 3);
@@ -100,7 +100,7 @@ describe("useShoppingList", () => {
 
   it("addToShoppingList does nothing for unknown item id", async () => {
     const items = [makeItem({ id: "item-1" })];
-    const { result } = renderHook(() => useShoppingList(items, dispatch));
+    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     await act(async () => {
       await result.current.addToShoppingList("nonexistent", 1);
@@ -111,7 +111,7 @@ describe("useShoppingList", () => {
 
   it("addToShoppingList does nothing for non-finite qty", async () => {
     const items = [makeItem({ id: "item-1" })];
-    const { result } = renderHook(() => useShoppingList(items, dispatch));
+    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     await act(async () => {
       await result.current.addToShoppingList("item-1", "abc");
@@ -131,7 +131,7 @@ describe("useShoppingList", () => {
         QtyOnHand: 2,
       }),
     ];
-    const { result } = renderHook(() => useShoppingList(items, dispatch));
+    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     await act(async () => {
       await result.current.removeFromShoppingList("item-1");
@@ -145,7 +145,7 @@ describe("useShoppingList", () => {
 
   it("removeFromShoppingList does nothing for unknown item id", async () => {
     const items = [makeItem({ id: "item-1" })];
-    const { result } = renderHook(() => useShoppingList(items, dispatch));
+    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     await act(async () => {
       await result.current.removeFromShoppingList("nonexistent");
@@ -165,7 +165,7 @@ describe("useShoppingList", () => {
         QtyOnHand: 2,
       }),
     ];
-    const { result } = renderHook(() => useShoppingList(items, dispatch));
+    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     await act(async () => {
       await result.current.updateTargetQty("item-1", 8);
@@ -179,7 +179,7 @@ describe("useShoppingList", () => {
 
   it("updateTargetQty does nothing for unknown item id", async () => {
     const items = [makeItem({ id: "item-1" })];
-    const { result } = renderHook(() => useShoppingList(items, dispatch));
+    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     await act(async () => {
       await result.current.updateTargetQty("nonexistent", 5);
@@ -190,7 +190,7 @@ describe("useShoppingList", () => {
 
   it("updateTargetQty does nothing for non-finite qty", async () => {
     const items = [makeItem({ id: "item-1" })];
-    const { result } = renderHook(() => useShoppingList(items, dispatch));
+    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     await act(async () => {
       await result.current.updateTargetQty("item-1", NaN);

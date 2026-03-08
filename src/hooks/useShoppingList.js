@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import { actions } from "../reducers/inventoryReducer";
 import { patchInventoryItem } from "../data/airtableUtils";
 
-export default function useShoppingList(items, dispatch) {
+export default function useShoppingList({ items, dispatch }) {
   const itemsRef = useRef(items);
   useEffect(() => {
     itemsRef.current = items;
