@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Gate `loadSampleData` random failure behind `VITE_SIMULATE_ERRORS` env flag so developers using `VITE_SAMPLE_DATA=true` no longer hit unexplained 33% load failures by default
 - Extract shared `InventoryFormFields` component from duplicate field markup in `AddInventoryItemForm` and `EditInventoryItemForm`, reducing each form to ~80 lines of unique logic (state init, submit handling, buttons) while the shared component renders all 7 fieldsets
 - Sort `inventoryItems` once into `allSortedItems` in `useFilteredInventory` and derive `archivedItems` via `.filter()` instead of re-running `sortItems` independently on the full array
+- Consolidate four separate `useMemo` partition filters (fridge, freezer, pantry, shoppingList) in `useFilteredInventory` into a single-pass loop over `sortedItems`
 
 ### Fixed
 

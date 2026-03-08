@@ -61,38 +61,30 @@ export default function useFilteredInventory(
     [filterAppliedItems, sortConfig.field, sortConfig.direction],
   );
 
-  // Partition by location / status
-  const fridgeItems = useMemo(
-    () =>
-      sortedItems.filter(
-        (item) =>
-          item.Location?.includes("Fridge") && item.Status !== "archived",
-      ),
-    [sortedItems],
-  );
-  const freezerItems = useMemo(
-    () =>
-      sortedItems.filter(
-        (item) =>
-          item.Location?.includes("Freezer") && item.Status !== "archived",
-      ),
-    [sortedItems],
-  );
-  const pantryItems = useMemo(
-    () =>
-      sortedItems.filter(
-        (item) =>
-          item.Location?.includes("Pantry") && item.Status !== "archived",
-      ),
-    [sortedItems],
-  );
-  const shoppingListItems = useMemo(
-    () =>
-      sortedItems.filter(
-        (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
-      ),
-    [sortedItems],
-  );
+  // Partition sorted items by location / status in a single pass
+  const { fridgeItems, freezerItems, pantryItems, shoppingListItems } =
+    useMemo(() => {
+      const partitions = {
+        fridgeItems: [],
+        freezerItems: [],
+        pantryItems: [],
+        shoppingListItems: [],
+      };
+      for (const item of sortedItems) {
+        const loc = item.Location;
+        const isArchived = item.Status === "archived";
+        if (!isArchived) {
+          if (loc?.includes("Fridge")) partitions.fridgeItems.push(item);
+          if (loc?.includes("Freezer")) partitions.freezerItems.push(item);
+          if (loc?.includes("Pantry")) partitions.pantryItems.push(item);
+        }
+        if (item.NeedRestock && item.TargetQty > item.QtyOnHand) {
+          partitions.shoppingListItems.push(item);
+        }
+      }
+      return partitions;
+    }, [sortedItems]);
+
   const archivedItems = useMemo(
     () => allSortedItems.filter((item) => item.Status === "archived"),
     [allSortedItems],
