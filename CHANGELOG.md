@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor useInventory and inventoryReducer to manage lastFetchedAt state with useReducer
 - Refactor FilterBarForm to replace useState with useRef for search term management and implement debouncing directly in the search handler
 - Refactor MainContainer to streamline useShoppingList integration
+- Refactor InventorySection to rename updateItemQuantity prop to updateTargetQty
 
 ---
 

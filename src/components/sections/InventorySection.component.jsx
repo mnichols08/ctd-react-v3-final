@@ -9,7 +9,7 @@ function InventorySection({
   items,
   addToShoppingList,
   removeFromShoppingList,
-  updateItemQuantity,
+  updateTargetQty,
   updateItem,
   visibleFields,
   archiveItem,
@@ -61,9 +61,9 @@ function InventorySection({
                 <ItemCard
                   key={item.id}
                   item={item}
-                  handleAddToShoppingList={addToShoppingList}
-                  handleRemoveFromShoppingList={removeFromShoppingList}
-                  handleUpdateItemQuantity={updateItemQuantity}
+                  addToShoppingList={addToShoppingList}
+                  removeFromShoppingList={removeFromShoppingList}
+                  updateTargetQty={updateTargetQty}
                   handleUpdateItem={updateItem}
                   visibleFields={visibleFields}
                   handleArchiveItem={archiveItem}
