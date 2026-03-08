@@ -55,6 +55,10 @@ function AddInventoryItemForm({ addInventoryItem }) {
           newItem[field] = value === "" ? null : Number(value);
         }
       });
+      // Coerce empty date strings to null (Airtable rejects "")
+      ["ExpiresOn", "DatePurchased", "DateFrozen"].forEach((field) => {
+        if (!newItem[field]) newItem[field] = null;
+      });
       const success = await addInventoryItem(newItem);
       if (success === false) return;
       resetForm();

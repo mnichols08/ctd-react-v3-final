@@ -295,6 +295,12 @@ export const createInventoryItem = async ({
 
 export const patchInventoryItem = async (id, fields) => {
   const { isCompleted: _ic, isDeleting: _id, ...airtableFields } = fields;
+  // Coerce empty date strings to null (Airtable rejects "")
+  ["ExpiresOn", "DatePurchased", "DateFrozen"].forEach((field) => {
+    if (field in airtableFields && !airtableFields[field]) {
+      airtableFields[field] = null;
+    }
+  });
   const patchFields = {
     ...airtableFields,
     LastUpdated: new Date().toISOString(),
