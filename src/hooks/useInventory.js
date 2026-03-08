@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import inventoryReducer, {
   actions,
   initialState,
@@ -14,6 +14,7 @@ import {
 export default function useInventory() {
   const [state, dispatch] = useReducer(inventoryReducer, initialState);
   const { items, isLoading, error } = state;
+  const [lastFetchedAt, setLastFetchedAt] = useState(null);
 
   // Ref for reading current items in callbacks without stale closures
   const itemsRef = useRef(items);
@@ -27,14 +28,14 @@ export default function useInventory() {
   // --- Initial data fetch ---
   useEffect(() => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      loadSampleData({
+      const cleanup = loadSampleData({
         setInventoryItems: (data) =>
           dispatch({ type: actions.setItems, payload: data }),
         setIsLoading: (val) =>
           dispatch({ type: actions.setLoading, payload: val }),
         setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
       });
-      return;
+      return cleanup;
     }
 
     const controller = new AbortController();
@@ -49,6 +50,7 @@ export default function useInventory() {
       sortConfig: state.sortConfig,
       filterConfig: state.filters,
       searchTerm: state.searchTerm,
+      setLastFetchedAt,
       signal: controller.signal,
     });
 
@@ -198,7 +200,7 @@ export default function useInventory() {
       sortConfig: options.sortConfig,
       filterConfig: options.filterConfig,
       searchTerm: options.searchTerm,
-      setLastFetchedAt: options.setLastFetchedAt,
+      setLastFetchedAt,
       signal: controller.signal,
     });
   }, []);
@@ -214,5 +216,6 @@ export default function useInventory() {
     archiveItem,
     unarchiveItem,
     refetch,
+    lastFetchedAt,
   };
 }
