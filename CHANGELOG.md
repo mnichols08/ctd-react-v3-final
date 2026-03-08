@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Update dependencies in form components to include resetForm in useCallback dependencies
+- Fix comments in test files to replace special characters with hyphens
 
 ---
 
