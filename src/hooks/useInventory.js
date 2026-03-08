@@ -13,7 +13,20 @@ import {
 
 export default function useInventory() {
   const [state, dispatch] = useReducer(inventoryReducer, initialState);
-  const { items, isLoading, error, showQuickAdd, showArchived, isSaving, saveError, lastFetchedAt } = state;
+  const {
+    items,
+    isLoading,
+    error,
+    showQuickAdd,
+    showArchived,
+    isSaving,
+    saveError,
+    lastFetchedAt,
+    searchTerm,
+    sortConfig,
+    filters,
+    visibleFields,
+  } = state;
 
   // Refs for reading current state in callbacks without stale closures
   const itemsRef = useRef(items);
@@ -212,6 +225,32 @@ export default function useInventory() {
     });
   }, []);
 
+  // --- Filter / sort / search / field visibility dispatchers ---
+
+  const setSearch = useCallback((term) => {
+    dispatch({ type: actions.setSearch, payload: term });
+  }, []);
+
+  const setSort = useCallback((field, direction) => {
+    dispatch({ type: actions.setSort, payload: { field, direction } });
+  }, []);
+
+  const setFilters = useCallback((newFilters) => {
+    dispatch({ type: actions.setFilters, payload: newFilters });
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    dispatch({ type: actions.clearFilters });
+  }, []);
+
+  const toggleField = useCallback((key) => {
+    dispatch({ type: actions.toggleField, payload: key });
+  }, []);
+
+  const resetFields = useCallback(() => {
+    dispatch({ type: actions.resetFields });
+  }, []);
+
   return {
     items,
     isLoading,
@@ -228,5 +267,15 @@ export default function useInventory() {
     unarchiveItem,
     refetch,
     lastFetchedAt,
+    searchTerm,
+    sortConfig,
+    filters,
+    setSearch,
+    setSort,
+    setFilters,
+    clearFilters,
+    visibleFields,
+    toggleField,
+    resetFields,
   };
 }

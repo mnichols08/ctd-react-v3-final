@@ -1,3 +1,5 @@
+import { DEFAULT_VISIBLE_FIELDS } from "../data/fieldConfig";
+
 export const actions = {
   addItem: "addItem",
   deleteItem: "deleteItem",
@@ -18,6 +20,9 @@ export const actions = {
   setIsSaving: "setIsSaving",
   setSaveError: "setSaveError",
   setLastFetchedAt: "setLastFetchedAt",
+  toggleField: "toggleField",
+  resetFields: "resetFields",
+  clearFilters: "clearFilters",
 };
 
 export const initialState = {
@@ -39,6 +44,7 @@ export const initialState = {
     expiringSoon: false,
     lowStock: false,
   },
+  visibleFields: new Set(DEFAULT_VISIBLE_FIELDS),
 };
 
 export default function inventoryReducer(state, action) {
@@ -184,6 +190,33 @@ export default function inventoryReducer(state, action) {
 
     case actions.setLastFetchedAt:
       return { ...state, lastFetchedAt: action.payload };
+
+    case actions.toggleField: {
+      const next = new Set(state.visibleFields);
+      if (next.has(action.payload)) {
+        next.delete(action.payload);
+      } else {
+        next.add(action.payload);
+      }
+      return { ...state, visibleFields: next };
+    }
+
+    case actions.resetFields:
+      return { ...state, visibleFields: new Set(DEFAULT_VISIBLE_FIELDS) };
+
+    case actions.clearFilters:
+      return {
+        ...state,
+        filters: {
+          categories: [],
+          location: null,
+          needRestock: false,
+          status: "",
+          expiringSoon: false,
+          lowStock: false,
+        },
+        searchTerm: "",
+      };
 
     default:
       throw new Error(`Unknown action type: ${action.type}`);

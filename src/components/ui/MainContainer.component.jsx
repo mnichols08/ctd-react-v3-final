@@ -10,8 +10,6 @@ import {
   fetchParamsEqual,
 } from "../../data/inventoryUtils";
 import { SEARCHABLE_FIELDS } from "../../data/fieldConfig";
-import useInventory from "../../hooks/useInventory";
-import useFilters from "../../hooks/useFilters";
 import useShoppingList from "../../hooks/useShoppingList";
 import LoadingState from "./LoadingState.component";
 import ErrorState from "./ErrorState.component";
@@ -22,8 +20,7 @@ import QuickAddForm from "../forms/QuickAddForm.component";
 import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
 
-function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
-  // --- Custom hooks ---
+function MainContainer({ inventory }) {
   const {
     items: inventoryItems,
     isLoading,
@@ -40,10 +37,14 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     unarchiveItem,
     refetch,
     lastFetchedAt,
-  } = useInventory();
-
-  const { searchTerm, sortConfig, filters, setSearch, setSort, setFilters } =
-    useFilters();
+    searchTerm,
+    sortConfig,
+    filters,
+    setSearch,
+    setSort,
+    setFilters,
+    visibleFields,
+  } = inventory;
 
   const { addToShoppingList, removeFromShoppingList, updateTargetQty } =
     useShoppingList({ items: inventoryItems, dispatch });
@@ -205,13 +206,6 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       ),
     [inventoryItems, sortConfig.field, sortConfig.direction],
   );
-
-  // Effect to check for archived items whenever the inventory changes and update the state in App accordingly
-  useEffect(() => {
-    setArchivedItemsExist(
-      inventoryItems.some((item) => item.Status === "archived"),
-    );
-  }, [inventoryItems, setArchivedItemsExist]);
 
   // Track last-fetched params to prevent redundant server-side re-fetches
   const lastFetchedParamsRef = useRef({

@@ -30,22 +30,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Refactor useInventory hook to replace useState with useReducer for lastFetchedAt management
-- Refactor MainContainer to utilize custom hooks for inventory and filters, replacing local state management with useInventory and useFilters
-- Update LastUpdated field handling in inventoryReducer to use action payload if available
-- Update persistUpdate function to dispatch updated item after patching inventory
-- Refactor useInventory hook to improve state reference handling and avoid stale closures
-- Refactor inventory state management to use useReducer for UI state and add new actions for toggling quick add and archived item visibility
-- Refactor useInventory and inventoryReducer to manage lastFetchedAt state with useReducer
-- Refactor FilterBarForm to replace useState with useRef for search term management and implement debouncing directly in the search handler
-- Refactor MainContainer to streamline useShoppingList integration
-- Refactor InventorySection to rename updateItemQuantity prop to updateTargetQty
-- Refactor ItemCard to rename shopping list handlers for consistency
-- Refactor ShoppingListControl to replace handler props with direct function references and to use optional chaining for addToShoppingList
-- Refactor ShoppingListControl test and ItemCard test to replace handler props with more descriptive names
-- Refactor InventorySection test to rename updateItemQuantity prop to updateTargetQty
-- Extract SEARCHABLE_FIELDS constant into fieldConfig.js and consolidate duplicate in airtableUtils.js
-- Extract staleness utilities (STALE_TIME_MS, STALE_CHECK_INTERVAL_MS, isDataStale) and comparison helpers (arraysEqual, fetchParamsEqual) from MainContainer into inventoryUtils.js
+- Consolidate all local useState and useFilters state (visibleFields, archivedItemsExist, search, sort, filters) into the central inventoryReducer, lifting useInventory to App and passing it as a prop to MainContainer
+- Migrate remaining useReducer-managed values (lastFetchedAt, showQuickAdd, showArchived) and add toggleField, resetFields, and clearFilters actions to inventoryReducer
+- Replace FilterBarForm useState with useRef and implement debounced search handler
+- Rename shopping list handler props (updateItemQuantity → updateTargetQty) across InventorySection, ItemCard, and ShoppingListControl for consistency
+- Extract shared constants and utilities (SEARCHABLE_FIELDS, staleness helpers, comparison helpers) into fieldConfig.js and inventoryUtils.js
+- Update MainContainer and component tests to reflect new prop-driven architecture and renamed handlers
+
+### Removed
+
+- Remove useFilters hook usage and separate visibleFields/archivedItemsExist useState instances from App and MainContainer in favor of the unified reducer
 
 ---
 
