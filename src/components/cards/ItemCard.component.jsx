@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import ShoppingListControl from "../forms/ShoppingListControl.component";
 import EditInventoryItemForm from "../forms/EditInventoryItemForm.component";
 import { ALL_FIELDS, DEFAULT_VISIBLE_FIELDS } from "../../data/fieldConfig";
@@ -101,4 +101,4 @@ function ItemCard({
   );
 }
 
-export default ItemCard;
+export default memo(ItemCard);

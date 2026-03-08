@@ -1,72 +1,75 @@
-import { useState, useRef } from "react";
+import { memo, useCallback, useRef, useState } from "react";
+
+// Initial form state with all fields set to empty or default values
+const initialFormState = {
+  ItemName: "",
+  ItemDescription: "",
+  Brand: "",
+  PackageSize: "",
+  UPC: "",
+  Category: "",
+  SubCategory: "",
+  Location: "",
+  QtyOnHand: "",
+  QtyUnit: "",
+  TargetQty: "",
+  NeedRestock: false,
+  ExpiresOn: "",
+  DatePurchased: "",
+  DateFrozen: "",
+  PurchasePrice: "",
+  Store: "",
+  UnitCost: "",
+  Notes: "",
+  Tags: "",
+  Allergens: "",
+  ImageRef: "",
+  Status: "",
+  ProductUrl: "",
+};
 
 function AddInventoryItemForm({ addInventoryItem }) {
-  // Initial form state with all fields set to empty or default values
-  const initialFormState = {
-    ItemName: "",
-    ItemDescription: "",
-    Brand: "",
-    PackageSize: "",
-    UPC: "",
-    Category: "",
-    SubCategory: "",
-    Location: "",
-    QtyOnHand: "",
-    QtyUnit: "",
-    TargetQty: "",
-    NeedRestock: false,
-    ExpiresOn: "",
-    DatePurchased: "",
-    DateFrozen: "",
-    PurchasePrice: "",
-    Store: "",
-    UnitCost: "",
-    Notes: "",
-    Tags: "",
-    Allergens: "",
-    ImageRef: "",
-    Status: "",
-    ProductUrl: "",
-  };
-
   // Form state to manage controlled inputs
   const [formData, setFormData] = useState(initialFormState);
   const itemNameRef = useRef(null);
 
   // Handle input changes for all form fields
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
     }));
-  };
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newItem = {
-      id: Date.now(),
-      ...formData,
-      LastUpdated: new Date().toISOString(),
-    };
-    // Coerce numeric fields from strings to numbers (or null for empty fields)
-    const numericFields = [
-      "QtyOnHand",
-      "TargetQty",
-      "PurchasePrice",
-      "UnitCost",
-    ];
-    numericFields.forEach((field) => {
-      if (Object.prototype.hasOwnProperty.call(newItem, field)) {
-        const value = newItem[field];
-        newItem[field] = value === "" ? null : Number(value);
-      }
-    });
-    const success = await addInventoryItem(newItem);
-    if (success === false) return;
-    setFormData(initialFormState);
-    itemNameRef.current?.focus();
-  };
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      const newItem = {
+        id: Date.now(),
+        ...formData,
+        LastUpdated: new Date().toISOString(),
+      };
+      // Coerce numeric fields from strings to numbers (or null for empty fields)
+      const numericFields = [
+        "QtyOnHand",
+        "TargetQty",
+        "PurchasePrice",
+        "UnitCost",
+      ];
+      numericFields.forEach((field) => {
+        if (Object.prototype.hasOwnProperty.call(newItem, field)) {
+          const value = newItem[field];
+          newItem[field] = value === "" ? null : Number(value);
+        }
+      });
+      const success = await addInventoryItem(newItem);
+      if (success === false) return;
+      setFormData(initialFormState);
+      itemNameRef.current?.focus();
+    },
+    [formData, addInventoryItem],
+  );
   return (
     <form onSubmit={handleSubmit} aria-label="Add Inventory Item">
       <fieldset>
@@ -320,4 +323,4 @@ function AddInventoryItemForm({ addInventoryItem }) {
   );
 }
 
-export default AddInventoryItemForm;
+export default memo(AddInventoryItemForm);

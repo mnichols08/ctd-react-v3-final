@@ -1,7 +1,12 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import FieldSelector from "../../cards/FieldSelector.component";
 
-function NavMenu({ visibleFields, onToggleField, onResetFields, archivedItemsExist }) {
+function NavMenu({
+  visibleFields,
+  onToggleField,
+  onResetFields,
+  archivedItemsExist,
+}) {
   const [showFieldSelector, setShowFieldSelector] = useState(false);
 
   return (
@@ -51,4 +56,4 @@ function NavMenu({ visibleFields, onToggleField, onResetFields, archivedItemsExi
   );
 }
 
-export default NavMenu;
+export default memo(NavMenu);

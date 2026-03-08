@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { getActiveFilterCount } from "../../data/inventoryUtils";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 const DEFAULT_FILTERS = {
   categories: [],
   expiringSoon: false,
   lowStock: false,
+  needRestock: false,
+  status: "",
 };
 
 function FilterBarForm({
@@ -15,6 +16,7 @@ function FilterBarForm({
   sortDirection,
   filters = DEFAULT_FILTERS,
   inventoryItems = [],
+  handleRefresh = () => {},
 }) {
   const [searchTerm, setSearchTerm] = useState("");
   const debounceTimer = useRef(null);
@@ -27,9 +29,6 @@ function FilterBarForm({
       ].sort(),
     [inventoryItems],
   );
-
-  // Count active filters
-  const activeFilterCount = getActiveFilterCount(filters);
 
   const handleSortChange = (e) => {
     const value = e.target.value;
@@ -150,8 +149,11 @@ function FilterBarForm({
       <button type="button" onClick={handleClearFilters}>
         Clear All Filters
       </button>
+      <button type="button" onClick={handleRefresh}>
+        Refresh
+      </button>
     </form>
   );
 }
 
-export default FilterBarForm;
+export default memo(FilterBarForm);

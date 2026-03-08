@@ -21,7 +21,79 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [0.4.11] - 2026-03-06
+## [0.5.4] - 2026-03-07
+
+### Fixed
+
+- Remove active filter count calculation from FilterBarForm, causing linting error.
+- Add useEffect to MemoChild for accurate render count tracking
+- Remove unused import of getActiveFilterCount from FilterBarForm component
+
+---
+
+## [0.5.3] - 2026-03-07
+
+### Added
+
+- Add `useCallback` behavior tests to MainContainer verifying:
+  - Handler functions maintain same reference across renders when deps unchanged
+  - Handler functions get new reference when deps change
+  - Memoized child components skip re-render when parent re-renders with stable callbacks
+- Add tests for useCallback behavior in MainContainer
+- Add re-fetch prevention tests to MainContainer verifying:
+  - No API call when sort/filter changes but server-side params are inactive
+  - API call triggers when server-side params change
+  - Refresh button triggers API call regardless of server-side filter setting
+  - Previous in-flight fetch is aborted when a new fetch starts
+
+### Changed
+
+- Extend InventorySection mock to capture all props in render log for callback reference assertions
+- Enhance MainContainer tests with useMemo and useCallback behavior checks
+- Add partial mock for `fetchInventoryItems` in MainContainer tests to enable API-mode testing alongside sample-data tests
+
+---
+
+## [0.5.2] - 2026-03-07
+
+### Added
+
+- Add tests for Refresh functionality in FilterBarForm and MainContainer
+- Add refresh button and handler to re-fetch inventory items in FilterBarForm
+- Implement auto-refresh and stale-check for MainContainer and QuickStatsBar
+- Add tests for setLastFetchedAt in fetchInventoryItems to verify date handling on success and failure
+
+### Changed
+
+- Refactor MainContainer to prevent unnecessary Airtable refetches by tracking last-fetched parameters
+- Refactor MainContainer to improve parameter comparison logic and prevent unnecessary Airtable refetches
+- Refactor MainContainer and QuickStatsBar to track last fetch time and improve display of data freshness
+- Refactor MainContainer to prevent overlapping fetch requests and improve data fetching logic
+
+---
+
+## [0.5.1] - 2026-03-07
+
+### Changed
+
+- Wrap handlers and callbacks in useCallback for performance optimization
+- Wrap handleChange and handleSubmit in useCallback for performance optimization
+- Wrap handleAdd, handleDecrement, and handleIncrement in useCallback for performance optimization
+- Wrap all components in memo for performance optimization
+- Wrap toggleField and resetFields in useCallback for performance optimization
+- Refactor MainContainer to use useRef for inventoryItems in callbacks for improved performance
+
+---
+
+## [0.5.0] - 2026-03-07
+
+### Changed
+
+- Optimize inventory filtering and sorting using useMemo for improved performance
+
+---
+
+## [0.4.11] - 2026-03-07
 
 ### Added
 
@@ -37,9 +109,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
- - Fix Math.random spy usage in retry tests
- - Fix condition for loading sample data in MainContainer
- - Fix formatting in comments for clarity in FilterBarForm tests
+- Fix Math.random spy usage in retry tests
+- Fix condition for loading sample data in MainContainer
+- Fix formatting in comments for clarity in FilterBarForm tests
 
 ---
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 function EditInventoryItemForm({ item, onSave, onCancel }) {
   // Destructure item properties for easier access and initialize form state with existing item data
@@ -34,38 +34,42 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
   // Ref for the first input field to focus when the form opens
   const firstFieldRef = useRef(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    (e) => {
+      e.preventDefault();
 
-    const updatedItem = {
-      ...item,
-      ...formData,
-      QtyOnHand:
-        formData.QtyOnHand !== "" ? parseFloat(formData.QtyOnHand) : null,
-      TargetQty:
-        formData.TargetQty !== "" ? parseFloat(formData.TargetQty) : null,
-      PurchasePrice:
-        formData.PurchasePrice !== ""
-          ? parseFloat(formData.PurchasePrice)
-          : null,
-      UnitCost: formData.UnitCost !== "" ? parseFloat(formData.UnitCost) : null,
-      ExpiresOn: formData.ExpiresOn || null,
-      DatePurchased: formData.DatePurchased || null,
-      DateFrozen: formData.DateFrozen || null,
-      LastUpdated: new Date().toISOString(),
-    };
+      const updatedItem = {
+        ...item,
+        ...formData,
+        QtyOnHand:
+          formData.QtyOnHand !== "" ? parseFloat(formData.QtyOnHand) : null,
+        TargetQty:
+          formData.TargetQty !== "" ? parseFloat(formData.TargetQty) : null,
+        PurchasePrice:
+          formData.PurchasePrice !== ""
+            ? parseFloat(formData.PurchasePrice)
+            : null,
+        UnitCost:
+          formData.UnitCost !== "" ? parseFloat(formData.UnitCost) : null,
+        ExpiresOn: formData.ExpiresOn || null,
+        DatePurchased: formData.DatePurchased || null,
+        DateFrozen: formData.DateFrozen || null,
+        LastUpdated: new Date().toISOString(),
+      };
 
-    onSave(updatedItem);
-  };
+      onSave(updatedItem);
+    },
+    [formData, item, onSave],
+  );
 
   // Handle input changes for controlled components, updating the formData state accordingly
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [name]: type === "checkbox" ? checked : value,
     }));
-  };
+  }, []);
 
   // Focus the first input when the form opens
   useEffect(() => {
@@ -324,4 +328,4 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
   );
 }
 
-export default EditInventoryItemForm;
+export default memo(EditInventoryItemForm);

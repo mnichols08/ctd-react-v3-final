@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import "./App.css";
 import Header from "./components/shared/Header/Header.component";
 import MainContainer from "./components/ui/MainContainer.component";
@@ -11,7 +11,7 @@ function App() {
     () => new Set(DEFAULT_VISIBLE_FIELDS),
   );
 
-  const toggleField = (key) => {
+  const toggleField = useCallback((key) => {
     setVisibleFields((prev) => {
       const next = new Set(prev);
       if (next.has(key)) {
@@ -21,11 +21,11 @@ function App() {
       }
       return next;
     });
-  };
+  }, []);
 
-  const resetFields = () => {
+  const resetFields = useCallback(() => {
     setVisibleFields(new Set(DEFAULT_VISIBLE_FIELDS));
-  };
+  }, []);
 
   // State to track whether archived items exist in the inventory, passed down to Header for conditional nav link rendering
   const [archivedItemsExist, setArchivedItemsExist] = useState(false);
