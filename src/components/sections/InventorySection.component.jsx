@@ -27,8 +27,8 @@ function InventorySection({
 
   return (
     <section id={id}>
-      <h2 id={`${id}-heading`} onClick={toggleCollapsed}>
-        {title} ({itemCount}){" "}
+      <h2 id={`${id}-heading`}>
+        {title} ({itemCount})
       </h2>{" "}
       {itemCount > 0 && (
         <button
