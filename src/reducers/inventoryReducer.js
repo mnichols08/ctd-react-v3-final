@@ -13,12 +13,20 @@ export const actions = {
   setFilters: "setFilters",
   setSort: "setSort",
   setSearch: "setSearch",
+  toggleQuickAdd: "toggleQuickAdd",
+  toggleShowArchived: "toggleShowArchived",
+  setIsSaving: "setIsSaving",
+  setSaveError: "setSaveError",
 };
 
 export const initialState = {
   items: [],
   isLoading: true,
   error: null,
+  showQuickAdd: true,
+  showArchived: false,
+  isSaving: false,
+  saveError: null,
   searchTerm: "",
   sortConfig: { field: "ItemName", direction: "asc" },
   filters: {
@@ -159,6 +167,18 @@ export default function inventoryReducer(state, action) {
 
     case actions.setSearch:
       return { ...state, searchTerm: action.payload };
+
+    case actions.toggleQuickAdd:
+      return { ...state, showQuickAdd: !state.showQuickAdd };
+
+    case actions.toggleShowArchived:
+      return { ...state, showArchived: !state.showArchived };
+
+    case actions.setIsSaving:
+      return { ...state, isSaving: action.payload };
+
+    case actions.setSaveError:
+      return { ...state, saveError: action.payload };
 
     default:
       throw new Error(`Unknown action type: ${action.type}`);

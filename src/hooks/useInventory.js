@@ -13,7 +13,7 @@ import {
 
 export default function useInventory() {
   const [state, dispatch] = useReducer(inventoryReducer, initialState);
-  const { items, isLoading, error } = state;
+  const { items, isLoading, error, showQuickAdd, showArchived, isSaving, saveError } = state;
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
 
   // Refs for reading current state in callbacks without stale closures
@@ -215,6 +215,10 @@ export default function useInventory() {
     items,
     isLoading,
     error,
+    showQuickAdd,
+    showArchived,
+    isSaving,
+    saveError,
     dispatch,
     addItem,
     deleteItem,

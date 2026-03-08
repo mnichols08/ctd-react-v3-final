@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   getActiveFilterCount,
   isExpiringSoon,
@@ -72,6 +72,10 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     items: inventoryItems,
     isLoading,
     error,
+    showQuickAdd,
+    showArchived,
+    isSaving,
+    saveError,
     dispatch,
     addItem,
     deleteItem,
@@ -82,26 +86,14 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     lastFetchedAt,
   } = useInventory();
 
-  const {
-    searchTerm,
-    sortConfig,
-    filters,
-    setSearch,
-    setSort,
-    setFilters,
-  } = useFilters();
+  const { searchTerm, sortConfig, filters, setSearch, setSort, setFilters } =
+    useFilters();
 
   const {
     addToShoppingList: rawAddToShoppingList,
     removeFromShoppingList,
     updateTargetQty,
   } = useShoppingList({ items: inventoryItems, dispatch });
-
-  // --- UI-only state ---
-  const [showQuickAdd, setShowQuickAdd] = useState(true);
-  const [showArchived, setShowArchived] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveError, setSaveError] = useState(null);
 
   // Ref for stable callbacks that need current items
   const inventoryItemsRef = useRef(inventoryItems);
@@ -180,19 +172,19 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Adapter: Add item with save-error handling
   const handleAddItem = useCallback(
     async (item) => {
-      setSaveError(null);
-      setIsSaving(true);
+      dispatch({ type: "setSaveError", payload: null });
+      dispatch({ type: "setIsSaving", payload: true });
       try {
         const success = await addItem(item);
         return success;
       } catch (err) {
-        setSaveError(err.message);
+        dispatch({ type: "setSaveError", payload: err.message });
         return false;
       } finally {
-        setIsSaving(false);
+        dispatch({ type: "setIsSaving", payload: false });
       }
     },
-    [addItem],
+    [addItem, dispatch],
   );
 
   // Adapter: Delete with confirmation dialog
@@ -306,7 +298,14 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       filterConfig: filters,
       searchTerm,
     });
-  }, [sortConfig.field, sortConfig.direction, filters, searchTerm, refetch, sortConfig]);
+  }, [
+    sortConfig.field,
+    sortConfig.direction,
+    filters,
+    searchTerm,
+    refetch,
+    sortConfig,
+  ]);
 
   // Auto-refresh when the tab regains focus and data is stale
   useEffect(() => {
@@ -392,14 +391,19 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
           </ToolSection>
           <ToolSection id="add-item" title="Add Item">
             {/*  Toggle between Quick Add and Full Form */}
-            <button onClick={() => setShowQuickAdd((prev) => !prev)}>
+            <button onClick={() => dispatch({ type: "toggleQuickAdd" })}>
               {showQuickAdd ? "Switch to Full Form" : "Switch to Quick Add"}
             </button>
             {isSaving && <p role="status">Saving item to Airtable…</p>}
             {saveError && (
               <div role="alert">
                 <p>Error: {saveError}</p>
-                <button type="button" onClick={() => setSaveError(null)}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    dispatch({ type: "setSaveError", payload: null })
+                  }
+                >
                   Dismiss
                 </button>
               </div>
@@ -455,7 +459,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
             <div id="archived">
               <button
                 type="button"
-                onClick={() => setShowArchived((prev) => !prev)}
+                onClick={() => dispatch({ type: "toggleShowArchived" })}
               >
                 {showArchived ? "Hide Archived Items" : `Show Archived Items`} (
                 {archivedItems.length})

@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update LastUpdated field handling in inventoryReducer to use action payload if available
 - Update persistUpdate function to dispatch updated item after patching inventory
 - Refactor useInventory hook to improve state reference handling and avoid stale closures
+- Refactor inventory state management to use useReducer for UI state and add new actions for toggling quick add and archived item visibility
 
 ---
 
