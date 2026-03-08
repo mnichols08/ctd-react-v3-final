@@ -16,11 +16,17 @@ export default function useInventory() {
   const { items, isLoading, error } = state;
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
 
-  // Ref for reading current items in callbacks without stale closures
+  // Refs for reading current state in callbacks without stale closures
   const itemsRef = useRef(items);
+  const sortConfigRef = useRef(state.sortConfig);
+  const filtersRef = useRef(state.filters);
+  const searchTermRef = useRef(state.searchTerm);
   useEffect(() => {
     itemsRef.current = items;
-  }, [items]);
+    sortConfigRef.current = state.sortConfig;
+    filtersRef.current = state.filters;
+    searchTermRef.current = state.searchTerm;
+  }, [items, state.sortConfig, state.filters, state.searchTerm]);
 
   // AbortController for cancelling in-flight fetches
   const abortControllerRef = useRef(null);
@@ -197,9 +203,9 @@ export default function useInventory() {
         ? () => {}
         : (val) => dispatch({ type: actions.setLoading, payload: val }),
       setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
-      sortConfig: options.sortConfig,
-      filterConfig: options.filterConfig,
-      searchTerm: options.searchTerm,
+      sortConfig: options.sortConfig ?? sortConfigRef.current,
+      filterConfig: options.filterConfig ?? filtersRef.current,
+      searchTerm: options.searchTerm ?? searchTermRef.current,
       setLastFetchedAt,
       signal: controller.signal,
     });
