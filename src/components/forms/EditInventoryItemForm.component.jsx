@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useRef } from "react";
+import { memo, useEffect, useRef } from "react";
 import useFormData from "../../hooks/useFormData";
 
 function EditInventoryItemForm({ item, onSave, onCancel }) {
@@ -35,33 +35,29 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
   // Ref for the first input field to focus when the form opens
   const firstFieldRef = useRef(null);
 
-  const handleSubmit = useCallback(
-    (e) => {
-      e.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-      const updatedItem = {
-        ...item,
-        ...formData,
-        QtyOnHand:
-          formData.QtyOnHand !== "" ? parseFloat(formData.QtyOnHand) : null,
-        TargetQty:
-          formData.TargetQty !== "" ? parseFloat(formData.TargetQty) : null,
-        PurchasePrice:
-          formData.PurchasePrice !== ""
-            ? parseFloat(formData.PurchasePrice)
-            : null,
-        UnitCost:
-          formData.UnitCost !== "" ? parseFloat(formData.UnitCost) : null,
-        ExpiresOn: formData.ExpiresOn || null,
-        DatePurchased: formData.DatePurchased || null,
-        DateFrozen: formData.DateFrozen || null,
-        LastUpdated: new Date().toISOString(),
-      };
+    const updatedItem = {
+      ...item,
+      ...formData,
+      QtyOnHand:
+        formData.QtyOnHand !== "" ? parseFloat(formData.QtyOnHand) : null,
+      TargetQty:
+        formData.TargetQty !== "" ? parseFloat(formData.TargetQty) : null,
+      PurchasePrice:
+        formData.PurchasePrice !== ""
+          ? parseFloat(formData.PurchasePrice)
+          : null,
+      UnitCost: formData.UnitCost !== "" ? parseFloat(formData.UnitCost) : null,
+      ExpiresOn: formData.ExpiresOn || null,
+      DatePurchased: formData.DatePurchased || null,
+      DateFrozen: formData.DateFrozen || null,
+      LastUpdated: new Date().toISOString(),
+    };
 
-      onSave(updatedItem);
-    },
-    [formData, item, onSave],
-  );
+    onSave(updatedItem);
+  };
 
   // Focus the first input when the form opens
   useEffect(() => {

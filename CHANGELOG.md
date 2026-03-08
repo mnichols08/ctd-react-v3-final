@@ -37,11 +37,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `addItem` and `persistUpdate` now dispatch `setSaveError` instead of `setError`, preventing create/update failures from triggering the full-page error state. Save errors are shown inline and are dismissible. `addItem` also clears any prior `saveError` before starting.
 - Fix error handling in deleteItem action to use setSaveError
 - Prevent debounced search callback from firing after FilterBarForm unmount by adding useEffect cleanup to clear pending timer
-- Prevent potentialy null/undefined location by adding   optional chaining for Location checks in useFilteredInventory
+- Prevent potentialy null/undefined location by adding optional chaining for Location checks in useFilteredInventory
 - Return no-op cleanup function from `loadSampleData` error path so the return type is consistent with the success path
 - - Fix item edits silently failing: `updateItem` now accepts both `(id, fields)` and `(fullItem)` signatures, and `patchInventoryItem` strips client-only properties (`isCompleted`, `isDeleting`) that caused Airtable 422 errors
 - Coerce empty date strings to `null` in `AddInventoryItemForm` and `patchInventoryItem` to prevent Airtable 422 errors on blank `ExpiresOn`, `DatePurchased`, and `DateFrozen` fields
 - Remove redundant `sortConfig.field` and `sortConfig.direction` from `useAutoRefresh` effect dependency array, keeping only the `sortConfig` object reference
+- Removed misleading `useCallback` wrapper from `handleChange` and `handleSubmit` in `AddInventoryItemForm`, `QuickAddForm` and `EditInventoryItemForm`. The `formData` dependency changed on every keystroke, so the memoization had no effect. Replaced with a plain function for clarity.
 
 ### Removed
 

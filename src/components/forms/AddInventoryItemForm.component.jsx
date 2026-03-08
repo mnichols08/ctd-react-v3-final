@@ -1,4 +1,4 @@
-import { memo, useCallback, useRef } from "react";
+import { memo, useRef } from "react";
 import useFormData from "../../hooks/useFormData";
 
 // Initial form state with all fields set to empty or default values
@@ -34,38 +34,35 @@ function AddInventoryItemForm({ addInventoryItem }) {
   const { formData, handleChange, resetForm } = useFormData(initialFormState);
   const itemNameRef = useRef(null);
 
-  const handleSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      const newItem = {
-        id: crypto.randomUUID(),
-        ...formData,
-        LastUpdated: new Date().toISOString(),
-      };
-      // Coerce numeric fields from strings to numbers (or null for empty fields)
-      const numericFields = [
-        "QtyOnHand",
-        "TargetQty",
-        "PurchasePrice",
-        "UnitCost",
-      ];
-      numericFields.forEach((field) => {
-        if (Object.prototype.hasOwnProperty.call(newItem, field)) {
-          const value = newItem[field];
-          newItem[field] = value === "" ? null : Number(value);
-        }
-      });
-      // Coerce empty date strings to null (Airtable rejects "")
-      ["ExpiresOn", "DatePurchased", "DateFrozen"].forEach((field) => {
-        if (!newItem[field]) newItem[field] = null;
-      });
-      const success = await addInventoryItem(newItem);
-      if (success === false) return;
-      resetForm();
-      itemNameRef.current?.focus();
-    },
-    [formData, addInventoryItem, resetForm],
-  );
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newItem = {
+      id: crypto.randomUUID(),
+      ...formData,
+      LastUpdated: new Date().toISOString(),
+    };
+    // Coerce numeric fields from strings to numbers (or null for empty fields)
+    const numericFields = [
+      "QtyOnHand",
+      "TargetQty",
+      "PurchasePrice",
+      "UnitCost",
+    ];
+    numericFields.forEach((field) => {
+      if (Object.prototype.hasOwnProperty.call(newItem, field)) {
+        const value = newItem[field];
+        newItem[field] = value === "" ? null : Number(value);
+      }
+    });
+    // Coerce empty date strings to null (Airtable rejects "")
+    ["ExpiresOn", "DatePurchased", "DateFrozen"].forEach((field) => {
+      if (!newItem[field]) newItem[field] = null;
+    });
+    const success = await addInventoryItem(newItem);
+    if (success === false) return;
+    resetForm();
+    itemNameRef.current?.focus();
+  };
   return (
     <form onSubmit={handleSubmit} aria-label="Add Inventory Item">
       <fieldset>
