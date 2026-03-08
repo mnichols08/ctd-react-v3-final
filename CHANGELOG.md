@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced `<a href="">` collapse toggle in `InventorySection` and `<a href="#field-selector">` in `NavMenu` with semantic `<button>` elements. Anchors with empty or hash-only hrefs are incorrect for non-navigation actions and cause page scroll. Updated related test selectors in `InventorySection.test.jsx` and `App.test.jsx`.
 - Extracted hardcoded Category and Location option lists into shared `CATEGORIES` and `LOCATIONS` constants in `fieldConfig.js`. Updated `QuickAddForm` and `AddInventoryItemForm` to use the shared arrays. Added missing categories ("Cooking Essentials", "Fresh") that exist in sample data.
 - Simplify useFilters hook to accept only { dispatch } instead of passing through searchTerm, sortConfig, and filters state it never read internally — those values are already available directly from the reducer in useInventory
+- Simplify updateItem in useInventoryActions to accept a single full item object { id, ...fields } instead of a dual-signature (idOrItem, maybeFields) with an IIFE destructure — all callers (ItemCard, EditInventoryItemForm) already pass a full item
 
 ### Fixed
 

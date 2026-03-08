@@ -88,7 +88,7 @@ describe("useInventory", () => {
     const firstItem = result.current.items[0];
 
     await act(async () => {
-      await result.current.updateItem(firstItem.id, { ItemName: "Updated" });
+      await result.current.updateItem({ ...firstItem, ItemName: "Updated" });
     });
 
     const updated = result.current.items.find((i) => i.id === firstItem.id);

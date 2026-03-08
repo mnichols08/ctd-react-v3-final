@@ -70,15 +70,8 @@ export default function useInventoryActions({ items, dispatch }) {
   );
 
   const updateItem = useCallback(
-    async (idOrItem, maybeFields) => {
-      const id = maybeFields !== undefined ? idOrItem : idOrItem.id;
-      const fields =
-        maybeFields !== undefined
-          ? maybeFields
-          : (() => {
-              const { id: _, ...rest } = idOrItem;
-              return rest;
-            })();
+    async (updatedItem) => {
+      const { id, ...fields } = updatedItem;
 
       const previousItem = itemsRef.current.find((i) => i.id === id);
       if (!previousItem) return;
