@@ -110,7 +110,7 @@ export const fetchInventoryItems = async ({
   sortConfig,
   filterConfig,
   searchTerm,
-  setLastFetchedAt,
+  setLastFetchedAt = () => {},
 }) => {
   setIsLoading(true);
   setError(null);
