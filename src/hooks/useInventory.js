@@ -122,7 +122,8 @@ export default function useInventory() {
         item,
         addInventoryItem: (savedItem) =>
           dispatch({ type: actions.addItem, payload: savedItem }),
-        setIsSaving: () => {},
+        setIsSaving: (val) =>
+          dispatch({ type: actions.setIsSaving, payload: val }),
         setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
       });
       return success;

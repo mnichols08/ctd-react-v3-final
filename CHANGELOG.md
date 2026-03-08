@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restored missing `useCallback` declaration for `handleSubmit` in `EditInventoryItemForm`, which caused a parse error breaking five test suites.
 - Added `window.confirm` mock in `useInventory` delete test to support jsdom environment.
 - Update useInventory test to verify new wrapper functions instead of raw dispatch exposure
+- Add setIsSaving action to inventory reducer for state management
 
 ---
 
