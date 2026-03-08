@@ -47,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extract shared `InventoryFormFields` component from duplicate field markup in `AddInventoryItemForm` and `EditInventoryItemForm`, reducing each form to ~80 lines of unique logic (state init, submit handling, buttons) while the shared component renders all 7 fieldsets
 - Sort `inventoryItems` once into `allSortedItems` in `useFilteredInventory` and derive `archivedItems` via `.filter()` instead of re-running `sortItems` independently on the full array
 - Consolidate four separate `useMemo` partition filters (fridge, freezer, pantry, shoppingList) in `useFilteredInventory` into a single-pass loop over `sortedItems`
+- Replace `useReducer` with `useState` in `useStaleFetchDisplay` so the 30-second interval tick skips re-renders when the display string and stale flag haven't changed
 
 ### Fixed
 
