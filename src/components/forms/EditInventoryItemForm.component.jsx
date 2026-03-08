@@ -17,7 +17,6 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
     QtyOnHand: item.QtyOnHand != null ? String(item.QtyOnHand) : "",
     QtyUnit: item.QtyUnit || "",
     TargetQty: item.TargetQty != null ? String(item.TargetQty) : "",
-    NeedRestock: item.NeedRestock || false,
     ExpiresOn: item.ExpiresOn ? item.ExpiresOn.split("T")[0] : "",
     DatePurchased: item.DatePurchased ? item.DatePurchased.split("T")[0] : "",
     DateFrozen: item.DateFrozen ? item.DateFrozen.split("T")[0] : "",
@@ -205,15 +204,6 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
           name="TargetQty"
           step="any"
           min="0"
-        />
-
-        <label htmlFor={`NeedRestock-${item.id}`}>Need Restock:</label>
-        <input
-          type="checkbox"
-          id={`NeedRestock-${item.id}`}
-          name="NeedRestock"
-          checked={formData.NeedRestock}
-          onChange={handleChange}
         />
       </fieldset>
 
