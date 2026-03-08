@@ -11,6 +11,9 @@ import {
 import MainContainer from "./MainContainer.component";
 import inventorySampleData from "../../data/inventorySample.json";
 
+// Tracks every InventorySection render so useMemo tests can compare item refs
+const sectionRenderLog = [];
+
 vi.mock("../sections/ToolSection.component", () => ({
   default: ({ id, title, children }) => (
     <section id={id}>
@@ -21,66 +24,90 @@ vi.mock("../sections/ToolSection.component", () => ({
 }));
 
 vi.mock("./QuickStatsBar.component", () => ({
-  default: () => <div>QuickStatsBar</div>,
+  default: ({ inventoryItems, filteredItems }) => (
+    <div data-testid="quick-stats">
+      QuickStatsBar
+      <span data-testid="stats-total">{inventoryItems?.length ?? 0}</span>
+      <span data-testid="stats-filtered">{filteredItems?.length ?? 0}</span>
+    </div>
+  ),
 }));
 
 vi.mock("../forms/FilterBarForm.component", () => ({
-  default: ({ handleRefresh }) => (
+  default: ({ handleRefresh, onSearch, onSort }) => (
     <div>
       FilterBarForm
       <button type="button" onClick={handleRefresh}>
         Refresh
+      </button>
+      <input
+        aria-label="mock-search"
+        onChange={(e) => onSearch(e.target.value)}
+      />
+      <button
+        type="button"
+        aria-label="mock-sort-category-desc"
+        onClick={() => onSort("Category", "desc")}
+      >
+        Sort
       </button>
     </div>
   ),
 }));
 
 vi.mock("../sections/InventorySection.component", () => ({
-  default: ({ title, items, addToShoppingList, updateItemQuantity }) => (
-    <section>
-      <h2>{title}</h2>
-      <p>{`count:${items.length}`}</p>
-      <p>{items.map((item) => item.ItemName).join("|")}</p>
-      <p>
-        {items
-          .map(
-            (item) => `${item.ItemName}:${item.TargetQty}:${item.NeedRestock}`,
-          )
-          .join("|")}
-      </p>
-      {addToShoppingList && items[0] && (
-        <form
-          aria-label={`mock-form-${title}`}
-          onSubmit={(e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            addToShoppingList?.({
-              itemId: items[0].id,
-              quantity: formData.get("quantity"),
-            });
-          }}
-        >
-          <input
-            aria-label={`mock-qty-${title}`}
-            name="quantity"
-            defaultValue="2"
-          />
-          <button type="submit">{`mock-add-${title}`}</button>
-        </form>
-      )}
-      {updateItemQuantity && items[0] && (
-        <button
-          onClick={() => updateItemQuantity?.(items[0].id, items[0].QtyOnHand)}
-        >
-          {`mock-remove-${title}`}
-        </button>
-      )}
-    </section>
-  ),
+  default: ({ title, items, addToShoppingList, updateItemQuantity }) => {
+    sectionRenderLog.push({ title, items });
+    return (
+      <section>
+        <h2>{title}</h2>
+        <p>{`count:${items.length}`}</p>
+        <p>{items.map((item) => item.ItemName).join("|")}</p>
+        <p>
+          {items
+            .map(
+              (item) =>
+                `${item.ItemName}:${item.TargetQty}:${item.NeedRestock}`,
+            )
+            .join("|")}
+        </p>
+        {addToShoppingList && items[0] && (
+          <form
+            aria-label={`mock-form-${title}`}
+            onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              addToShoppingList?.({
+                itemId: items[0].id,
+                quantity: formData.get("quantity"),
+              });
+            }}
+          >
+            <input
+              aria-label={`mock-qty-${title}`}
+              name="quantity"
+              defaultValue="2"
+            />
+            <button type="submit">{`mock-add-${title}`}</button>
+          </form>
+        )}
+        {updateItemQuantity && items[0] && (
+          <button
+            onClick={() =>
+              updateItemQuantity?.(items[0].id, items[0].QtyOnHand)
+            }
+          >
+            {`mock-remove-${title}`}
+          </button>
+        )}
+      </section>
+    );
+  },
 }));
 
 afterEach(() => {
   cleanup();
+  sectionRenderLog.length = 0;
 });
 
 describe("MainContainer", () => {
@@ -404,5 +431,156 @@ describe("MainContainer", () => {
       screen.getByRole("heading", { name: "Pantry" }).closest("section")
         ?.textContent,
     ).toContain(`count:${initialPantryCount}`);
+  });
+
+  // -- useMemo / useCallback behavior --------------------------------------
+
+  describe("useMemo behavior", () => {
+    it("section lists keep the same reference when unrelated state (showQuickAdd) changes", () => {
+      render(<MainContainer />);
+      act(() => vi.runAllTimers());
+
+      const pantryBefore = sectionRenderLog
+        .filter((r) => r.title === "Pantry")
+        .pop();
+
+      // Toggle showQuickAdd — an unrelated state change
+      fireEvent.click(
+        screen.getByRole("button", { name: "Switch to Full Form" }),
+      );
+
+      const pantryAfter = sectionRenderLog
+        .filter((r) => r.title === "Pantry")
+        .pop();
+
+      // useMemo should return the cached array — same reference
+      expect(pantryAfter.items).toBe(pantryBefore.items);
+    });
+
+    it("filtered list recomputes when search term changes", () => {
+      render(<MainContainer />);
+      act(() => vi.runAllTimers());
+
+      const pantryBefore = sectionRenderLog
+        .filter((r) => r.title === "Pantry")
+        .pop();
+
+      // Type a search term that matches only a subset of pantry items
+      fireEvent.change(screen.getByLabelText("mock-search"), {
+        target: { value: "Pearl" },
+      });
+
+      const pantryAfter = sectionRenderLog
+        .filter((r) => r.title === "Pantry")
+        .pop();
+
+      // New reference — useMemo recomputed
+      expect(pantryAfter.items).not.toBe(pantryBefore.items);
+      expect(pantryAfter.items.length).toBeLessThan(pantryBefore.items.length);
+    });
+
+    it("sorted list recomputes when sort field or direction changes", () => {
+      render(<MainContainer />);
+      act(() => vi.runAllTimers());
+
+      const fridgeBefore = sectionRenderLog
+        .filter((r) => r.title === "Fridge")
+        .pop();
+
+      // Change sort to Category descending
+      fireEvent.click(
+        screen.getByRole("button", { name: "mock-sort-category-desc" }),
+      );
+
+      const fridgeAfter = sectionRenderLog
+        .filter((r) => r.title === "Fridge")
+        .pop();
+
+      // New reference — useMemo recomputed due to sort dependency change
+      expect(fridgeAfter.items).not.toBe(fridgeBefore.items);
+    });
+
+    it("section-specific lists recompute when inventoryItems changes", () => {
+      render(<MainContainer />);
+      act(() => vi.runAllTimers());
+
+      const pantryBefore = sectionRenderLog
+        .filter((r) => r.title === "Pantry")
+        .pop();
+
+      // Add a new Pantry item via QuickAddForm
+      const addItemSection = screen
+        .getByRole("heading", { name: "Add Item" })
+        .closest("section");
+      const addForm = within(addItemSection).getByRole("form", {
+        name: "Quick add inventory item",
+      });
+
+      fireEvent.change(within(addForm).getByLabelText("Item Name:"), {
+        target: { value: "Memo Test Item" },
+      });
+      fireEvent.change(within(addForm).getByLabelText("Category:"), {
+        target: { value: "Snacks" },
+      });
+      fireEvent.change(within(addForm).getByLabelText("Location:"), {
+        target: { value: "Pantry" },
+      });
+      fireEvent.change(within(addForm).getByLabelText("Quantity on Hand:"), {
+        target: { value: "5" },
+      });
+      fireEvent.click(
+        within(addForm).getByRole("button", { name: "Add Item" }),
+      );
+
+      const pantryAfter = sectionRenderLog
+        .filter((r) => r.title === "Pantry")
+        .pop();
+
+      // New reference and one additional item
+      expect(pantryAfter.items).not.toBe(pantryBefore.items);
+      expect(pantryAfter.items.length).toBe(pantryBefore.items.length + 1);
+    });
+
+    it("QuickStatsBar values recompute when inventory changes", () => {
+      render(<MainContainer />);
+      act(() => vi.runAllTimers());
+
+      const totalBefore = Number(screen.getByTestId("stats-total").textContent);
+      const filteredBefore = Number(
+        screen.getByTestId("stats-filtered").textContent,
+      );
+
+      // Add a new item
+      const addItemSection = screen
+        .getByRole("heading", { name: "Add Item" })
+        .closest("section");
+      const addForm = within(addItemSection).getByRole("form", {
+        name: "Quick add inventory item",
+      });
+
+      fireEvent.change(within(addForm).getByLabelText("Item Name:"), {
+        target: { value: "Stats Test Item" },
+      });
+      fireEvent.change(within(addForm).getByLabelText("Category:"), {
+        target: { value: "Snacks" },
+      });
+      fireEvent.change(within(addForm).getByLabelText("Location:"), {
+        target: { value: "Fridge" },
+      });
+      fireEvent.change(within(addForm).getByLabelText("Quantity on Hand:"), {
+        target: { value: "1" },
+      });
+      fireEvent.click(
+        within(addForm).getByRole("button", { name: "Add Item" }),
+      );
+
+      const totalAfter = Number(screen.getByTestId("stats-total").textContent);
+      const filteredAfter = Number(
+        screen.getByTestId("stats-filtered").textContent,
+      );
+
+      expect(totalAfter).toBe(totalBefore + 1);
+      expect(filteredAfter).toBe(filteredBefore + 1);
+    });
   });
 });

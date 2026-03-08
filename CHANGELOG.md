@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.5.3] - 2026-03-07
+
+### Changed
+
+- Enhance MainContainer tests with useMemo and useCallback behavior checks
+
+---
+
 ## [0.5.2] - 2026-03-07
 
 ### Added
