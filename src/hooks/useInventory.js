@@ -3,10 +3,7 @@ import inventoryReducer, {
   actions,
   initialState,
 } from "../reducers/inventoryReducer";
-import {
-  fetchInventoryItems,
-  loadSampleData,
-} from "../data/airtableUtils";
+import { fetchInventoryItems, loadSampleData } from "../data/airtableUtils";
 import useFilters from "./useFilters";
 import useFieldVisibility from "./useFieldVisibility";
 import useUIToggles from "./useUIToggles";
@@ -123,16 +120,14 @@ export default function useInventory() {
   // --- Composed hooks ---
 
   const { setSearch, setSort, setFilters, clearFilters } = useFilters({
-    searchTerm,
-    sortConfig,
-    filters,
     dispatch,
   });
 
   const { toggleField, resetFields } = useFieldVisibility({ dispatch });
 
-  const { toggleQuickAdd, toggleShowArchived, dismissSaveError } =
-    useUIToggles({ dispatch });
+  const { toggleQuickAdd, toggleShowArchived, dismissSaveError } = useUIToggles(
+    { dispatch },
+  );
 
   const { addItem, deleteItem, updateItem, archiveItem, unarchiveItem } =
     useInventoryActions({ items, dispatch });

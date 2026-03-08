@@ -2,40 +2,12 @@ import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import useFilters from "./useFilters";
 
-const defaultState = {
-  searchTerm: "",
-  sortConfig: { field: "ItemName", direction: "asc" },
-  filters: {
-    categories: [],
-    expiringSoon: false,
-    lowStock: false,
-    status: "",
-  },
-};
-
-function setup(overrides = {}) {
+function setup() {
   const dispatch = vi.fn();
-  const props = { ...defaultState, ...overrides, dispatch };
-  return { dispatch, ...renderHook(() => useFilters(props)) };
+  return { dispatch, ...renderHook(() => useFilters({ dispatch })) };
 }
 
 describe("useFilters", () => {
-  it("returns default state", () => {
-    const { result } = setup();
-
-    expect(result.current.searchTerm).toBe("");
-    expect(result.current.sortConfig).toEqual({
-      field: "ItemName",
-      direction: "asc",
-    });
-    expect(result.current.filters).toEqual({
-      categories: [],
-      expiringSoon: false,
-      lowStock: false,
-      status: "",
-    });
-  });
-
   it("setSearch dispatches setSearch action", () => {
     const { result, dispatch } = setup();
 

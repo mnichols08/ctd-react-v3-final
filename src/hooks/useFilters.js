@@ -1,12 +1,7 @@
 import { useCallback } from "react";
 import { actions } from "../reducers/inventoryReducer";
 
-export default function useFilters({
-  searchTerm,
-  sortConfig,
-  filters,
-  dispatch,
-}) {
+export default function useFilters({ dispatch }) {
   const setSearch = useCallback(
     (term) => dispatch({ type: actions.setSearch, payload: term }),
     [dispatch],
@@ -29,9 +24,6 @@ export default function useFilters({
   );
 
   return {
-    searchTerm,
-    sortConfig,
-    filters,
     setSearch,
     setSort,
     setFilters,
