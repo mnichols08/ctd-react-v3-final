@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add refresh button and handler to re-fetch inventory items in MainContainer
+- Implement auto-refresh and stale-check for MainContainer and QuickStatsBar
 
 ### Changed
 

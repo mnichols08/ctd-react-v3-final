@@ -29,6 +29,17 @@ const DEFAULT_FILTERS = {
   lowStock: false,
 };
 
+// Auto-refresh if data is older than this threshold (5 minutes)
+const STALE_TIME_MS = 5 * 60 * 1000;
+// How often to check for stale data while the tab is visible (60 seconds)
+const STALE_CHECK_INTERVAL_MS = 60 * 1000;
+
+/** Returns true if lastFetchedAt is older than the given threshold. */
+function isDataStale(lastFetchedAt, threshold = STALE_TIME_MS) {
+  if (!lastFetchedAt) return false;
+  return Date.now() - lastFetchedAt.getTime() >= threshold;
+}
+
 /** Shallow-compare two arrays by length + strict element equality. */
 function arraysEqual(a, b) {
   if (a.length !== b.length) return false;
@@ -446,7 +457,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       sortConfig: { field: sortField, direction: sortDirection },
       filterConfig: filters,
       searchTerm,
-      setLastFetchedAt
+      setLastFetchedAt,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -469,7 +480,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         sortConfig: { field: sortField, direction: sortDirection },
         filterConfig: filters,
         searchTerm,
-        setLastFetchedAt
+        setLastFetchedAt,
       });
     }
   }, [sortField, sortDirection, filters, searchTerm]);
@@ -492,7 +503,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         sortConfig: { field: sortField, direction: sortDirection },
         filterConfig: filters,
         searchTerm,
-        setLastFetchedAt
+        setLastFetchedAt,
       });
     }
   }, [sortField, sortDirection, filters, searchTerm]);
@@ -518,9 +529,73 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       sortConfig: { field: sortField, direction: sortDirection },
       filterConfig: filters,
       searchTerm,
-      setLastFetchedAt
+      setLastFetchedAt,
     });
   }, [sortField, sortDirection, filters, searchTerm]);
+
+  // Auto-refresh when the tab regains focus and data is stale
+  useEffect(() => {
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
+
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === "visible" &&
+        isDataStale(lastFetchedAt) &&
+        !isLoading
+      ) {
+        lastFetchedParamsRef.current = {
+          sortField,
+          sortDirection,
+          filters,
+          searchTerm,
+        };
+        fetchInventoryItems({
+          setInventoryItems,
+          setIsLoading: () => {},
+          setError,
+          sortConfig: { field: sortField, direction: sortDirection },
+          filterConfig: filters,
+          searchTerm,
+          setLastFetchedAt,
+        });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [lastFetchedAt, isLoading, sortField, sortDirection, filters, searchTerm]);
+
+  // Periodic stale-check while the tab stays visible
+  useEffect(() => {
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
+
+    const id = setInterval(() => {
+      if (
+        document.visibilityState === "visible" &&
+        isDataStale(lastFetchedAt) &&
+        !isLoading
+      ) {
+        lastFetchedParamsRef.current = {
+          sortField,
+          sortDirection,
+          filters,
+          searchTerm,
+        };
+        fetchInventoryItems({
+          setInventoryItems,
+          setIsLoading: () => {},
+          setError,
+          sortConfig: { field: sortField, direction: sortDirection },
+          filterConfig: filters,
+          searchTerm,
+          setLastFetchedAt,
+        });
+      }
+    }, STALE_CHECK_INTERVAL_MS);
+
+    return () => clearInterval(id);
+  }, [lastFetchedAt, isLoading, sortField, sortDirection, filters, searchTerm]);
 
   return (
     <main>
@@ -536,6 +611,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
               filteredItems={filterAppliedItems}
               isFiltered={searchTerm.trim() !== "" || activeFilterCount > 0}
               lastFetchedAt={lastFetchedAt}
+              staleTimeMs={STALE_TIME_MS}
             />
           </ToolSection>
           <ToolSection id="filter" title="Filter & Sort">

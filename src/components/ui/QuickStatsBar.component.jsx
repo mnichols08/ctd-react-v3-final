@@ -9,6 +9,7 @@ function QuickStatsBar({
   filteredItems = [],
   isFiltered = false,
   lastFetchedAt,
+  staleTimeMs,
 } = {}) {
   const sourceItems = isFiltered ? filteredItems : inventoryItems;
   const activeItems = sourceItems.filter((item) => item.Status !== "archived");
@@ -22,10 +23,14 @@ function QuickStatsBar({
     (item) => item.NeedRestock === true && item.TargetQty > item.QtyOnHand,
   ).length;
   const [lastFetchedAtDisplay, setLastFetchedAtDisplay] = useState("");
+  const [isStale, setIsStale] = useState(false);
   useEffect(() => {
     if (lastFetchedAt) {
       const updateDisplay = () => {
         setLastFetchedAtDisplay(formateRelativeTime(lastFetchedAt));
+        if (staleTimeMs) {
+          setIsStale(Date.now() - lastFetchedAt.getTime() >= staleTimeMs);
+        }
       };
       updateDisplay();
       const interval = setInterval(() => {
@@ -33,7 +38,7 @@ function QuickStatsBar({
       }, 30000);
       return () => clearInterval(interval);
     }
-  }, [lastFetchedAt]);
+  }, [lastFetchedAt, staleTimeMs]);
   return (
     <>
       {isFiltered && <p>Showing stats for filtered items</p>}
@@ -53,7 +58,12 @@ function QuickStatsBar({
         <h3>Shopping List</h3>
         <p>{shoppingList}</p>
       </div>
-      {lastFetchedAtDisplay && <p>Last updated: {lastFetchedAtDisplay}</p>}
+      {lastFetchedAtDisplay && (
+        <p>
+          Last updated: {lastFetchedAtDisplay}
+          {isStale && " (stale)"}
+        </p>
+      )}
     </>
   );
 }
