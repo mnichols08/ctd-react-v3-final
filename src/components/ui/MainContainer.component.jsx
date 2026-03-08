@@ -102,6 +102,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const lastFetchedParamsRef = useRef(null);
   // Track the timestamp of the last successful fetch to help with debugging and ensuring data freshness
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
+  // Guard against concurrent in-flight fetch requests
+  const fetchInProgressRef = useRef(false);
 
   // Keep a ref to the latest inventoryItems so handlers can read current
   // state without needing inventoryItems in their dependency arrays.
@@ -145,6 +147,37 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const activeFilterCount = useMemo(
     () => getActiveFilterCount(filters),
     [filters],
+  );
+
+  // Wrapper that prevents overlapping fetch requests
+  const doFetch = useCallback(
+    (overrides = {}) => {
+      if (fetchInProgressRef.current) return;
+      fetchInProgressRef.current = true;
+
+      const wrappedSetIsLoading = (val) => {
+        if (!val) fetchInProgressRef.current = false;
+        (overrides.setIsLoading ?? setIsLoading)(val);
+      };
+
+      lastFetchedParamsRef.current = {
+        sortField,
+        sortDirection,
+        filters,
+        searchTerm,
+      };
+
+      fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading: wrappedSetIsLoading,
+        setError,
+        sortConfig: { field: sortField, direction: sortDirection },
+        filterConfig: filters,
+        searchTerm,
+        setLastFetchedAt,
+      });
+    },
+    [sortField, sortDirection, filters, searchTerm],
   );
 
   // Handler to add a new inventory item to local state
@@ -444,21 +477,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       });
       return cleanup;
     }
-    lastFetchedParamsRef.current = {
-      sortField,
-      sortDirection,
-      filters,
-      searchTerm,
-    };
-    fetchInventoryItems({
-      setInventoryItems,
-      setIsLoading,
-      setError,
-      sortConfig: { field: sortField, direction: sortDirection },
-      filterConfig: filters,
-      searchTerm,
-      setLastFetchedAt,
-    });
+    doFetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -467,46 +486,20 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       loadSampleData({ setInventoryItems, setIsLoading, setError });
     } else {
-      lastFetchedParamsRef.current = {
-        sortField,
-        sortDirection,
-        filters,
-        searchTerm,
-      };
-      fetchInventoryItems({
-        setInventoryItems,
-        setIsLoading,
-        setError,
-        sortConfig: { field: sortField, direction: sortDirection },
-        filterConfig: filters,
-        searchTerm,
-        setLastFetchedAt,
-      });
+      doFetch();
     }
-  }, [sortField, sortDirection, filters, searchTerm]);
+  }, [doFetch]);
 
   // Force a re-fetch regardless of whether parameters changed
   const handleRefresh = useCallback(() => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       loadSampleData({ setInventoryItems, setIsLoading, setError });
     } else {
-      lastFetchedParamsRef.current = {
-        sortField,
-        sortDirection,
-        filters,
-        searchTerm,
-      };
-      fetchInventoryItems({
-        setInventoryItems,
-        setIsLoading,
-        setError,
-        sortConfig: { field: sortField, direction: sortDirection },
-        filterConfig: filters,
-        searchTerm,
-        setLastFetchedAt,
-      });
+      // Manual refresh always fires — bypass the in-progress guard
+      fetchInProgressRef.current = false;
+      doFetch();
     }
-  }, [sortField, sortDirection, filters, searchTerm]);
+  }, [doFetch]);
 
   // When server-side filtering is enabled, re-fetch on sort/filter/search changes
   useEffect(() => {
@@ -521,17 +514,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     if (fetchParamsEqual(params, lastFetchedParamsRef.current)) {
       return;
     }
-    lastFetchedParamsRef.current = params;
-    fetchInventoryItems({
-      setInventoryItems,
-      setIsLoading,
-      setError,
-      sortConfig: { field: sortField, direction: sortDirection },
-      filterConfig: filters,
-      searchTerm,
-      setLastFetchedAt,
-    });
-  }, [sortField, sortDirection, filters, searchTerm]);
+    doFetch();
+  }, [sortField, sortDirection, filters, searchTerm, doFetch]);
 
   // Auto-refresh when the tab regains focus and data is stale
   useEffect(() => {
@@ -543,28 +527,14 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         isDataStale(lastFetchedAt) &&
         !isLoading
       ) {
-        lastFetchedParamsRef.current = {
-          sortField,
-          sortDirection,
-          filters,
-          searchTerm,
-        };
-        fetchInventoryItems({
-          setInventoryItems,
-          setIsLoading: () => {},
-          setError,
-          sortConfig: { field: sortField, direction: sortDirection },
-          filterConfig: filters,
-          searchTerm,
-          setLastFetchedAt,
-        });
+        doFetch({ setIsLoading: () => {} });
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [lastFetchedAt, isLoading, sortField, sortDirection, filters, searchTerm]);
+  }, [lastFetchedAt, isLoading, doFetch]);
 
   // Periodic stale-check while the tab stays visible
   useEffect(() => {
@@ -576,26 +546,12 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
         isDataStale(lastFetchedAt) &&
         !isLoading
       ) {
-        lastFetchedParamsRef.current = {
-          sortField,
-          sortDirection,
-          filters,
-          searchTerm,
-        };
-        fetchInventoryItems({
-          setInventoryItems,
-          setIsLoading: () => {},
-          setError,
-          sortConfig: { field: sortField, direction: sortDirection },
-          filterConfig: filters,
-          searchTerm,
-          setLastFetchedAt,
-        });
+        doFetch({ setIsLoading: () => {} });
       }
     }, STALE_CHECK_INTERVAL_MS);
 
     return () => clearInterval(id);
-  }, [lastFetchedAt, isLoading, sortField, sortDirection, filters, searchTerm]);
+  }, [lastFetchedAt, isLoading, doFetch]);
 
   return (
     <main>

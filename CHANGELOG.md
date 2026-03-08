@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor MainContainer to prevent unnecessary Airtable refetches by tracking last-fetched parameters
 - Refactor MainContainer to improve parameter comparison logic and prevent unnecessary Airtable refetches
 - Refactor MainContainer and QuickStatsBar to track last fetch time and improve display of data freshness
+- Refactor MainContainer to prevent overlapping fetch requests and improve data fetching logic
 
 ---
 
