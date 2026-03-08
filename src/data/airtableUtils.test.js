@@ -356,6 +356,7 @@ function createMockFetch(body, opts = {}) {
 
 describe("Airtable API functions", () => {
   let originalFetch;
+  let consoleErrorSpy;
   beforeEach(() => {
     // The global test-setup enables fake timers for loading-simulation tests.
     // API tests need real timers so throttledFetch's Date.now / setTimeout work.
@@ -363,9 +364,12 @@ describe("Airtable API functions", () => {
     originalFetch = globalThis.fetch;
     // Clear the module-level throttle queue so tests don't trigger real 1s sleeps.
     resetThrottle();
+    // Silence expected console.error output from error-scenario tests
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => {
     globalThis.fetch = originalFetch;
+    consoleErrorSpy.mockRestore();
   });
 
   // -- fetchInventoryItems -------------------------------------------------
