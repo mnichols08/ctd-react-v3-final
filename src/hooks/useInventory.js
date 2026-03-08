@@ -134,7 +134,6 @@ export default function useInventory() {
 
   const {
     shoppingListItems,
-    shoppingListCount,
     addToShoppingList,
     removeFromShoppingList,
     updateTargetQty,
@@ -169,7 +168,6 @@ export default function useInventory() {
     toggleShowArchived,
     dismissSaveError,
     shoppingListItems,
-    shoppingListCount,
     addToShoppingList,
     removeFromShoppingList,
     updateTargetQty,

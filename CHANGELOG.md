@@ -68,6 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unused needRestock filter flag from reducer initial state, clearFilters, buildAirtableParams, and fetchParamsEqual — it had no UI toggle and was only a leftover from early prototyping. The NeedRestock field on inventory items (used by shopping list logic) is unchanged.
 - Remove redundant handleClick wrapper in InventorySection — pass toggleCollapsed directly to onClick handlers
 - Remove stale `needRestock` key from `DEFAULT_FILTERS` in `FilterBarForm` to match the reducer's `initialState.filters` and `clearFilters` case, which no longer include it
+- Remove dead `shoppingListCount` value from `useShoppingList` and `useInventory` return objects — no component consumed it; callers can use `shoppingListItems.length` directly
 
 ---
 

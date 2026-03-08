@@ -16,8 +16,6 @@ export default function useShoppingList({ items, dispatch }) {
     [items],
   );
 
-  const shoppingListCount = shoppingListItems.length;
-
   const persistUpdate = usePersistUpdate(dispatch);
 
   const addToShoppingList = useCallback(
@@ -86,7 +84,6 @@ export default function useShoppingList({ items, dispatch }) {
 
   return {
     shoppingListItems,
-    shoppingListCount,
     addToShoppingList,
     removeFromShoppingList,
     updateTargetQty,

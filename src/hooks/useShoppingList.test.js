@@ -43,17 +43,6 @@ describe("useShoppingList", () => {
     ]);
   });
 
-  it("exposes shoppingListCount matching filtered length", () => {
-    const items = [
-      makeItem({ id: "a", NeedRestock: true, TargetQty: 5, QtyOnHand: 2 }),
-      makeItem({ id: "b", NeedRestock: false }),
-    ];
-
-    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
-
-    expect(result.current.shoppingListCount).toBe(1);
-  });
-
   it("returns empty list when no items need restock", () => {
     const items = [
       makeItem({ id: "a", NeedRestock: false }),
@@ -63,7 +52,6 @@ describe("useShoppingList", () => {
     const { result } = renderHook(() => useShoppingList({ items, dispatch }));
 
     expect(result.current.shoppingListItems).toHaveLength(0);
-    expect(result.current.shoppingListCount).toBe(0);
   });
 
   it("updates derived state when items prop changes", () => {
@@ -73,14 +61,14 @@ describe("useShoppingList", () => {
       { initialProps: { items: initialItems } },
     );
 
-    expect(result.current.shoppingListCount).toBe(0);
+    expect(result.current.shoppingListItems).toHaveLength(0);
 
     const updatedItems = [
       makeItem({ id: "a", NeedRestock: true, TargetQty: 5, QtyOnHand: 2 }),
     ];
     rerender({ items: updatedItems });
 
-    expect(result.current.shoppingListCount).toBe(1);
+    expect(result.current.shoppingListItems).toHaveLength(1);
   });
 
   // --- addToShoppingList ---
