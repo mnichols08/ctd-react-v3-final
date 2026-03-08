@@ -43,3 +43,19 @@ export const DEFAULT_VISIBLE_FIELDS = [
   "ExpiresOn",
   "Location",
 ];
+
+export const CATEGORIES = [
+  "Cooking Essentials",
+  "Condiments",
+  "Dairy",
+  "Drinks",
+  "Dry",
+  "Fresh",
+  "Frozen",
+  "Meat",
+  "Produce",
+  "Snacks",
+  "Other",
+];
+
+export const LOCATIONS = ["Fridge", "Freezer", "Pantry"];

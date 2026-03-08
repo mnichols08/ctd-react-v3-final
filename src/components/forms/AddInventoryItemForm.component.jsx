@@ -1,5 +1,6 @@
 import { memo, useRef } from "react";
 import useFormData from "../../hooks/useFormData";
+import { LOCATIONS } from "../../data/fieldConfig";
 
 // Initial form state with all fields set to empty or default values
 const initialFormState = {
@@ -152,9 +153,11 @@ function AddInventoryItemForm({ addInventoryItem }) {
           required
         >
           <option value="">Select Location</option>
-          <option value="Fridge">Fridge</option>
-          <option value="Freezer">Freezer</option>
-          <option value="Pantry">Pantry</option>
+          {LOCATIONS.map((loc) => (
+            <option key={loc} value={loc}>
+              {loc}
+            </option>
+          ))}
         </select>
 
         <label htmlFor="Tags">Tags:</label>

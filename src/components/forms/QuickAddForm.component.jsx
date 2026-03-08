@@ -1,5 +1,6 @@
 import { memo, useRef } from "react";
 import useFormData from "../../hooks/useFormData";
+import { CATEGORIES, LOCATIONS } from "../../data/fieldConfig";
 
 const initialFormState = {
   ItemName: "",
@@ -90,15 +91,11 @@ function QuickAddForm({ addInventoryItem }) {
             required
           >
             <option value="">Select Category</option>
-            <option value="Drinks">Drinks</option>
-            <option value="Dairy">Dairy</option>
-            <option value="Dry">Dry</option>
-            <option value="Produce">Produce</option>
-            <option value="Meat">Meat</option>
-            <option value="Frozen">Frozen</option>
-            <option value="Condiments">Condiments</option>
-            <option value="Snacks">Snacks</option>
-            <option value="Other">Other</option>
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
         </p>
 
@@ -123,9 +120,11 @@ function QuickAddForm({ addInventoryItem }) {
             required
           >
             <option value="">Select Location</option>
-            <option value="Fridge">Fridge</option>
-            <option value="Freezer">Freezer</option>
-            <option value="Pantry">Pantry</option>
+            {LOCATIONS.map((loc) => (
+              <option key={loc} value={loc}>
+                {loc}
+              </option>
+            ))}
           </select>
         </p>
 
