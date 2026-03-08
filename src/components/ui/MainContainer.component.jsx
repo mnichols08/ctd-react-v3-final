@@ -29,6 +29,52 @@ const DEFAULT_FILTERS = {
   lowStock: false,
 };
 
+// Auto-refresh if data is older than this threshold (5 minutes)
+const STALE_TIME_MS = 5 * 60 * 1000;
+// How often to check for stale data while the tab is visible (60 seconds)
+const STALE_CHECK_INTERVAL_MS = 60 * 1000;
+
+/** Returns true if lastFetchedAt is older than the given threshold. */
+function isDataStale(lastFetchedAt, threshold = STALE_TIME_MS) {
+  if (!lastFetchedAt) return false;
+  return Date.now() - lastFetchedAt.getTime() >= threshold;
+}
+
+/** Shallow-compare two arrays by length + strict element equality. */
+function arraysEqual(a, b) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+/** Deep-compare two fetch-param objects ({sortField, sortDirection, filters, searchTerm}). */
+function fetchParamsEqual(a, b) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (
+    a.sortField !== b.sortField ||
+    a.sortDirection !== b.sortDirection ||
+    a.searchTerm !== b.searchTerm
+  ) {
+    return false;
+  }
+  const fa = a.filters;
+  const fb = b.filters;
+  if (fa === fb) return true;
+  if (!fa || !fb) return false;
+  if (
+    fa.expiringSoon !== fb.expiringSoon ||
+    fa.lowStock !== fb.lowStock ||
+    fa.needRestock !== fb.needRestock ||
+    fa.status !== fb.status
+  ) {
+    return false;
+  }
+  return arraysEqual(fa.categories ?? [], fb.categories ?? []);
+}
+
 function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // Initialize inventory items from sample data, ensuring we have a fresh copy of each item
   const [inventoryItems, setInventoryItems] = useState([]);
@@ -52,6 +98,12 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const [error, setError] = useState(null);
   // State for save/create errors — shown inline near the form, not replacing the whole UI
   const [saveError, setSaveError] = useState(null);
+  // Track the last-fetched sort/filter/search params to avoid redundant API calls
+  const lastFetchedParamsRef = useRef(null);
+  // Track the timestamp of the last successful fetch to help with debugging and ensuring data freshness
+  const [lastFetchedAt, setLastFetchedAt] = useState(null);
+  // Guard against concurrent in-flight fetch requests
+  const fetchInProgressRef = useRef(false);
 
   // Keep a ref to the latest inventoryItems so handlers can read current
   // state without needing inventoryItems in their dependency arrays.
@@ -95,6 +147,37 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const activeFilterCount = useMemo(
     () => getActiveFilterCount(filters),
     [filters],
+  );
+
+  // Wrapper that prevents overlapping fetch requests
+  const doFetch = useCallback(
+    (overrides = {}) => {
+      if (fetchInProgressRef.current) return;
+      fetchInProgressRef.current = true;
+
+      const wrappedSetIsLoading = (val) => {
+        if (!val) fetchInProgressRef.current = false;
+        (overrides.setIsLoading ?? setIsLoading)(val);
+      };
+
+      lastFetchedParamsRef.current = {
+        sortField,
+        sortDirection,
+        filters,
+        searchTerm,
+      };
+
+      fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading: wrappedSetIsLoading,
+        setError,
+        sortConfig: { field: sortField, direction: sortDirection },
+        filterConfig: filters,
+        searchTerm,
+        setLastFetchedAt,
+      });
+    },
+    [sortField, sortDirection, filters, searchTerm],
   );
 
   // Handler to add a new inventory item to local state
@@ -394,14 +477,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
       });
       return cleanup;
     }
-    fetchInventoryItems({
-      setInventoryItems,
-      setIsLoading,
-      setError,
-      sortConfig: { field: sortField, direction: sortDirection },
-      filterConfig: filters,
-      searchTerm,
-    });
+    doFetch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -410,16 +486,20 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       loadSampleData({ setInventoryItems, setIsLoading, setError });
     } else {
-      fetchInventoryItems({
-        setInventoryItems,
-        setIsLoading,
-        setError,
-        sortConfig: { field: sortField, direction: sortDirection },
-        filterConfig: filters,
-        searchTerm,
-      });
+      doFetch();
     }
-  }, [sortField, sortDirection, filters, searchTerm]);
+  }, [doFetch]);
+
+  // Force a re-fetch regardless of whether parameters changed
+  const handleRefresh = useCallback(() => {
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      loadSampleData({ setInventoryItems, setIsLoading, setError });
+    } else {
+      // Manual refresh always fires — bypass the in-progress guard
+      fetchInProgressRef.current = false;
+      doFetch();
+    }
+  }, [doFetch]);
 
   // When server-side filtering is enabled, re-fetch on sort/filter/search changes
   useEffect(() => {
@@ -429,15 +509,49 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     ) {
       return;
     }
-    fetchInventoryItems({
-      setInventoryItems,
-      setIsLoading,
-      setError,
-      sortConfig: { field: sortField, direction: sortDirection },
-      filterConfig: filters,
-      searchTerm,
-    });
-  }, [sortField, sortDirection, filters, searchTerm]);
+    // Skip fetch if params haven't changed since the last request
+    const params = { sortField, sortDirection, filters, searchTerm };
+    if (fetchParamsEqual(params, lastFetchedParamsRef.current)) {
+      return;
+    }
+    doFetch();
+  }, [sortField, sortDirection, filters, searchTerm, doFetch]);
+
+  // Auto-refresh when the tab regains focus and data is stale
+  useEffect(() => {
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
+
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === "visible" &&
+        isDataStale(lastFetchedAt) &&
+        !isLoading
+      ) {
+        doFetch({ setIsLoading: () => {} });
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [lastFetchedAt, isLoading, doFetch]);
+
+  // Periodic stale-check while the tab stays visible
+  useEffect(() => {
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
+
+    const id = setInterval(() => {
+      if (
+        document.visibilityState === "visible" &&
+        isDataStale(lastFetchedAt) &&
+        !isLoading
+      ) {
+        doFetch({ setIsLoading: () => {} });
+      }
+    }, STALE_CHECK_INTERVAL_MS);
+
+    return () => clearInterval(id);
+  }, [lastFetchedAt, isLoading, doFetch]);
 
   return (
     <main>
@@ -452,6 +566,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
               inventoryItems={inventoryItems}
               filteredItems={filterAppliedItems}
               isFiltered={searchTerm.trim() !== "" || activeFilterCount > 0}
+              lastFetchedAt={lastFetchedAt}
+              staleTimeMs={STALE_TIME_MS}
             />
           </ToolSection>
           <ToolSection id="filter" title="Filter & Sort">
@@ -464,6 +580,9 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
               filters={filters}
               inventoryItems={inventoryItems}
             />
+            <button type="button" onClick={handleRefresh}>
+              Refresh
+            </button>
             {(searchTerm.trim() || activeFilterCount > 0) && (
               <p>
                 Showing {filterAppliedItems.length} of {inventoryItems.length}{" "}

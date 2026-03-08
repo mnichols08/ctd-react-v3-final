@@ -21,6 +21,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.5.2] - 2026-03-07
+
+### Added
+
+- Add refresh button and handler to re-fetch inventory items in MainContainer
+- Implement auto-refresh and stale-check for MainContainer and QuickStatsBar
+
+### Changed
+
+- Refactor MainContainer to prevent unnecessary Airtable refetches by tracking last-fetched parameters
+- Refactor MainContainer to improve parameter comparison logic and prevent unnecessary Airtable refetches
+- Refactor MainContainer and QuickStatsBar to track last fetch time and improve display of data freshness
+- Refactor MainContainer to prevent overlapping fetch requests and improve data fetching logic
+
+---
+
 ## [0.5.1] - 2026-03-07
 
 ### Changed
