@@ -34,12 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace Date.now() with crypto.randomUUID() for unique ID generation in AddInventoryItemForm and QuickAddForm
 - Extract shared `usePersistUpdate` hook from duplicate `persistUpdate` logic in useInventory and useShoppingList, fixing action-type drift where useShoppingList incorrectly dispatched `setError` instead of `setSaveError` on save failure
 - Rewrite `useFilters` to delegate to the central `inventoryReducer` dispatch (same pattern as `useShoppingList`), moving filter/sort/search callbacks out of `useInventory` to reduce its size
-- - Split `useInventory` god hook into focused composable hooks (`useInventoryActions`, `useFieldVisibility`, `useUIToggles`), reducing it to a slim orchestrator while preserving the same return API
+- Split `useInventory` god hook into focused composable hooks (`useInventoryActions`, `useFieldVisibility`, `useUIToggles`), reducing it to a slim orchestrator while preserving the same return API
 - Silenced expected `console.error` output in `airtableUtils.test.js` error-scenario tests (404, 422, 429, network error) using a scoped `vi.spyOn` mock to keep test output clean.
 - Replaced `<a href="">` collapse toggle in `InventorySection` and `<a href="#field-selector">` in `NavMenu` with semantic `<button>` elements. Anchors with empty or hash-only hrefs are incorrect for non-navigation actions and cause page scroll. Updated related test selectors in `InventorySection.test.jsx` and `App.test.jsx`.
 - Extracted hardcoded Category and Location option lists into shared `CATEGORIES` and `LOCATIONS` constants in `fieldConfig.js`. Updated `QuickAddForm` and `AddInventoryItemForm` to use the shared arrays. Added missing categories ("Cooking Essentials", "Fresh") that exist in sample data.
 - Simplify useFilters hook to accept only { dispatch } instead of passing through searchTerm, sortConfig, and filters state it never read internally — those values are already available directly from the reducer in useInventory
 - Simplify updateItem in useInventoryActions to accept a single full item object { id, ...fields } instead of a dual-signature (idOrItem, maybeFields) with an IIFE destructure — all callers (ItemCard, EditInventoryItemForm) already pass a full item
+- Add "Need Restock" checkbox to AddInventoryItemForm after Target Qty, allowing users to place a new item directly on the shopping list at creation time (defaults to unchecked)
 
 ### Fixed
 
@@ -84,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extract shared constants and utilities (SEARCHABLE_FIELDS, staleness helpers, comparison helpers) into fieldConfig.js and inventoryUtils.js
 - Update MainContainer and component tests to reflect new prop-driven architecture and renamed handlers
 - Refactor MainContainer to simplify state management and remove unused handlers
-- - Refactored `useToggle`, `useFormData`, and `useStaleFetchDisplay` hooks from `useState` to `useReducer` for consistent state management across the codebase.
+- Refactored `useToggle`, `useFormData`, and `useStaleFetchDisplay` hooks from `useState` to `useReducer` for consistent state management across the codebase.
 - Simplify MainContainer to mostly JSX and hook calls by moving filtering/sorting/partitioning into `useFilteredInventory` and auto-refresh effects into `useAutoRefresh`
 - Encapsulate dispatch in useInventory: add `toggleQuickAdd`, `toggleShowArchived`, and `dismissSaveError` wrapper functions so all state changes go through named action functions
 - Compose `useShoppingList` inside `useInventory` to keep `dispatch` private; shopping list functions are now returned directly from `useInventory`

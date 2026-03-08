@@ -15,6 +15,7 @@ const initialFormState = {
   QtyOnHand: "",
   QtyUnit: "",
   TargetQty: "",
+  NeedRestock: false,
   ExpiresOn: "",
   DatePurchased: "",
   DateFrozen: "",
@@ -39,7 +40,6 @@ function AddInventoryItemForm({ addInventoryItem }) {
     const newItem = {
       id: crypto.randomUUID(),
       ...formData,
-      NeedRestock: false,
       LastUpdated: new Date().toISOString(),
     };
     // Coerce numeric fields from strings to numbers (or null for empty fields)
@@ -210,6 +210,15 @@ function AddInventoryItemForm({ addInventoryItem }) {
           id="TargetQty"
           name="TargetQty"
           min="0"
+        />
+
+        <label htmlFor="NeedRestock">Need Restock:</label>
+        <input
+          checked={formData.NeedRestock}
+          onChange={handleChange}
+          type="checkbox"
+          id="NeedRestock"
+          name="NeedRestock"
         />
       </fieldset>
 
