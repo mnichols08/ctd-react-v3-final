@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prevent debounced search callback from firing after FilterBarForm unmount by adding useEffect cleanup to clear pending timer
 - Prevent potentialy null/undefined location by adding   optional chaining for Location checks in useFilteredInventory
 - Return no-op cleanup function from `loadSampleData` error path so the return type is consistent with the success path
+- - Fix item edits silently failing: `updateItem` now accepts both `(id, fields)` and `(fullItem)` signatures, and `patchInventoryItem` strips client-only properties (`isCompleted`, `isDeleting`) that caused Airtable 422 errors
 
 ---
 

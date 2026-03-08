@@ -294,8 +294,9 @@ export const createInventoryItem = async ({
 };
 
 export const patchInventoryItem = async (id, fields) => {
+  const { isCompleted: _ic, isDeleting: _id, ...airtableFields } = fields;
   const patchFields = {
-    ...fields,
+    ...airtableFields,
     LastUpdated: new Date().toISOString(),
   };
   const options = {

@@ -14,55 +14,72 @@ export default function useInventoryActions({ items, dispatch }) {
 
   const persistUpdate = usePersistUpdate(dispatch);
 
-  const addItem = useCallback(async (item) => {
-    dispatch({ type: actions.setSaveError, payload: null });
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      dispatch({ type: actions.addItem, payload: item });
-      return true;
-    }
-    try {
-      const success = await createInventoryItem({
-        item,
-        addInventoryItem: (savedItem) =>
-          dispatch({ type: actions.addItem, payload: savedItem }),
-        setIsSaving: (val) =>
-          dispatch({ type: actions.setIsSaving, payload: val }),
-        setError: (msg) =>
-          dispatch({ type: actions.setSaveError, payload: msg }),
-      });
-      return success;
-    } catch (err) {
-      dispatch({ type: actions.setSaveError, payload: err.message });
-      return false;
-    }
-  }, [dispatch]);
+  const addItem = useCallback(
+    async (item) => {
+      dispatch({ type: actions.setSaveError, payload: null });
+      if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+        dispatch({ type: actions.addItem, payload: item });
+        return true;
+      }
+      try {
+        const success = await createInventoryItem({
+          item,
+          addInventoryItem: (savedItem) =>
+            dispatch({ type: actions.addItem, payload: savedItem }),
+          setIsSaving: (val) =>
+            dispatch({ type: actions.setIsSaving, payload: val }),
+          setError: (msg) =>
+            dispatch({ type: actions.setSaveError, payload: msg }),
+        });
+        return success;
+      } catch (err) {
+        dispatch({ type: actions.setSaveError, payload: err.message });
+        return false;
+      }
+    },
+    [dispatch],
+  );
 
-  const deleteItem = useCallback(async (id) => {
-    const item = itemsRef.current.find((i) => i.id === id);
-    if (!item || item.isDeleting) return;
+  const deleteItem = useCallback(
+    async (id) => {
+      const item = itemsRef.current.find((i) => i.id === id);
+      if (!item || item.isDeleting) return;
 
-    if (!window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)) {
-      return;
-    }
+      if (
+        !window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)
+      ) {
+        return;
+      }
 
-    dispatch({ type: actions.setDeleting, payload: { id, value: true } });
+      dispatch({ type: actions.setDeleting, payload: { id, value: true } });
 
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      dispatch({ type: actions.deleteItem, payload: id });
-      return;
-    }
+      if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+        dispatch({ type: actions.deleteItem, payload: id });
+        return;
+      }
 
-    try {
-      await deleteInventoryItem(id);
-      dispatch({ type: actions.deleteItem, payload: id });
-    } catch (err) {
-      dispatch({ type: actions.setDeleting, payload: { id, value: false } });
-      dispatch({ type: actions.setSaveError, payload: err.message });
-    }
-  }, [dispatch]);
+      try {
+        await deleteInventoryItem(id);
+        dispatch({ type: actions.deleteItem, payload: id });
+      } catch (err) {
+        dispatch({ type: actions.setDeleting, payload: { id, value: false } });
+        dispatch({ type: actions.setSaveError, payload: err.message });
+      }
+    },
+    [dispatch],
+  );
 
   const updateItem = useCallback(
-    async (id, fields) => {
+    async (idOrItem, maybeFields) => {
+      const id = maybeFields !== undefined ? idOrItem : idOrItem.id;
+      const fields =
+        maybeFields !== undefined
+          ? maybeFields
+          : (() => {
+              const { id: _, ...rest } = idOrItem;
+              return rest;
+            })();
+
       const previousItem = itemsRef.current.find((i) => i.id === id);
       if (!previousItem) return;
 
