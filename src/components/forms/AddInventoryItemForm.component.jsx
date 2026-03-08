@@ -38,7 +38,7 @@ function AddInventoryItemForm({ addInventoryItem }) {
     async (e) => {
       e.preventDefault();
       const newItem = {
-        id: Date.now(),
+        id: crypto.randomUUID(),
         ...formData,
         LastUpdated: new Date().toISOString(),
       };

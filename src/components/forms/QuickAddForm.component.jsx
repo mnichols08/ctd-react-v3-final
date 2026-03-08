@@ -29,7 +29,7 @@ function QuickAddForm({ addInventoryItem }) {
       if (!ItemName.trim()) return;
       // Create a new item object with the provided data and default values for other fields
       const newItem = {
-        id: Date.now(),
+        id: crypto.randomUUID(),
         ItemName: ItemName.trim(),
         ItemDescription: null,
         Brand: null,
