@@ -44,14 +44,7 @@ export default function useAutoRefresh({
       filterConfig: filters,
       searchTerm,
     });
-  }, [
-    sortConfig.field,
-    sortConfig.direction,
-    filters,
-    searchTerm,
-    refetch,
-    sortConfig,
-  ]);
+  }, [sortConfig, filters, searchTerm, refetch]);
 
   // Auto-refresh when the tab regains focus and data is stale
   useEffect(() => {
