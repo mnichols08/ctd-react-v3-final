@@ -79,7 +79,8 @@ export default function inventoryReducer(state, action) {
             ? {
                 ...item,
                 ...action.payload.fields,
-                LastUpdated: new Date().toISOString(),
+                LastUpdated:
+                  action.payload.fields.LastUpdated ?? new Date().toISOString(),
               }
             : item,
         ),
