@@ -27,6 +27,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add refetch functionality to useInventory hook and enhance tests for data fetching
 - Add tests for persistUpdate functionality in useShoppingList hook
+- Extract `useFilteredInventory` hook for search, filter, sort, and location partitioning logic
+- Extract `useAutoRefresh` hook for server-side refetch, visibility-change refresh, and periodic stale-check logic
 
 ### Changed
 
@@ -38,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update MainContainer and component tests to reflect new prop-driven architecture and renamed handlers
 - Refactor MainContainer to simplify state management and remove unused handlers
 - - Refactored `useToggle`, `useFormData`, and `useStaleFetchDisplay` hooks from `useState` to `useReducer` for consistent state management across the codebase.
+- Simplify MainContainer to mostly JSX and hook calls by moving filtering/sorting/partitioning into `useFilteredInventory` and auto-refresh effects into `useAutoRefresh`
 
 ### Removed
 
