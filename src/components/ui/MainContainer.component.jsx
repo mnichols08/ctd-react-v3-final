@@ -89,11 +89,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const { searchTerm, sortConfig, filters, setSearch, setSort, setFilters } =
     useFilters();
 
-  const {
-    addToShoppingList: rawAddToShoppingList,
-    removeFromShoppingList,
-    updateTargetQty,
-  } = useShoppingList({ items: inventoryItems, dispatch });
+  const { addToShoppingList, removeFromShoppingList, updateTargetQty } =
+    useShoppingList({ items: inventoryItems, dispatch });
 
   // Ref for stable callbacks that need current items
   const inventoryItemsRef = useRef(inventoryItems);
@@ -139,12 +136,6 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   );
 
   // --- Adapters / handlers ---
-
-  // Adapter: ShoppingListControl passes { itemId, quantity } object
-  const addToShoppingList = useCallback(
-    ({ itemId, quantity }) => rawAddToShoppingList(itemId, quantity),
-    [rawAddToShoppingList],
-  );
 
   // Adapter: EditForm passes full item object; compute changed fields
   const updateInventoryItem = useCallback(
@@ -451,7 +442,7 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
           <InventorySection
             id="shopping-list"
             title="Shopping List"
-            updateItemQuantity={updateTargetQty}
+            updateTargetQty={updateTargetQty}
             items={shoppingListItems}
           />
           {/* Archived Items Toggle & Section */}
