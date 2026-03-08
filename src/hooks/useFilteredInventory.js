@@ -60,7 +60,7 @@ export default function useFilteredInventory(
     () =>
       sortedItems.filter(
         (item) =>
-          item.Location.includes("Fridge") && item.Status !== "archived",
+          item.Location?.includes("Fridge") && item.Status !== "archived",
       ),
     [sortedItems],
   );
@@ -68,7 +68,7 @@ export default function useFilteredInventory(
     () =>
       sortedItems.filter(
         (item) =>
-          item.Location.includes("Freezer") && item.Status !== "archived",
+          item.Location?.includes("Freezer") && item.Status !== "archived",
       ),
     [sortedItems],
   );
@@ -76,7 +76,7 @@ export default function useFilteredInventory(
     () =>
       sortedItems.filter(
         (item) =>
-          item.Location.includes("Pantry") && item.Status !== "archived",
+          item.Location?.includes("Pantry") && item.Status !== "archived",
       ),
     [sortedItems],
   );
