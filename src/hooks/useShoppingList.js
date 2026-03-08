@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { actions } from "../reducers/inventoryReducer";
-import { patchInventoryItem } from "../data/airtableUtils";
+import usePersistUpdate from "./usePersistUpdate";
 
 export default function useShoppingList({ items, dispatch }) {
   const itemsRef = useRef(items);
@@ -18,25 +18,7 @@ export default function useShoppingList({ items, dispatch }) {
 
   const shoppingListCount = shoppingListItems.length;
 
-  const persistUpdate = useCallback(
-    async (itemId, changedFields, previousItem) => {
-      if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
-      try {
-        const savedItem = await patchInventoryItem(itemId, changedFields);
-        dispatch({
-          type: actions.updateItem,
-          payload: { id: itemId, fields: savedItem },
-        });
-      } catch (err) {
-        dispatch({
-          type: actions.updateItem,
-          payload: { id: itemId, fields: previousItem },
-        });
-        dispatch({ type: actions.setError, payload: err.message });
-      }
-    },
-    [dispatch],
-  );
+  const persistUpdate = usePersistUpdate(dispatch);
 
   const addToShoppingList = useCallback(
     async (itemId, qty) => {

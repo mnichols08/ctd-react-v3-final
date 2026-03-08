@@ -7,9 +7,9 @@ import {
   fetchInventoryItems,
   loadSampleData,
   createInventoryItem,
-  patchInventoryItem,
   deleteInventoryItem,
 } from "../data/airtableUtils";
+import usePersistUpdate from "./usePersistUpdate";
 import useShoppingList from "./useShoppingList";
 
 export default function useInventory() {
@@ -89,26 +89,7 @@ export default function useInventory() {
   }, []);
 
   // --- Optimistic update helper with rollback ---
-  const persistUpdate = useCallback(
-    async (itemId, changedFields, previousItem) => {
-      if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
-      try {
-        const savedItem = await patchInventoryItem(itemId, changedFields);
-        dispatch({
-          type: actions.updateItem,
-          payload: { id: itemId, fields: savedItem },
-        });
-      } catch (err) {
-        // Rollback to previous state
-        dispatch({
-          type: actions.updateItem,
-          payload: { id: itemId, fields: previousItem },
-        });
-        dispatch({ type: actions.setSaveError, payload: err.message });
-      }
-    },
-    [],
-  );
+  const persistUpdate = usePersistUpdate(dispatch);
 
   // --- Action functions ---
 

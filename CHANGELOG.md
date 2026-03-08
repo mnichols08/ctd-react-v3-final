@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Replace Date.now() with crypto.randomUUID() for unique ID generation in AddInventoryItemForm and QuickAddForm
+- Extract shared `usePersistUpdate` hook from duplicate `persistUpdate` logic in useInventory and useShoppingList, fixing action-type drift where useShoppingList incorrectly dispatched `setError` instead of `setSaveError` on save failure
 
 ### Fixed
 

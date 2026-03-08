@@ -281,9 +281,9 @@ describe("useShoppingList", () => {
         TargetQty: 5,
       });
 
-      // Should dispatch setError
+      // Should dispatch setSaveError
       const errorCalls = dispatch.mock.calls.filter(
-        ([action]) => action.type === "setError",
+        ([action]) => action.type === "setSaveError",
       );
       expect(errorCalls).toHaveLength(1);
       expect(errorCalls[0][0].payload).toBe("Network failure");
