@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add refetch functionality to useInventory hook and enhance tests for data fetching
+- Add tests for persistUpdate functionality in useShoppingList hook
 
 ### Changed
 
