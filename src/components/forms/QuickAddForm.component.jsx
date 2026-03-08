@@ -63,7 +63,7 @@ function QuickAddForm({ addInventoryItem }) {
       resetForm();
       itemNameRef.current?.focus();
     },
-    [formData, addInventoryItem],
+    [formData, addInventoryItem, resetForm],
   );
   return (
     <form onSubmit={handleSubmit} aria-label="Quick add inventory item">
