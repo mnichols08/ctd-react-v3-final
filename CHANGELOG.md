@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added test covering `EditInventoryItemForm` submit coercion logic: numeric fields parsed to floats (or null when empty), cleared date fields set to null, and original item fields preserved through the update.
 - Added focus trap, Escape key dismissal, and auto-focus to the `FieldSelector` modal dialog. Screen reader and keyboard users can no longer tab into background content, and pressing Escape closes the modal. Added 4 tests covering the new behavior.
+- Add two useInventory hook tests exercising the loadSampleData simulated-failure branch: verifies error state is set when Math.random triggers the 33% failure, and verifies recovery after refetch
 
 ### Changed
 
@@ -47,10 +48,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prevent debounced search callback from firing after FilterBarForm unmount by adding useEffect cleanup to clear pending timer
 - Prevent potentialy null/undefined location by adding optional chaining for Location checks in useFilteredInventory
 - Return no-op cleanup function from `loadSampleData` error path so the return type is consistent with the success path
-- - Fix item edits silently failing: `updateItem` now accepts both `(id, fields)` and `(fullItem)` signatures, and `patchInventoryItem` strips client-only properties (`isCompleted`, `isDeleting`) that caused Airtable 422 errors
+- Fix item edits silently failing: `updateItem` now accepts both `(id, fields)` and `(fullItem)` signatures, and `patchInventoryItem` strips client-only properties (`isCompleted`, `isDeleting`) that caused Airtable 422 errors
 - Coerce empty date strings to `null` in `AddInventoryItemForm` and `patchInventoryItem` to prevent Airtable 422 errors on blank `ExpiresOn`, `DatePurchased`, and `DateFrozen` fields
 - Remove redundant `sortConfig.field` and `sortConfig.direction` from `useAutoRefresh` effect dependency array, keeping only the `sortConfig` object reference
 - Removed misleading `useCallback` wrapper from `handleChange` and `handleSubmit` in `AddInventoryItemForm`, `QuickAddForm` and `EditInventoryItemForm`. The `formData` dependency changed on every keystroke, so the memoization had no effect. Replaced with a plain function for clarity.
+- Fix stale comment in test-setup.js (was < 0.55 / 1750 ms, now matches actual < 0.33 / 500 ms)
 
 ### Removed
 

@@ -131,6 +131,38 @@ describe("useInventory", () => {
     expect(typeof result.current.dismissSaveError).toBe("function");
   });
 
+  describe("loadSampleData error path", () => {
+    it("sets error when Math.random triggers simulated failure", async () => {
+      // Override the global mock so randomFailure = (0 < 0.33) → true
+      vi.spyOn(Math, "random").mockReturnValue(0);
+
+      const { result } = renderHook(() => useInventory());
+      await act(() => vi.runAllTimers());
+
+      expect(result.current.error).toBe(
+        "Failed to load sample data. Please try again.",
+      );
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.items).toHaveLength(0);
+    });
+
+    it("recovers after refetch when failure clears", async () => {
+      vi.spyOn(Math, "random").mockReturnValue(0);
+
+      const { result } = renderHook(() => useInventory());
+      await act(() => vi.runAllTimers());
+      expect(result.current.error).toBeTruthy();
+
+      // Next call succeeds
+      vi.mocked(Math.random).mockReturnValue(1);
+      act(() => result.current.refetch());
+      await act(() => vi.runAllTimers());
+
+      expect(result.current.error).toBeNull();
+      expect(result.current.items.length).toBeGreaterThan(0);
+    });
+  });
+
   describe("refetch", () => {
     it("calls loadSampleData again in sample-data mode", async () => {
       const result = await renderAndLoad();

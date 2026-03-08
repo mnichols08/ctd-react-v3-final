@@ -3,8 +3,8 @@ import { afterEach, beforeEach, vi } from "vitest";
 // ---------------------------------------------------------------------------
 // Global test setup – Loading/Error state POC (#37)
 // ---------------------------------------------------------------------------
-// MainContainer simulates a random loading error (Math.random < 0.55) and a
-// 1750 ms loading delay via setTimeout.  These mocks ensure every test gets a
+// loadSampleData simulates a random loading error (Math.random < 0.33) and a
+// 500 ms loading delay via setTimeout.  These mocks ensure every test gets a
 // deterministic, timer-controlled render cycle:
 //
 //   • Math.random → 1   (always skips the error branch)
