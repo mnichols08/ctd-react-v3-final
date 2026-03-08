@@ -171,6 +171,38 @@ export default function useInventory() {
     [persistUpdate],
   );
 
+  // Re-run the fetch/load logic (for retry, refresh, or re-fetch with new params)
+  const refetch = useCallback((options = {}) => {
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      loadSampleData({
+        setInventoryItems: (data) =>
+          dispatch({ type: actions.setItems, payload: data }),
+        setIsLoading: (val) =>
+          dispatch({ type: actions.setLoading, payload: val }),
+        setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
+      });
+      return;
+    }
+
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    fetchInventoryItems({
+      setInventoryItems: (data) =>
+        dispatch({ type: actions.setItems, payload: data }),
+      setIsLoading: options.silent
+        ? () => {}
+        : (val) => dispatch({ type: actions.setLoading, payload: val }),
+      setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
+      sortConfig: options.sortConfig,
+      filterConfig: options.filterConfig,
+      searchTerm: options.searchTerm,
+      setLastFetchedAt: options.setLastFetchedAt,
+      signal: controller.signal,
+    });
+  }, []);
+
   return {
     items,
     isLoading,
@@ -181,5 +213,6 @@ export default function useInventory() {
     updateItem,
     archiveItem,
     unarchiveItem,
+    refetch,
   };
 }
