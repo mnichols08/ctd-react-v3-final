@@ -104,7 +104,7 @@ export default function useInventory() {
           type: actions.updateItem,
           payload: { id: itemId, fields: previousItem },
         });
-        dispatch({ type: actions.setError, payload: err.message });
+        dispatch({ type: actions.setSaveError, payload: err.message });
       }
     },
     [],
@@ -113,6 +113,7 @@ export default function useInventory() {
   // --- Action functions ---
 
   const addItem = useCallback(async (item) => {
+    dispatch({ type: actions.setSaveError, payload: null });
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       dispatch({ type: actions.addItem, payload: item });
       return true;
@@ -124,11 +125,12 @@ export default function useInventory() {
           dispatch({ type: actions.addItem, payload: savedItem }),
         setIsSaving: (val) =>
           dispatch({ type: actions.setIsSaving, payload: val }),
-        setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
+        setError: (msg) =>
+          dispatch({ type: actions.setSaveError, payload: msg }),
       });
       return success;
     } catch (err) {
-      dispatch({ type: actions.setError, payload: err.message });
+      dispatch({ type: actions.setSaveError, payload: err.message });
       return false;
     }
   }, []);

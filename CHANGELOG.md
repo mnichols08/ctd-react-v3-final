@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update dependencies in form components to include resetForm in useCallback dependencies
 - Fix comments in test files to replace special characters with hyphens
+- `addItem` and `persistUpdate` now dispatch `setSaveError` instead of `setError`, preventing create/update failures from triggering the full-page error state. Save errors are shown inline and are dismissible. `addItem` also clears any prior `saveError` before starting.
 
 ---
 
