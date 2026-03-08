@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   act,
   cleanup,
@@ -11,6 +11,15 @@ import { memo, useCallback, useState } from "react";
 
 import MainContainer from "./MainContainer.component";
 import inventorySampleData from "../../data/inventorySample.json";
+import { fetchInventoryItems } from "../../data/airtableUtils";
+
+vi.mock("../../data/airtableUtils", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    fetchInventoryItems: vi.fn(),
+  };
+});
 
 // Tracks every InventorySection render so useMemo tests can compare item refs
 const sectionRenderLog = [];
@@ -668,6 +677,122 @@ describe("MainContainer", () => {
       // MemoChild should NOT have re-rendered because stableHandler
       // is the same reference thanks to useCallback
       expect(childRenderCount.current).toBe(1);
+    });
+  });
+
+  // -- Re-fetch prevention --------------------------------------------------
+
+  describe("Re-fetch prevention", () => {
+    let savedSampleData;
+    let savedServerFilter;
+
+    beforeEach(() => {
+      savedSampleData = import.meta.env.VITE_SAMPLE_DATA;
+      savedServerFilter = import.meta.env.VITE_SERVER_FILTER;
+
+      // Default API mock: populate data and finish loading synchronously
+      vi.mocked(fetchInventoryItems).mockImplementation(
+        ({ setInventoryItems, setIsLoading, setError, setLastFetchedAt }) => {
+          setError(null);
+          setInventoryItems(inventorySampleData.records.map((r) => ({ ...r })));
+          setLastFetchedAt?.(new Date());
+          setIsLoading(false);
+          return Promise.resolve();
+        },
+      );
+    });
+
+    afterEach(() => {
+      import.meta.env.VITE_SAMPLE_DATA = savedSampleData;
+      import.meta.env.VITE_SERVER_FILTER = savedServerFilter;
+      vi.mocked(fetchInventoryItems).mockReset();
+    });
+
+    it("does not re-fetch when sort/filter changes and server-side params are inactive", () => {
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+      import.meta.env.VITE_SERVER_FILTER = "false";
+
+      render(<MainContainer />);
+
+      // Initial mount triggers one fetch
+      expect(fetchInventoryItems).toHaveBeenCalledTimes(1);
+
+      // Change sort — should NOT trigger a re-fetch because server-side
+      // filtering is disabled
+      fireEvent.click(
+        screen.getByRole("button", { name: "mock-sort-category-desc" }),
+      );
+
+      expect(fetchInventoryItems).toHaveBeenCalledTimes(1);
+    });
+
+    it("re-fetches when server-side params change", () => {
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+      import.meta.env.VITE_SERVER_FILTER = "true";
+
+      render(<MainContainer />);
+
+      // Initial mount fetch
+      expect(fetchInventoryItems).toHaveBeenCalledTimes(1);
+
+      // Change sort — should trigger a re-fetch with server-side filtering
+      fireEvent.click(
+        screen.getByRole("button", { name: "mock-sort-category-desc" }),
+      );
+
+      expect(fetchInventoryItems).toHaveBeenCalledTimes(2);
+    });
+
+    it("Refresh button triggers API call regardless of server-side filter setting", () => {
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+      import.meta.env.VITE_SERVER_FILTER = "false";
+
+      render(<MainContainer />);
+
+      expect(fetchInventoryItems).toHaveBeenCalledTimes(1);
+
+      // Refresh always triggers a new fetch
+      fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+
+      expect(fetchInventoryItems).toHaveBeenCalledTimes(2);
+    });
+
+    it("aborts the previous in-flight fetch when a new fetch starts", () => {
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+      import.meta.env.VITE_SERVER_FILTER = "true";
+
+      const signals = [];
+      vi.mocked(fetchInventoryItems).mockImplementation(
+        ({
+          setInventoryItems,
+          setIsLoading,
+          setError,
+          setLastFetchedAt,
+          signal,
+        }) => {
+          signals.push(signal);
+          setError(null);
+          setInventoryItems(inventorySampleData.records.map((r) => ({ ...r })));
+          setLastFetchedAt?.(new Date());
+          setIsLoading(false);
+          return Promise.resolve();
+        },
+      );
+
+      render(<MainContainer />);
+
+      // Initial fetch registered
+      expect(signals).toHaveLength(1);
+
+      // Change sort to trigger a second fetch
+      fireEvent.click(
+        screen.getByRole("button", { name: "mock-sort-category-desc" }),
+      );
+
+      // doFetch aborts the previous controller before starting a new one
+      expect(signals).toHaveLength(2);
+      expect(signals[0].aborted).toBe(true);
+      expect(signals[1].aborted).toBe(false);
     });
   });
 });
