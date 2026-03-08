@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added test covering `EditInventoryItemForm` submit coercion logic: numeric fields parsed to floats (or null when empty), cleared date fields set to null, and original item fields preserved through the update.
+- Added focus trap, Escape key dismissal, and auto-focus to the `FieldSelector` modal dialog. Screen reader and keyboard users can no longer tab into background content, and pressing Escape closes the modal. Added 4 tests covering the new behavior.
 
 ### Changed
 

@@ -149,4 +149,79 @@ describe("FieldSelector – field visibility", () => {
     expect(dialog).toBeTruthy();
     expect(screen.getByText("Select Visible Fields")).toBeTruthy();
   });
+
+  it("pressing Escape calls onClose", () => {
+    const closeFn = vi.fn();
+    render(
+      <FieldSelector
+        visibleFields={defaultSet()}
+        onToggleField={() => {}}
+        onResetFields={() => {}}
+        onClose={closeFn}
+      />,
+    );
+
+    fireEvent.keyDown(document, { key: "Escape" });
+    expect(closeFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("focuses close button on mount", () => {
+    render(
+      <FieldSelector
+        visibleFields={defaultSet()}
+        onToggleField={() => {}}
+        onResetFields={() => {}}
+        onClose={() => {}}
+      />,
+    );
+
+    const closeBtn = screen.getByRole("button", {
+      name: "Close field selector",
+    });
+    expect(document.activeElement).toBe(closeBtn);
+  });
+
+  it("traps focus: Tab from last focusable wraps to first", () => {
+    render(
+      <FieldSelector
+        visibleFields={defaultSet()}
+        onToggleField={() => {}}
+        onResetFields={() => {}}
+        onClose={() => {}}
+      />,
+    );
+
+    const doneBtn = screen.getByRole("button", { name: "Done" });
+    doneBtn.focus();
+    expect(document.activeElement).toBe(doneBtn);
+
+    fireEvent.keyDown(document, { key: "Tab" });
+
+    // Should wrap to first focusable (close button)
+    const closeBtn = screen.getByRole("button", {
+      name: "Close field selector",
+    });
+    expect(document.activeElement).toBe(closeBtn);
+  });
+
+  it("traps focus: Shift+Tab from first focusable wraps to last", () => {
+    render(
+      <FieldSelector
+        visibleFields={defaultSet()}
+        onToggleField={() => {}}
+        onResetFields={() => {}}
+        onClose={() => {}}
+      />,
+    );
+
+    const closeBtn = screen.getByRole("button", {
+      name: "Close field selector",
+    });
+    expect(document.activeElement).toBe(closeBtn);
+
+    fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
+
+    const doneBtn = screen.getByRole("button", { name: "Done" });
+    expect(document.activeElement).toBe(doneBtn);
+  });
 });
