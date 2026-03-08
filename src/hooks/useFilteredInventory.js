@@ -98,7 +98,7 @@ export default function useFilteredInventory(
   );
 
   return {
-    filterAppliedItems,
+    filterAppliedItems: sortedItems,
     activeFilterCount,
     fridgeItems,
     freezerItems,

@@ -62,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix misleading destructure alias in patchInventoryItem: renamed \_id to \_isDeleting to correctly reflect that the discarded property is the UI-only isDeleting flag, not an id field
 - Make `FilterBarForm` search input controlled via local state synced to the parent `searchTerm` prop, replacing the uncontrolled ref-based approach. The input now stays in sync when `searchTerm` is cleared externally (e.g. via `clearFilters`) while preserving the 300ms debounce on `onSearch`.
 - Replace free-text `<input>` for Location in `EditInventoryItemForm` with a `<select>` dropdown using the shared `LOCATIONS` constant, matching the add forms and preventing case-sensitive mismatches that caused edited items to vanish from location sections
+- Return `sortedItems` as `filterAppliedItems` from `useFilteredInventory` so consumers receive filtered-and-sorted data instead of filtered-only; existing consumers only used `.length` so behavior was correct but the unsorted return was misleading
 
 ### Removed
 
