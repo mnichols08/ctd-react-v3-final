@@ -683,6 +683,61 @@ describe("EditInventoryItemForm", () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
+  it("submit coerces numeric fields to numbers and empty dates to null", () => {
+    const onSave = vi.fn();
+    // Start with populated numeric and date fields
+    const item = {
+      ...baseItem,
+      QtyOnHand: 2,
+      TargetQty: 5,
+      PurchasePrice: 4.99,
+      UnitCost: null,
+      ExpiresOn: "2026-06-01",
+      DatePurchased: "2026-02-15",
+      DateFrozen: "2026-02-16",
+    };
+
+    const { container } = render(
+      <EditInventoryItemForm item={item} onSave={onSave} onCancel={() => {}} />,
+    );
+
+    // Update QtyOnHand and clear ExpiresOn + DateFrozen
+    fireEvent.change(screen.getByLabelText("Quantity on Hand:"), {
+      target: { value: "10" },
+    });
+    fireEvent.change(screen.getByLabelText("Target Qty:"), {
+      target: { value: "" },
+    });
+    fireEvent.change(screen.getByLabelText("Expires On:"), {
+      target: { value: "" },
+    });
+    fireEvent.change(screen.getByLabelText("Date Frozen:"), {
+      target: { value: "" },
+    });
+
+    const form = container.querySelector("form");
+    fireEvent(form, createEvent.submit(form));
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    const saved = onSave.mock.calls[0][0];
+
+    // Numeric fields: non-empty → parseFloat, empty → null
+    expect(saved.QtyOnHand).toBe(10);
+    expect(typeof saved.QtyOnHand).toBe("number");
+    expect(saved.TargetQty).toBeNull();
+    expect(saved.PurchasePrice).toBe(4.99);
+    expect(saved.UnitCost).toBeNull();
+
+    // Date fields: cleared → null, kept → string
+    expect(saved.ExpiresOn).toBeNull();
+    expect(saved.DatePurchased).toBe("2026-02-15");
+    expect(saved.DateFrozen).toBeNull();
+
+    // Original item fields preserved
+    expect(saved.id).toBe(10);
+    expect(saved.ItemName).toBe("Blueberries");
+  });
+
   it("LastUpdated is auto-set to current timestamp on save", () => {
     const onSave = vi.fn();
     const before = new Date().toISOString();
