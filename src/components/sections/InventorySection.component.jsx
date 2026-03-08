@@ -40,7 +40,7 @@ function InventorySection({
         </button>
       )}
       <div id={contentId} role="region" aria-labelledby={`${id}-heading`}>
-        {itemCount > 0 && items && items.length > 0 ? (
+        {itemCount > 0 ? (
           isCollapsed ? (
             <p>Collapsed</p>
           ) : (

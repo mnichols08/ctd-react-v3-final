@@ -203,8 +203,8 @@ export const loadSampleData = ({
 }) => {
   setIsLoading(true);
   setError(null);
-  const randomFailure = Math.random() < 0.33; // 33% chance of failure
-  if (randomFailure) {
+  const simulateErrors = import.meta.env.VITE_SIMULATE_ERRORS === "true";
+  if (simulateErrors && Math.random() < 0.33) {
     setError("Failed to load sample data. Please try again.");
     setIsLoading(false);
     return () => {};

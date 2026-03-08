@@ -374,6 +374,7 @@ describe("MainContainer", () => {
 
   it("error message and Retry button render when error is set", () => {
     // Make Math.random return 0 so loadSampleData triggers its failure branch
+    import.meta.env.VITE_SIMULATE_ERRORS = "true";
     vi.spyOn(Math, "random").mockReturnValue(0);
 
     render(<TestMainContainer />);
@@ -395,6 +396,7 @@ describe("MainContainer", () => {
 
   it("Retry clears error and re-fetches", () => {
     // First render triggers a failure
+    import.meta.env.VITE_SIMULATE_ERRORS = "true";
     vi.spyOn(Math, "random").mockReturnValue(0);
 
     render(<TestMainContainer />);

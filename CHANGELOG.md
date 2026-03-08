@@ -43,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add "Need Restock" checkbox to AddInventoryItemForm after Target Qty, allowing users to place a new item directly on the shopping list at creation time (defaults to unchecked)
 - Wire orphaned `clearFilters` action through `MainContainer` into `FilterBarForm`. The reset button now dispatches the reducer's `clearFilters` action via a new `onClearFilters` prop instead of manually calling `onSearch("")` and `onFilter(DEFAULT_FILTERS)` separately.
 - Diff form fields against the previous item in `updateItem` before sending to Airtable, so PATCH requests only include changed fields instead of all 25+ form fields. Skips the network call entirely when nothing changed.
+- Gate `loadSampleData` random failure behind `VITE_SIMULATE_ERRORS` env flag so developers using `VITE_SAMPLE_DATA=true` no longer hit unexplained 33% load failures by default
 
 ### Fixed
 
@@ -63,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Make `FilterBarForm` search input controlled via local state synced to the parent `searchTerm` prop, replacing the uncontrolled ref-based approach. The input now stays in sync when `searchTerm` is cleared externally (e.g. via `clearFilters`) while preserving the 300ms debounce on `onSearch`.
 - Replace free-text `<input>` for Location in `EditInventoryItemForm` with a `<select>` dropdown using the shared `LOCATIONS` constant, matching the add forms and preventing case-sensitive mismatches that caused edited items to vanish from location sections
 - Return `sortedItems` as `filterAppliedItems` from `useFilteredInventory` so consumers receive filtered-and-sorted data instead of filtered-only; existing consumers only used `.length` so behavior was correct but the unsorted return was misleading
+- Simplify redundant `itemCount > 0 && items && items.length > 0` condition in `InventorySection` to just `itemCount > 0`, since `itemCount` is already derived from `items.length`
 
 ### Removed
 

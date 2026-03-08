@@ -134,6 +134,7 @@ describe("useInventory", () => {
   describe("loadSampleData error path", () => {
     it("sets error when Math.random triggers simulated failure", async () => {
       // Override the global mock so randomFailure = (0 < 0.33) → true
+      import.meta.env.VITE_SIMULATE_ERRORS = "true";
       vi.spyOn(Math, "random").mockReturnValue(0);
 
       const { result } = renderHook(() => useInventory());
@@ -147,6 +148,7 @@ describe("useInventory", () => {
     });
 
     it("recovers after refetch when failure clears", async () => {
+      import.meta.env.VITE_SIMULATE_ERRORS = "true";
       vi.spyOn(Math, "random").mockReturnValue(0);
 
       const { result } = renderHook(() => useInventory());
