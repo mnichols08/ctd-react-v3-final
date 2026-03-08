@@ -4,7 +4,12 @@ import {
   isExpiringSoon,
   isLowStock,
   sortItems,
+  STALE_TIME_MS,
+  STALE_CHECK_INTERVAL_MS,
+  isDataStale,
+  fetchParamsEqual,
 } from "../../data/inventoryUtils";
+import { SEARCHABLE_FIELDS } from "../../data/fieldConfig";
 import useInventory from "../../hooks/useInventory";
 import useFilters from "../../hooks/useFilters";
 import useShoppingList from "../../hooks/useShoppingList";
@@ -16,55 +21,6 @@ import AddInventoryItemForm from "../forms/AddInventoryItemForm.component";
 import QuickAddForm from "../forms/QuickAddForm.component";
 import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
-
-// Searchable fields for filtering inventory items
-const SEARCHABLE_FIELDS = ["ItemName", "Brand", "Category", "Tags", "Notes"];
-
-// Auto-refresh if data is older than this threshold (5 minutes)
-const STALE_TIME_MS = 5 * 60 * 1000;
-// How often to check for stale data while the tab is visible (60 seconds)
-const STALE_CHECK_INTERVAL_MS = 60 * 1000;
-
-/** Returns true if lastFetchedAt is older than the given threshold. */
-function isDataStale(lastFetchedAt, threshold = STALE_TIME_MS) {
-  if (!lastFetchedAt) return false;
-  return Date.now() - lastFetchedAt.getTime() >= threshold;
-}
-
-/** Shallow-compare two arrays by length + strict element equality. */
-function arraysEqual(a, b) {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false;
-  }
-  return true;
-}
-
-/** Deep-compare two fetch-param objects ({sortField, sortDirection, filters, searchTerm}). */
-function fetchParamsEqual(a, b) {
-  if (a === b) return true;
-  if (!a || !b) return false;
-  if (
-    a.sortField !== b.sortField ||
-    a.sortDirection !== b.sortDirection ||
-    a.searchTerm !== b.searchTerm
-  ) {
-    return false;
-  }
-  const fa = a.filters;
-  const fb = b.filters;
-  if (fa === fb) return true;
-  if (!fa || !fb) return false;
-  if (
-    fa.expiringSoon !== fb.expiringSoon ||
-    fa.lowStock !== fb.lowStock ||
-    fa.needRestock !== fb.needRestock ||
-    fa.status !== fb.status
-  ) {
-    return false;
-  }
-  return arraysEqual(fa.categories ?? [], fb.categories ?? []);
-}
 
 function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   // --- Custom hooks ---

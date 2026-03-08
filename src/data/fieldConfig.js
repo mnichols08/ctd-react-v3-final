@@ -26,6 +26,14 @@ export const ALL_FIELDS = [
   { key: "LastUpdated", label: "Last Updated" },
 ];
 
+export const SEARCHABLE_FIELDS = [
+  "ItemName",
+  "Brand",
+  "Category",
+  "Tags",
+  "Notes",
+];
+
 export const DEFAULT_VISIBLE_FIELDS = [
   "ItemName",
   "Brand",

@@ -1,10 +1,9 @@
 import sampleData from "./inventorySample.json";
 import { EXPIRING_SOON_MS, LOW_STOCK_THRESHOLD } from "./inventoryUtils";
+import { SEARCHABLE_FIELDS } from "./fieldConfig";
 
 const BASE_URL = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${encodeURIComponent(import.meta.env.VITE_AIRTABLE_TABLE_NAME)}`;
 const AUTH_TOKEN = `Bearer ${import.meta.env.VITE_AIRTABLE_PAT}`;
-
-const SEARCHABLE_FIELDS = ["ItemName", "Brand", "Category", "Tags", "Notes"];
 const EXPIRING_SOON_DAYS = EXPIRING_SOON_MS / (24 * 60 * 60 * 1000);
 
 function escapeFormulaString(value) {

@@ -44,6 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor ShoppingListControl to replace handler props with direct function references and to use optional chaining for addToShoppingList
 - Refactor ShoppingListControl test and ItemCard test to replace handler props with more descriptive names
 - Refactor InventorySection test to rename updateItemQuantity prop to updateTargetQty
+- Extract SEARCHABLE_FIELDS constant into fieldConfig.js and consolidate duplicate in airtableUtils.js
+- Extract staleness utilities (STALE_TIME_MS, STALE_CHECK_INTERVAL_MS, isDataStale) and comparison helpers (arraysEqual, fetchParamsEqual) from MainContainer into inventoryUtils.js
 
 ---
 
