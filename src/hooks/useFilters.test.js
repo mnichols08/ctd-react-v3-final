@@ -9,7 +9,6 @@ const defaultState = {
     categories: [],
     expiringSoon: false,
     lowStock: false,
-    needRestock: false,
     status: "",
   },
 };
@@ -33,7 +32,6 @@ describe("useFilters", () => {
       categories: [],
       expiringSoon: false,
       lowStock: false,
-      needRestock: false,
       status: "",
     });
   });
@@ -66,7 +64,6 @@ describe("useFilters", () => {
       categories: ["Dairy"],
       expiringSoon: true,
       lowStock: false,
-      needRestock: false,
       status: "active",
     };
 

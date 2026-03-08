@@ -118,7 +118,6 @@ export function fetchParamsEqual(a, b) {
   if (
     fa.expiringSoon !== fb.expiringSoon ||
     fa.lowStock !== fb.lowStock ||
-    fa.needRestock !== fb.needRestock ||
     fa.status !== fb.status
   ) {
     return false;

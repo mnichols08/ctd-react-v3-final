@@ -45,11 +45,6 @@ export function buildAirtableParams(sortConfig, filterConfig, searchTerm) {
     );
   }
 
-  // NeedRestock filter
-  if (filterConfig?.needRestock) {
-    formulaParts.push(`{NeedRestock}=TRUE()`);
-  }
-
   // Status filter — "archived" shows only archived, otherwise exclude archived
   if (filterConfig?.status === "archived") {
     formulaParts.push(`{Status}="archived"`);

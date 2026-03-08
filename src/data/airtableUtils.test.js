@@ -192,11 +192,6 @@ describe("buildAirtableParams", () => {
       expect(formula).toBe('OR({Category}="Dairy", {Category}="Drinks")');
     });
 
-    it("generates NeedRestock filter", () => {
-      const params = buildAirtableParams(null, { needRestock: true }, "");
-      expect(params.get("filterByFormula")).toBe("{NeedRestock}=TRUE()");
-    });
-
     it("generates archived status filter", () => {
       const params = buildAirtableParams(null, { status: "archived" }, "");
       expect(params.get("filterByFormula")).toBe('{Status}="archived"');

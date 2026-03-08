@@ -40,7 +40,6 @@ export const initialState = {
   filters: {
     categories: [],
     location: null,
-    needRestock: false,
     status: "",
     expiringSoon: false,
     lowStock: false,
@@ -221,7 +220,6 @@ export default function inventoryReducer(state, action) {
         filters: {
           categories: [],
           location: null,
-          needRestock: false,
           status: "",
           expiringSoon: false,
           lowStock: false,
