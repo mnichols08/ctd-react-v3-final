@@ -517,3 +517,43 @@ describe("Combined search, sort, and filter", () => {
     ]);
   });
 });
+
+// ===========================================================================
+// Refresh tests
+// ===========================================================================
+describe("Refresh", () => {
+  it("clicking Refresh reloads inventory data", () => {
+    render(<App />);
+    act(() => vi.runAllTimers());
+
+    // Inventory sections should be visible
+    expect(getSection("Fridge")).toBeTruthy();
+    expect(getSection("Pantry")).toBeTruthy();
+
+    // Click Refresh
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    act(() => vi.runAllTimers());
+
+    // Data should still be present after reload
+    expect(getSection("Fridge")).toBeTruthy();
+    expect(getSection("Pantry")).toBeTruthy();
+  });
+
+  it("Refresh restores data after user modifies inventory state", () => {
+    render(<App />);
+    act(() => vi.runAllTimers());
+
+    const initialFridgeNames = getSectionItemNames("Fridge");
+
+    // Add an item to Fridge via QuickAdd
+    quickAddItem({ name: "Test Item", location: "Fridge" });
+    expect(getSectionItemNames("Fridge")).toContain("Test Item");
+
+    // Click Refresh — sample data is reloaded, clearing the local addition
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    act(() => vi.runAllTimers());
+
+    expect(getSectionItemNames("Fridge")).toEqual(initialFridgeNames);
+    expect(getSectionItemNames("Fridge")).not.toContain("Test Item");
+  });
+});

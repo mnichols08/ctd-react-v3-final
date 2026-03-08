@@ -25,8 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add refresh button and handler to re-fetch inventory items in MainContainer
+- Add tests for Refresh functionality in FilterBarForm and MainContainer
+- Add refresh button and handler to re-fetch inventory items in FilterBarForm
 - Implement auto-refresh and stale-check for MainContainer and QuickStatsBar
+- Add tests for setLastFetchedAt in fetchInventoryItems to verify date handling on success and failure
 
 ### Changed
 

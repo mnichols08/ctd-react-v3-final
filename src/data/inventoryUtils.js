@@ -60,8 +60,8 @@ export function sortItems(items, sortField, sortDirection) {
   });
 }
 
-export function formateRelativeTime(timestamp) {
-  if ((timestamp === null || timestamp === undefined) && timestamp !== 0) {
+export function formatRelativeTime(timestamp) {
+  if (timestamp === null) {
     return null;
   }
   const now = Date.now();

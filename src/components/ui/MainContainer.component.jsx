@@ -27,6 +27,8 @@ const DEFAULT_FILTERS = {
   categories: [],
   expiringSoon: false,
   lowStock: false,
+  needRestock: false,
+  status: "",
 };
 
 // Auto-refresh if data is older than this threshold (5 minutes)
@@ -102,8 +104,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const lastFetchedParamsRef = useRef(null);
   // Track the timestamp of the last successful fetch to help with debugging and ensuring data freshness
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
-  // Guard against concurrent in-flight fetch requests
-  const fetchInProgressRef = useRef(false);
+  // AbortController for cancelling in-flight fetch requests
+  const abortControllerRef = useRef(null);
 
   // Keep a ref to the latest inventoryItems so handlers can read current
   // state without needing inventoryItems in their dependency arrays.
@@ -149,35 +151,59 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     [filters],
   );
 
-  // Wrapper that prevents overlapping fetch requests
+  // Ref that always holds the latest fetch-relevant params so the
+  // pending-retry path can read current values instead of stale closures.
+  const fetchParamsRef = useRef({
+    sortField,
+    sortDirection,
+    filters,
+    searchTerm,
+  });
+  useEffect(() => {
+    fetchParamsRef.current = { sortField, sortDirection, filters, searchTerm };
+  }, [sortField, sortDirection, filters, searchTerm]);
+
+  // Cancels the in-flight request (if any) and starts a fresh fetch using the
+  // latest params from fetchParamsRef.  Callers can pass { setIsLoading: () => {} }
+  // to suppress the loading indicator (e.g. background auto-refresh).
   const doFetch = useCallback(
     (overrides = {}) => {
-      if (fetchInProgressRef.current) return;
-      fetchInProgressRef.current = true;
+      // Cancel any in-flight request so its response never updates state
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
 
-      const wrappedSetIsLoading = (val) => {
-        if (!val) fetchInProgressRef.current = false;
-        (overrides.setIsLoading ?? setIsLoading)(val);
-      };
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      // Read current params from the ref so we always use the most
+      // up-to-date values regardless of when this callback was created.
+      const {
+        sortField: sf,
+        sortDirection: sd,
+        filters: f,
+        searchTerm: st,
+      } = fetchParamsRef.current;
 
       lastFetchedParamsRef.current = {
-        sortField,
-        sortDirection,
-        filters,
-        searchTerm,
+        sortField: sf,
+        sortDirection: sd,
+        filters: f,
+        searchTerm: st,
       };
 
       fetchInventoryItems({
         setInventoryItems,
-        setIsLoading: wrappedSetIsLoading,
+        setIsLoading: overrides.setIsLoading ?? setIsLoading,
         setError,
-        sortConfig: { field: sortField, direction: sortDirection },
-        filterConfig: filters,
-        searchTerm,
+        sortConfig: { field: sf, direction: sd },
+        filterConfig: f,
+        searchTerm: st,
         setLastFetchedAt,
+        signal: controller.signal,
       });
     },
-    [sortField, sortDirection, filters, searchTerm],
+    [], // stable — reads everything from refs
   );
 
   // Handler to add a new inventory item to local state
@@ -481,6 +507,15 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Cancel in-flight fetch on unmount to prevent state updates after cleanup
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
   // Retry handler for error state — re-fetches or reloads sample data
   const handleRetry = useCallback(() => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
@@ -490,13 +525,11 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     }
   }, [doFetch]);
 
-  // Force a re-fetch regardless of whether parameters changed
+  // Force a re-fetch — cancels any in-flight request and starts fresh
   const handleRefresh = useCallback(() => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       loadSampleData({ setInventoryItems, setIsLoading, setError });
     } else {
-      // Manual refresh always fires — bypass the in-progress guard
-      fetchInProgressRef.current = false;
       doFetch();
     }
   }, [doFetch]);
@@ -579,10 +612,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
               sortDirection={sortDirection}
               filters={filters}
               inventoryItems={inventoryItems}
+              handleRefresh={handleRefresh}
             />
-            <button type="button" onClick={handleRefresh}>
-              Refresh
-            </button>
             {(searchTerm.trim() || activeFilterCount > 0) && (
               <p>
                 Showing {filterAppliedItems.length} of {inventoryItems.length}{" "}

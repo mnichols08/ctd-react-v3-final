@@ -25,7 +25,14 @@ vi.mock("./QuickStatsBar.component", () => ({
 }));
 
 vi.mock("../forms/FilterBarForm.component", () => ({
-  default: () => <div>FilterBarForm</div>,
+  default: ({ handleRefresh }) => (
+    <div>
+      FilterBarForm
+      <button type="button" onClick={handleRefresh}>
+        Refresh
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock("../sections/InventorySection.component", () => ({
@@ -371,5 +378,31 @@ describe("MainContainer", () => {
     // Inventory sections should now render
     expect(screen.getByRole("heading", { name: "Fridge" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Pantry" })).toBeTruthy();
+  });
+
+  it("Refresh button reloads sample data", () => {
+    render(<MainContainer />);
+    act(() => vi.runAllTimers());
+
+    // Inventory is loaded
+    const initialPantryCount = inventorySampleData.records.filter(
+      (item) => item.Location.includes("Pantry") && item.Status !== "archived",
+    ).length;
+    expect(
+      screen.getByRole("heading", { name: "Pantry" }).closest("section")
+        ?.textContent,
+    ).toContain(`count:${initialPantryCount}`);
+
+    // Click Refresh
+    fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
+    act(() => vi.runAllTimers());
+
+    // Data should still be present (reloaded, not cleared)
+    expect(screen.getByRole("heading", { name: "Fridge" })).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Pantry" })).toBeTruthy();
+    expect(
+      screen.getByRole("heading", { name: "Pantry" }).closest("section")
+        ?.textContent,
+    ).toContain(`count:${initialPantryCount}`);
   });
 });
