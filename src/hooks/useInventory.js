@@ -155,7 +155,7 @@ export default function useInventory() {
       dispatch({ type: actions.deleteItem, payload: id });
     } catch (err) {
       dispatch({ type: actions.setDeleting, payload: { id, value: false } });
-      dispatch({ type: actions.setError, payload: err.message });
+      dispatch({ type: actions.setSaveError, payload: err.message });
     }
   }, []);
 
