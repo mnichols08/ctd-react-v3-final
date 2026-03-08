@@ -468,6 +468,28 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     }
   }, [sortField, sortDirection, filters, searchTerm]);
 
+  // Force a re-fetch regardless of whether parameters changed
+  const handleRefresh = useCallback(() => {
+    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      loadSampleData({ setInventoryItems, setIsLoading, setError });
+    } else {
+      lastFetchedParamsRef.current = {
+        sortField,
+        sortDirection,
+        filters,
+        searchTerm,
+      };
+      fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading,
+        setError,
+        sortConfig: { field: sortField, direction: sortDirection },
+        filterConfig: filters,
+        searchTerm,
+      });
+    }
+  }, [sortField, sortDirection, filters, searchTerm]);
+
   // When server-side filtering is enabled, re-fetch on sort/filter/search changes
   useEffect(() => {
     if (
@@ -517,6 +539,9 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
               filters={filters}
               inventoryItems={inventoryItems}
             />
+            <button type="button" onClick={handleRefresh}>
+              Refresh
+            </button>
             {(searchTerm.trim() || activeFilterCount > 0) && (
               <p>
                 Showing {filterAppliedItems.length} of {inventoryItems.length}{" "}
