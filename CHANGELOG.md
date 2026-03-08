@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.6.0] - 2026-03-08
+
+### Added
+
+- Add inventory reducer with actions and initial state
+
+---
+
 ## [0.5.4] - 2026-03-07
 
 ### Fixed
