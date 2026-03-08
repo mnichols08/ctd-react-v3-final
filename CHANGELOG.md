@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rewrite `useFilters` to delegate to the central `inventoryReducer` dispatch (same pattern as `useShoppingList`), moving filter/sort/search callbacks out of `useInventory` to reduce its size
 - - Split `useInventory` god hook into focused composable hooks (`useInventoryActions`, `useFieldVisibility`, `useUIToggles`), reducing it to a slim orchestrator while preserving the same return API
 - Silenced expected `console.error` output in `airtableUtils.test.js` error-scenario tests (404, 422, 429, network error) using a scoped `vi.spyOn` mock to keep test output clean.
+- Replaced `<a href="">` collapse toggle in `InventorySection` and `<a href="#field-selector">` in `NavMenu` with semantic `<button>` elements. Anchors with empty or hash-only hrefs are incorrect for non-navigation actions and cause page scroll. Updated related test selectors in `InventorySection.test.jsx` and `App.test.jsx`.
 
 ### Fixed
 

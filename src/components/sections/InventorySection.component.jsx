@@ -26,27 +26,24 @@ function InventorySection({
   const contentId = `${id}-content`;
 
   // Handler for toggling the collapsed state
-  const handleClick = (e) => {
-    e.preventDefault();
+  const handleClick = () => {
     toggleCollapsed();
   };
 
   return (
     <section id={id}>
-      <h2
-        id={`${id}-heading`}
-        onClick={handleClick}
-      >
+      <h2 id={`${id}-heading`} onClick={handleClick}>
         {title} ({itemCount}){" "}
       </h2>{" "}
-      <a
-        href=""
-        aria-expanded={!isCollapsed}
-        aria-controls={contentId}
-        onClick={handleClick}
-      >
-        {itemCount > 0 && (isCollapsed ? "Show Collapsed" : "Collapse")}
-      </a>
+      {itemCount > 0 && (
+        <button
+          aria-expanded={!isCollapsed}
+          aria-controls={contentId}
+          onClick={handleClick}
+        >
+          {isCollapsed ? "Show Collapsed" : "Collapse"}
+        </button>
+      )}
       <div id={contentId} role="region" aria-labelledby={`${id}-heading`}>
         {itemCount > 0 && items && items.length > 0 ? (
           isCollapsed ? (

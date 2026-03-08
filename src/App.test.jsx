@@ -246,7 +246,7 @@ describe("App – field visibility", () => {
 
     // Open FieldSelector via nav (aria-label is "Select visible fields")
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
 
     // Uncheck "Brand"
@@ -271,7 +271,7 @@ describe("App – field visibility", () => {
 
     // Open FieldSelector
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
 
     // Check "Notes" on
@@ -285,7 +285,7 @@ describe("App – field visibility", () => {
     // Sample items all have Notes: null, so nothing to show — that's correct behavior.
     // Instead verify a field that has data: toggle on "Sub-Category"
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
     const subCatCb = screen.getByRole("checkbox", { name: "Sub-Category" });
     fireEvent.click(subCatCb);
@@ -301,7 +301,7 @@ describe("App – field visibility", () => {
 
     // Open FieldSelector
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
 
     // ItemName checkbox should be disabled
@@ -326,7 +326,7 @@ describe("App – field visibility", () => {
 
     // First, toggle Brand off
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
     fireEvent.click(screen.getByRole("checkbox", { name: "Brand" }));
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
@@ -335,7 +335,7 @@ describe("App – field visibility", () => {
 
     // Now reset
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
     fireEvent.click(screen.getByRole("button", { name: "Reset to Defaults" }));
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
