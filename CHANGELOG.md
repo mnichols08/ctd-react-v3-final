@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Return no-op cleanup function from `loadSampleData` error path so the return type is consistent with the success path
 - Fix item edits silently failing: `updateItem` now accepts both `(id, fields)` and `(fullItem)` signatures, and `patchInventoryItem` strips client-only properties (`isCompleted`, `isDeleting`) that caused Airtable 422 errors
 - Coerce empty date strings to `null` in `AddInventoryItemForm` and `patchInventoryItem` to prevent Airtable 422 errors on blank `ExpiresOn`, `DatePurchased`, and `DateFrozen` fields
+- Tighten date coercion in `AddInventoryItemForm` from `!value` (all falsy) to `=== ""` (empty string only) for precision
 - Remove redundant `sortConfig.field` and `sortConfig.direction` from `useAutoRefresh` effect dependency array, keeping only the `sortConfig` object reference
 - Removed misleading `useCallback` wrapper from `handleChange` and `handleSubmit` in `AddInventoryItemForm`, `QuickAddForm` and `EditInventoryItemForm`. The `formData` dependency changed on every keystroke, so the memoization had no effect. Replaced with a plain function for clarity.
 - Fix stale comment in test-setup.js (was < 0.55 / 1750 ms, now matches actual < 0.33 / 500 ms)
