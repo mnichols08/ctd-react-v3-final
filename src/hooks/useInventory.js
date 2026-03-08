@@ -10,6 +10,7 @@ import {
   deleteInventoryItem,
 } from "../data/airtableUtils";
 import usePersistUpdate from "./usePersistUpdate";
+import useFilters from "./useFilters";
 import useShoppingList from "./useShoppingList";
 
 export default function useInventory() {
@@ -217,23 +218,14 @@ export default function useInventory() {
     });
   }, []);
 
-  // --- Filter / sort / search / field visibility dispatchers ---
+  // --- Filter / sort / search dispatchers ---
 
-  const setSearch = useCallback((term) => {
-    dispatch({ type: actions.setSearch, payload: term });
-  }, []);
-
-  const setSort = useCallback((field, direction) => {
-    dispatch({ type: actions.setSort, payload: { field, direction } });
-  }, []);
-
-  const setFilters = useCallback((newFilters) => {
-    dispatch({ type: actions.setFilters, payload: newFilters });
-  }, []);
-
-  const clearFilters = useCallback(() => {
-    dispatch({ type: actions.clearFilters });
-  }, []);
+  const { setSearch, setSort, setFilters, clearFilters } = useFilters({
+    searchTerm,
+    sortConfig,
+    filters,
+    dispatch,
+  });
 
   const toggleField = useCallback((key) => {
     dispatch({ type: actions.toggleField, payload: key });

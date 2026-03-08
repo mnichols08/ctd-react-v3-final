@@ -1,10 +1,28 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import useFilters from "./useFilters";
 
+const defaultState = {
+  searchTerm: "",
+  sortConfig: { field: "ItemName", direction: "asc" },
+  filters: {
+    categories: [],
+    expiringSoon: false,
+    lowStock: false,
+    needRestock: false,
+    status: "",
+  },
+};
+
+function setup(overrides = {}) {
+  const dispatch = vi.fn();
+  const props = { ...defaultState, ...overrides, dispatch };
+  return { dispatch, ...renderHook(() => useFilters(props)) };
+}
+
 describe("useFilters", () => {
   it("returns default state", () => {
-    const { result } = renderHook(() => useFilters());
+    const { result } = setup();
 
     expect(result.current.searchTerm).toBe("");
     expect(result.current.sortConfig).toEqual({
@@ -20,27 +38,30 @@ describe("useFilters", () => {
     });
   });
 
-  it("setSearch updates searchTerm", () => {
-    const { result } = renderHook(() => useFilters());
+  it("setSearch dispatches setSearch action", () => {
+    const { result, dispatch } = setup();
 
     act(() => result.current.setSearch("olive oil"));
 
-    expect(result.current.searchTerm).toBe("olive oil");
-  });
-
-  it("setSort updates sortConfig", () => {
-    const { result } = renderHook(() => useFilters());
-
-    act(() => result.current.setSort("QtyOnHand", "desc"));
-
-    expect(result.current.sortConfig).toEqual({
-      field: "QtyOnHand",
-      direction: "desc",
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "setSearch",
+      payload: "olive oil",
     });
   });
 
-  it("setFilters updates filters object", () => {
-    const { result } = renderHook(() => useFilters());
+  it("setSort dispatches setSort action", () => {
+    const { result, dispatch } = setup();
+
+    act(() => result.current.setSort("QtyOnHand", "desc"));
+
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "setSort",
+      payload: { field: "QtyOnHand", direction: "desc" },
+    });
+  });
+
+  it("setFilters dispatches setFilters action", () => {
+    const { result, dispatch } = setup();
     const newFilters = {
       categories: ["Dairy"],
       expiringSoon: true,
@@ -51,45 +72,17 @@ describe("useFilters", () => {
 
     act(() => result.current.setFilters(newFilters));
 
-    expect(result.current.filters).toEqual(newFilters);
-  });
-
-  it("clearFilters resets filters and searchTerm to defaults", () => {
-    const { result } = renderHook(() => useFilters());
-
-    // Set some values first
-    act(() => {
-      result.current.setSearch("test");
-      result.current.setFilters({
-        categories: ["Snacks"],
-        expiringSoon: true,
-        lowStock: true,
-        needRestock: true,
-        status: "archived",
-      });
-    });
-
-    act(() => result.current.clearFilters());
-
-    expect(result.current.searchTerm).toBe("");
-    expect(result.current.filters).toEqual({
-      categories: [],
-      expiringSoon: false,
-      lowStock: false,
-      needRestock: false,
-      status: "",
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "setFilters",
+      payload: newFilters,
     });
   });
 
-  it("clearFilters preserves sortConfig", () => {
-    const { result } = renderHook(() => useFilters());
+  it("clearFilters dispatches clearFilters action", () => {
+    const { result, dispatch } = setup();
 
-    act(() => result.current.setSort("Brand", "desc"));
     act(() => result.current.clearFilters());
 
-    expect(result.current.sortConfig).toEqual({
-      field: "Brand",
-      direction: "desc",
-    });
+    expect(dispatch).toHaveBeenCalledWith({ type: "clearFilters" });
   });
 });
