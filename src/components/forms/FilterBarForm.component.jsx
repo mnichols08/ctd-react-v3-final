@@ -11,6 +11,7 @@ function FilterBarForm({
   onSearch = () => {},
   onSort = () => {},
   onFilter = () => {},
+  onClearFilters = () => {},
   sortField,
   sortDirection,
   filters = DEFAULT_FILTERS,
@@ -68,8 +69,7 @@ function FilterBarForm({
     }
     clearTimeout(debounceTimer.current);
     onSort("", "asc");
-    onSearch("");
-    onFilter(DEFAULT_FILTERS);
+    onClearFilters();
   };
 
   return (

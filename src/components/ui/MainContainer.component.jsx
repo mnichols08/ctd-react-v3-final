@@ -32,6 +32,7 @@ function MainContainer({ inventory }) {
     setSearch,
     setSort,
     setFilters,
+    clearFilters,
     visibleFields,
     toggleQuickAdd,
     toggleShowArchived,
@@ -82,6 +83,7 @@ function MainContainer({ inventory }) {
               onSearch={setSearch}
               onSort={setSort}
               onFilter={setFilters}
+              onClearFilters={clearFilters}
               sortField={sortConfig.field}
               sortDirection={sortConfig.direction}
               filters={filters}
