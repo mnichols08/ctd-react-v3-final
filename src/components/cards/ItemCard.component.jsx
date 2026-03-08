@@ -15,9 +15,9 @@ function formatValue(value) {
 // The ItemCard component represents an individual inventory item and conditionally renders forms/buttons based on its state and shopping cart status
 function ItemCard({
   item,
-  handleAddToShoppingList,
-  handleRemoveFromShoppingList,
-  handleUpdateItemQuantity,
+  addToShoppingList,
+  removeFromShoppingList,
+  updateTargetQty,
   handleUpdateItem,
   visibleFields = DEFAULT_VISIBLE_FIELDS_SET,
   handleArchiveItem,
@@ -86,12 +86,12 @@ function ItemCard({
                 {item.isDeleting ? "Deleting…" : "Delete"}
               </button>
             )}
-            {(handleAddToShoppingList || handleUpdateItemQuantity) && (
+            {(addToShoppingList || updateTargetQty) && (
               <ShoppingListControl
                 item={item}
-                handleAddToShoppingList={handleAddToShoppingList}
-                handleRemoveFromShoppingList={handleRemoveFromShoppingList}
-                handleUpdateItemQuantity={handleUpdateItemQuantity}
+                addToShoppingList={addToShoppingList}
+                removeFromShoppingList={removeFromShoppingList}
+                updateTargetQty={updateTargetQty}
               />
             )}
           </>
