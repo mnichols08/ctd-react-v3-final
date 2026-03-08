@@ -10,16 +10,36 @@ import {
   patchInventoryItem,
   deleteInventoryItem,
 } from "../data/airtableUtils";
+import useShoppingList from "./useShoppingList";
 
 export default function useInventory() {
   const [state, dispatch] = useReducer(inventoryReducer, initialState);
-  const { items, isLoading, error } = state;
+  const {
+    items,
+    isLoading,
+    error,
+    showQuickAdd,
+    showArchived,
+    isSaving,
+    saveError,
+    lastFetchedAt,
+    searchTerm,
+    sortConfig,
+    filters,
+    visibleFields,
+  } = state;
 
-  // Ref for reading current items in callbacks without stale closures
+  // Refs for reading current state in callbacks without stale closures
   const itemsRef = useRef(items);
+  const sortConfigRef = useRef(state.sortConfig);
+  const filtersRef = useRef(state.filters);
+  const searchTermRef = useRef(state.searchTerm);
   useEffect(() => {
     itemsRef.current = items;
-  }, [items]);
+    sortConfigRef.current = state.sortConfig;
+    filtersRef.current = state.filters;
+    searchTermRef.current = state.searchTerm;
+  }, [items, state.sortConfig, state.filters, state.searchTerm]);
 
   // AbortController for cancelling in-flight fetches
   const abortControllerRef = useRef(null);
@@ -27,14 +47,14 @@ export default function useInventory() {
   // --- Initial data fetch ---
   useEffect(() => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      loadSampleData({
+      const cleanup = loadSampleData({
         setInventoryItems: (data) =>
           dispatch({ type: actions.setItems, payload: data }),
         setIsLoading: (val) =>
           dispatch({ type: actions.setLoading, payload: val }),
         setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
       });
-      return;
+      return cleanup;
     }
 
     const controller = new AbortController();
@@ -49,6 +69,8 @@ export default function useInventory() {
       sortConfig: state.sortConfig,
       filterConfig: state.filters,
       searchTerm: state.searchTerm,
+      setLastFetchedAt: (date) =>
+        dispatch({ type: actions.setLastFetchedAt, payload: date }),
       signal: controller.signal,
     });
 
@@ -100,7 +122,8 @@ export default function useInventory() {
         item,
         addInventoryItem: (savedItem) =>
           dispatch({ type: actions.addItem, payload: savedItem }),
-        setIsSaving: () => {},
+        setIsSaving: (val) =>
+          dispatch({ type: actions.setIsSaving, payload: val }),
         setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
       });
       return success;
@@ -112,7 +135,13 @@ export default function useInventory() {
 
   const deleteItem = useCallback(async (id) => {
     const item = itemsRef.current.find((i) => i.id === id);
-    if (!item) return;
+    if (!item || item.isDeleting) return;
+
+    if (!window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)) {
+      return;
+    }
+
+    dispatch({ type: actions.setDeleting, payload: { id, value: true } });
 
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       dispatch({ type: actions.deleteItem, payload: id });
@@ -123,6 +152,7 @@ export default function useInventory() {
       await deleteInventoryItem(id);
       dispatch({ type: actions.deleteItem, payload: id });
     } catch (err) {
+      dispatch({ type: actions.setDeleting, payload: { id, value: false } });
       dispatch({ type: actions.setError, payload: err.message });
     }
   }, []);
@@ -195,24 +225,93 @@ export default function useInventory() {
         ? () => {}
         : (val) => dispatch({ type: actions.setLoading, payload: val }),
       setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
-      sortConfig: options.sortConfig,
-      filterConfig: options.filterConfig,
-      searchTerm: options.searchTerm,
-      setLastFetchedAt: options.setLastFetchedAt,
+      sortConfig: options.sortConfig ?? sortConfigRef.current,
+      filterConfig: options.filterConfig ?? filtersRef.current,
+      searchTerm: options.searchTerm ?? searchTermRef.current,
+      setLastFetchedAt: (date) =>
+        dispatch({ type: actions.setLastFetchedAt, payload: date }),
       signal: controller.signal,
     });
   }, []);
+
+  // --- Filter / sort / search / field visibility dispatchers ---
+
+  const setSearch = useCallback((term) => {
+    dispatch({ type: actions.setSearch, payload: term });
+  }, []);
+
+  const setSort = useCallback((field, direction) => {
+    dispatch({ type: actions.setSort, payload: { field, direction } });
+  }, []);
+
+  const setFilters = useCallback((newFilters) => {
+    dispatch({ type: actions.setFilters, payload: newFilters });
+  }, []);
+
+  const clearFilters = useCallback(() => {
+    dispatch({ type: actions.clearFilters });
+  }, []);
+
+  const toggleField = useCallback((key) => {
+    dispatch({ type: actions.toggleField, payload: key });
+  }, []);
+
+  const resetFields = useCallback(() => {
+    dispatch({ type: actions.resetFields });
+  }, []);
+
+  const toggleQuickAdd = useCallback(() => {
+    dispatch({ type: actions.toggleQuickAdd });
+  }, []);
+
+  const toggleShowArchived = useCallback(() => {
+    dispatch({ type: actions.toggleShowArchived });
+  }, []);
+
+  const dismissSaveError = useCallback(() => {
+    dispatch({ type: actions.setSaveError, payload: null });
+  }, []);
+
+  const {
+    shoppingListItems,
+    shoppingListCount,
+    addToShoppingList,
+    removeFromShoppingList,
+    updateTargetQty,
+  } = useShoppingList({ items, dispatch });
 
   return {
     items,
     isLoading,
     error,
-    dispatch,
+    showQuickAdd,
+    showArchived,
+    isSaving,
+    saveError,
     addItem,
     deleteItem,
     updateItem,
     archiveItem,
     unarchiveItem,
     refetch,
+    lastFetchedAt,
+    searchTerm,
+    sortConfig,
+    filters,
+    setSearch,
+    setSort,
+    setFilters,
+    clearFilters,
+    visibleFields,
+    toggleField,
+    resetFields,
+    toggleQuickAdd,
+    toggleShowArchived,
+    dismissSaveError,
+    shoppingListItems,
+    shoppingListCount,
+    addToShoppingList,
+    removeFromShoppingList,
+    updateTargetQty,
   };
 }

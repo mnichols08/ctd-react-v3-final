@@ -1,3 +1,5 @@
+import { DEFAULT_VISIBLE_FIELDS } from "../data/fieldConfig";
+
 export const actions = {
   addItem: "addItem",
   deleteItem: "deleteItem",
@@ -13,12 +15,26 @@ export const actions = {
   setFilters: "setFilters",
   setSort: "setSort",
   setSearch: "setSearch",
+  toggleQuickAdd: "toggleQuickAdd",
+  toggleShowArchived: "toggleShowArchived",
+  setIsSaving: "setIsSaving",
+  setSaveError: "setSaveError",
+  setLastFetchedAt: "setLastFetchedAt",
+  toggleField: "toggleField",
+  resetFields: "resetFields",
+  clearFilters: "clearFilters",
+  setDeleting: "setDeleting",
 };
 
 export const initialState = {
   items: [],
   isLoading: true,
   error: null,
+  showQuickAdd: true,
+  showArchived: false,
+  isSaving: false,
+  saveError: null,
+  lastFetchedAt: null,
   searchTerm: "",
   sortConfig: { field: "ItemName", direction: "asc" },
   filters: {
@@ -29,6 +45,7 @@ export const initialState = {
     expiringSoon: false,
     lowStock: false,
   },
+  visibleFields: new Set(DEFAULT_VISIBLE_FIELDS),
 };
 
 export default function inventoryReducer(state, action) {
@@ -79,7 +96,8 @@ export default function inventoryReducer(state, action) {
             ? {
                 ...item,
                 ...action.payload.fields,
-                LastUpdated: new Date().toISOString(),
+                LastUpdated:
+                  action.payload.fields.LastUpdated ?? new Date().toISOString(),
               }
             : item,
         ),
@@ -138,6 +156,16 @@ export default function inventoryReducer(state, action) {
       };
     }
 
+    case actions.setDeleting:
+      return {
+        ...state,
+        items: state.items.map((item) =>
+          item.id === action.payload.id
+            ? { ...item, isDeleting: action.payload.value }
+            : item,
+        ),
+      };
+
     case actions.setItems:
       return { ...state, items: action.payload };
 
@@ -158,6 +186,48 @@ export default function inventoryReducer(state, action) {
 
     case actions.setSearch:
       return { ...state, searchTerm: action.payload };
+
+    case actions.toggleQuickAdd:
+      return { ...state, showQuickAdd: !state.showQuickAdd };
+
+    case actions.toggleShowArchived:
+      return { ...state, showArchived: !state.showArchived };
+
+    case actions.setIsSaving:
+      return { ...state, isSaving: action.payload };
+
+    case actions.setSaveError:
+      return { ...state, saveError: action.payload };
+
+    case actions.setLastFetchedAt:
+      return { ...state, lastFetchedAt: action.payload };
+
+    case actions.toggleField: {
+      const next = new Set(state.visibleFields);
+      if (next.has(action.payload)) {
+        next.delete(action.payload);
+      } else {
+        next.add(action.payload);
+      }
+      return { ...state, visibleFields: next };
+    }
+
+    case actions.resetFields:
+      return { ...state, visibleFields: new Set(DEFAULT_VISIBLE_FIELDS) };
+
+    case actions.clearFilters:
+      return {
+        ...state,
+        filters: {
+          categories: [],
+          location: null,
+          needRestock: false,
+          status: "",
+          expiringSoon: false,
+          lowStock: false,
+        },
+        searchTerm: "",
+      };
 
     default:
       throw new Error(`Unknown action type: ${action.type}`);

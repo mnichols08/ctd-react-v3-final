@@ -1,4 +1,5 @@
-import { memo, useState } from "react";
+import { memo } from "react";
+import useToggle from "../../hooks/useToggle";
 import ShoppingListControl from "../forms/ShoppingListControl.component";
 import EditInventoryItemForm from "../forms/EditInventoryItemForm.component";
 import { ALL_FIELDS, DEFAULT_VISIBLE_FIELDS } from "../../data/fieldConfig";
@@ -15,24 +16,20 @@ function formatValue(value) {
 // The ItemCard component represents an individual inventory item and conditionally renders forms/buttons based on its state and shopping cart status
 function ItemCard({
   item,
-  handleAddToShoppingList,
-  handleRemoveFromShoppingList,
-  handleUpdateItemQuantity,
+  addToShoppingList,
+  removeFromShoppingList,
+  updateTargetQty,
   handleUpdateItem,
   visibleFields = DEFAULT_VISIBLE_FIELDS_SET,
   handleArchiveItem,
   handleUnarchiveItem,
   handleDeleteItem,
 }) {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, , openEditor, closeEditor] = useToggle(false);
 
   const handleSave = (updatedItem) => {
     handleUpdateItem(updatedItem);
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
+    closeEditor();
   };
 
   // Build the list of dynamic fields to render (excluding ItemName, which is always the heading)
@@ -53,7 +50,7 @@ function ItemCard({
           <EditInventoryItemForm
             item={item}
             onSave={handleSave}
-            onCancel={handleCancel}
+            onCancel={closeEditor}
           />
         ) : (
           <>
@@ -70,7 +67,7 @@ function ItemCard({
                     {label}: {formatValue(item[key])}
                   </p>
                 ))}
-                <button onClick={() => setIsEditing(true)}>Edit</button>
+                <button onClick={openEditor}>Edit</button>
                 {handleArchiveItem && item.Status !== "archived" && (
                   <button onClick={() => handleArchiveItem(item.id)}>
                     Archive
@@ -86,12 +83,12 @@ function ItemCard({
                 {item.isDeleting ? "Deleting…" : "Delete"}
               </button>
             )}
-            {(handleAddToShoppingList || handleUpdateItemQuantity) && (
+            {(addToShoppingList || updateTargetQty) && (
               <ShoppingListControl
                 item={item}
-                handleAddToShoppingList={handleAddToShoppingList}
-                handleRemoveFromShoppingList={handleRemoveFromShoppingList}
-                handleUpdateItemQuantity={handleUpdateItemQuantity}
+                addToShoppingList={addToShoppingList}
+                removeFromShoppingList={removeFromShoppingList}
+                updateTargetQty={updateTargetQty}
               />
             )}
           </>

@@ -1,5 +1,5 @@
-import { memo, useState } from "react";
-
+import { memo } from "react";
+import useToggle from "../../hooks/useToggle";
 import ItemCard from "../cards/ItemCard.component";
 import EmptyState from "../ui/EmptyState.component";
 
@@ -9,7 +9,7 @@ function InventorySection({
   items,
   addToShoppingList,
   removeFromShoppingList,
-  updateItemQuantity,
+  updateTargetQty,
   updateItem,
   visibleFields,
   archiveItem,
@@ -18,7 +18,7 @@ function InventorySection({
 }) {
   // State to track whether the section is collapsed or expanded
   const isArchivedSection = id === "archived";
-  const [isCollapsed, setIsCollapsed] = useState(isArchivedSection);
+  const [isCollapsed, toggleCollapsed] = useToggle(isArchivedSection);
 
   // Calculate the item count for display
   const itemCount = items ? items.length : 0;
@@ -28,7 +28,7 @@ function InventorySection({
   // Handler for toggling the collapsed state
   const handleClick = (e) => {
     e.preventDefault();
-    setIsCollapsed((prevIsCollapsed) => !prevIsCollapsed);
+    toggleCollapsed();
   };
 
   return (
@@ -61,9 +61,9 @@ function InventorySection({
                 <ItemCard
                   key={item.id}
                   item={item}
-                  handleAddToShoppingList={addToShoppingList}
-                  handleRemoveFromShoppingList={removeFromShoppingList}
-                  handleUpdateItemQuantity={updateItemQuantity}
+                  addToShoppingList={addToShoppingList}
+                  removeFromShoppingList={removeFromShoppingList}
+                  updateTargetQty={updateTargetQty}
                   handleUpdateItem={updateItem}
                   visibleFields={visibleFields}
                   handleArchiveItem={archiveItem}

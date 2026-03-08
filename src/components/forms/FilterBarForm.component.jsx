@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useMemo, useRef } from "react";
 
 const DEFAULT_FILTERS = {
   categories: [],
@@ -18,7 +18,7 @@ function FilterBarForm({
   inventoryItems = [],
   handleRefresh = () => {},
 }) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const searchInputRef = useRef(null);
   const debounceTimer = useRef(null);
 
   // Derive available categories from inventory items
@@ -41,7 +41,11 @@ function FilterBarForm({
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+    const value = e.target.value;
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      onSearch(value);
+    }, 300);
   };
 
   const handleCategoryToggle = (category) => {
@@ -56,25 +60,20 @@ function FilterBarForm({
   };
 
   const handleReset = () => {
-    setSearchTerm("");
+    if (searchInputRef.current) {
+      searchInputRef.current.value = "";
+    }
+    clearTimeout(debounceTimer.current);
     onSort("", "asc");
     onSearch("");
     onFilter(DEFAULT_FILTERS);
   };
-  // Debounce the onSearch callback by 300ms
-  useEffect(() => {
-    debounceTimer.current = setTimeout(() => {
-      onSearch(searchTerm);
-    }, 300);
-
-    return () => clearTimeout(debounceTimer.current);
-  }, [searchTerm, onSearch]);
 
   return (
     <form onSubmit={(e) => e.preventDefault()}>
       <label htmlFor="search">Search:</label>
       <input
-        value={searchTerm}
+        ref={searchInputRef}
         onChange={handleSearchChange}
         type="text"
         id="search"

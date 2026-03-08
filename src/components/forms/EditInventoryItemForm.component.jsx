@@ -1,10 +1,11 @@
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef } from "react";
+import useFormData from "../../hooks/useFormData";
 
 function EditInventoryItemForm({ item, onSave, onCancel }) {
   // Destructure item properties for easier access and initialize form state with existing item data
 
   // Initialize form state with existing item data, converting null/undefined to empty strings for controlled inputs
-  const [formData, setFormData] = useState({
+  const { formData, handleChange } = useFormData({
     ItemName: item.ItemName || "",
     ItemDescription: item.ItemDescription || "",
     Brand: item.Brand || "",
@@ -62,19 +63,11 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
     [formData, item, onSave],
   );
 
-  // Handle input changes for controlled components, updating the formData state accordingly
-  const handleChange = useCallback((e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-  }, []);
-
   // Focus the first input when the form opens
   useEffect(() => {
     firstFieldRef.current?.focus();
   }, []);
+
   return (
     <form onSubmit={handleSubmit} aria-label="Edit Inventory Item">
       <fieldset>

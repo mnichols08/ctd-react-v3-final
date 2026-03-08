@@ -21,6 +21,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.6.2] - 2026-03-08
+
+### Added
+
+- Add refetch functionality to useInventory hook and enhance tests for data fetching
+- Add tests for persistUpdate functionality in useShoppingList hook
+- Extract `useFilteredInventory` hook for search, filter, sort, and location partitioning logic
+- Extract `useAutoRefresh` hook for server-side refetch, visibility-change refresh, and periodic stale-check logic
+
+### Changed
+
+- Consolidate all local useState and useFilters state (visibleFields, archivedItemsExist, search, sort, filters) into the central inventoryReducer, lifting useInventory to App and passing it as a prop to MainContainer
+- Migrate remaining useReducer-managed values (lastFetchedAt, showQuickAdd, showArchived) and add toggleField, resetFields, and clearFilters actions to inventoryReducer
+- Replace FilterBarForm useState with useRef and implement debounced search handler
+- Rename shopping list handler props (updateItemQuantity → updateTargetQty) across InventorySection, ItemCard, and ShoppingListControl for consistency
+- Extract shared constants and utilities (SEARCHABLE_FIELDS, staleness helpers, comparison helpers) into fieldConfig.js and inventoryUtils.js
+- Update MainContainer and component tests to reflect new prop-driven architecture and renamed handlers
+- Refactor MainContainer to simplify state management and remove unused handlers
+- - Refactored `useToggle`, `useFormData`, and `useStaleFetchDisplay` hooks from `useState` to `useReducer` for consistent state management across the codebase.
+- Simplify MainContainer to mostly JSX and hook calls by moving filtering/sorting/partitioning into `useFilteredInventory` and auto-refresh effects into `useAutoRefresh`
+- Encapsulate dispatch in useInventory: add `toggleQuickAdd`, `toggleShowArchived`, and `dismissSaveError` wrapper functions so all state changes go through named action functions
+- Compose `useShoppingList` inside `useInventory` to keep `dispatch` private; shopping list functions are now returned directly from `useInventory`
+- Remove raw `dispatch` from `useInventory` return value; MainContainer no longer imports `useShoppingList` or calls `dispatch` directly
+
+### Removed
+
+- Remove useFilters hook usage and separate visibleFields/archivedItemsExist useState instances from App and MainContainer in favor of the unified reducer
+
+### Fixed
+
+- Restored missing `useCallback` declaration for `handleSubmit` in `EditInventoryItemForm`, which caused a parse error breaking five test suites.
+- Added `window.confirm` mock in `useInventory` delete test to support jsdom environment.
+- Update useInventory test to verify new wrapper functions instead of raw dispatch exposure
+- Add setIsSaving action to inventory reducer for state management
+
+---
+
 ## [0.6.1] - 2026-03-08
 
 ### Added
@@ -30,6 +67,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implement custom hook for managing shopping list with add, remove, and update functionalities
 - Add unit tests for custom hooks: useFilters, useInventory, and useShoppingList
 - Add refetch functionality to useInventory hook and update inventoryReducer for LastUpdated tracking
+
+---
 
 ## [0.6.0] - 2026-03-08
 

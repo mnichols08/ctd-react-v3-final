@@ -22,7 +22,11 @@ export default function useShoppingList({ items, dispatch }) {
     async (itemId, changedFields, previousItem) => {
       if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
       try {
-        await patchInventoryItem(itemId, changedFields);
+        const savedItem = await patchInventoryItem(itemId, changedFields);
+        dispatch({
+          type: actions.updateItem,
+          payload: { id: itemId, fields: savedItem },
+        });
       } catch (err) {
         dispatch({
           type: actions.updateItem,
