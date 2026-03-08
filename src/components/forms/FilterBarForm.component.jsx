@@ -67,7 +67,7 @@ function FilterBarForm({
   };
 
   const handleClearFilters = () => {
-    onFilter(DEFAULT_FILTERS);
+    onClearFilters();
   };
 
   const handleReset = () => {

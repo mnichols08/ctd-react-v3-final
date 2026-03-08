@@ -44,6 +44,8 @@ export const DEFAULT_VISIBLE_FIELDS = [
   "Location",
 ];
 
+export const DEFAULT_VISIBLE_FIELDS_SET = new Set(DEFAULT_VISIBLE_FIELDS);
+
 export const CATEGORIES = [
   "Cooking Essentials",
   "Condiments",

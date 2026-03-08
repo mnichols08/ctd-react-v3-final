@@ -1,4 +1,4 @@
-import { DEFAULT_VISIBLE_FIELDS } from "../data/fieldConfig";
+import { DEFAULT_VISIBLE_FIELDS_SET } from "../data/fieldConfig";
 
 export const actions = {
   addItem: "addItem",
@@ -44,7 +44,7 @@ export const initialState = {
     expiringSoon: false,
     lowStock: false,
   },
-  visibleFields: new Set(DEFAULT_VISIBLE_FIELDS),
+  visibleFields: DEFAULT_VISIBLE_FIELDS_SET,
 };
 
 export default function inventoryReducer(state, action) {
@@ -212,7 +212,7 @@ export default function inventoryReducer(state, action) {
     }
 
     case actions.resetFields:
-      return { ...state, visibleFields: new Set(DEFAULT_VISIBLE_FIELDS) };
+      return { ...state, visibleFields: new Set(DEFAULT_VISIBLE_FIELDS_SET) };
 
     case actions.clearFilters:
       return {

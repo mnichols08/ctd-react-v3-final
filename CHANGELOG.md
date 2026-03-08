@@ -48,6 +48,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sort `inventoryItems` once into `allSortedItems` in `useFilteredInventory` and derive `archivedItems` via `.filter()` instead of re-running `sortItems` independently on the full array
 - Consolidate four separate `useMemo` partition filters (fridge, freezer, pantry, shoppingList) in `useFilteredInventory` into a single-pass loop over `sortedItems`
 - Replace `useReducer` with `useState` in `useStaleFetchDisplay` so the 30-second interval tick skips re-renders when the display string and stale flag haven't changed
+- Centralized `DEFAULT_VISIBLE_FIELDS_SET` in fieldConfig; ItemCard and reducer now share the single source of truth
+- `handleClearFilters` in FilterBarForm now delegates to `onClearFilters` instead of using a local default constant
 
 ### Fixed
 
