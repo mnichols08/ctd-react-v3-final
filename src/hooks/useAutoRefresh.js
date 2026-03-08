@@ -44,14 +44,7 @@ export default function useAutoRefresh({
       filterConfig: filters,
       searchTerm,
     });
-  }, [
-    sortConfig.field,
-    sortConfig.direction,
-    filters,
-    searchTerm,
-    refetch,
-    sortConfig,
-  ]);
+  }, [sortConfig, filters, searchTerm, refetch]);
 
   // Auto-refresh when the tab regains focus and data is stale
   useEffect(() => {
@@ -76,7 +69,7 @@ export default function useAutoRefresh({
   useEffect(() => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
 
-    const id = setInterval(() => {
+    const intervalId = setInterval(() => {
       if (
         document.visibilityState === "visible" &&
         isDataStale(lastFetchedAt) &&
@@ -86,6 +79,6 @@ export default function useAutoRefresh({
       }
     }, STALE_CHECK_INTERVAL_MS);
 
-    return () => clearInterval(id);
+    return () => clearInterval(intervalId);
   }, [lastFetchedAt, isLoading, refetch]);
 }

@@ -24,65 +24,6 @@ describe("useShoppingList", () => {
     vi.clearAllMocks();
   });
 
-  // --- Derived state ---
-
-  it("derives shoppingListItems from items where NeedRestock && TargetQty > QtyOnHand", () => {
-    const items = [
-      makeItem({ id: "a", NeedRestock: true, TargetQty: 5, QtyOnHand: 2 }),
-      makeItem({ id: "b", NeedRestock: false, TargetQty: 3, QtyOnHand: 3 }),
-      makeItem({ id: "c", NeedRestock: true, TargetQty: 4, QtyOnHand: 4 }),
-      makeItem({ id: "d", NeedRestock: true, TargetQty: 10, QtyOnHand: 3 }),
-    ];
-
-    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
-
-    expect(result.current.shoppingListItems).toHaveLength(2);
-    expect(result.current.shoppingListItems.map((i) => i.id)).toEqual([
-      "a",
-      "d",
-    ]);
-  });
-
-  it("exposes shoppingListCount matching filtered length", () => {
-    const items = [
-      makeItem({ id: "a", NeedRestock: true, TargetQty: 5, QtyOnHand: 2 }),
-      makeItem({ id: "b", NeedRestock: false }),
-    ];
-
-    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
-
-    expect(result.current.shoppingListCount).toBe(1);
-  });
-
-  it("returns empty list when no items need restock", () => {
-    const items = [
-      makeItem({ id: "a", NeedRestock: false }),
-      makeItem({ id: "b", NeedRestock: true, TargetQty: 3, QtyOnHand: 3 }),
-    ];
-
-    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
-
-    expect(result.current.shoppingListItems).toHaveLength(0);
-    expect(result.current.shoppingListCount).toBe(0);
-  });
-
-  it("updates derived state when items prop changes", () => {
-    const initialItems = [makeItem({ id: "a", NeedRestock: false })];
-    const { result, rerender } = renderHook(
-      ({ items }) => useShoppingList({ items, dispatch }),
-      { initialProps: { items: initialItems } },
-    );
-
-    expect(result.current.shoppingListCount).toBe(0);
-
-    const updatedItems = [
-      makeItem({ id: "a", NeedRestock: true, TargetQty: 5, QtyOnHand: 2 }),
-    ];
-    rerender({ items: updatedItems });
-
-    expect(result.current.shoppingListCount).toBe(1);
-  });
-
   // --- addToShoppingList ---
 
   it("addToShoppingList dispatches addToShoppingList action", async () => {
@@ -95,7 +36,7 @@ describe("useShoppingList", () => {
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "addToShoppingList",
-      payload: { id: "item-1", targetQty: 5 },
+      payload: expect.objectContaining({ id: "item-1", targetQty: 5 }),
     });
   });
 
@@ -140,7 +81,7 @@ describe("useShoppingList", () => {
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "removeFromShoppingList",
-      payload: "item-1",
+      payload: expect.objectContaining({ id: "item-1" }),
     });
   });
 
@@ -174,7 +115,7 @@ describe("useShoppingList", () => {
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "updateTargetQty",
-      payload: { id: "item-1", targetQty: 8 },
+      payload: expect.objectContaining({ id: "item-1", targetQty: 8 }),
     });
   });
 
@@ -281,9 +222,9 @@ describe("useShoppingList", () => {
         TargetQty: 5,
       });
 
-      // Should dispatch setError
+      // Should dispatch setSaveError
       const errorCalls = dispatch.mock.calls.filter(
-        ([action]) => action.type === "setError",
+        ([action]) => action.type === "setSaveError",
       );
       expect(errorCalls).toHaveLength(1);
       expect(errorCalls[0][0].payload).toBe("Network failure");

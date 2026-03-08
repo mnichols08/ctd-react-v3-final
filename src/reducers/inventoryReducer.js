@@ -1,4 +1,4 @@
-import { DEFAULT_VISIBLE_FIELDS } from "../data/fieldConfig";
+import { DEFAULT_VISIBLE_FIELDS_SET } from "../data/fieldConfig";
 
 export const actions = {
   addItem: "addItem",
@@ -39,13 +39,11 @@ export const initialState = {
   sortConfig: { field: "ItemName", direction: "asc" },
   filters: {
     categories: [],
-    location: null,
-    needRestock: false,
     status: "",
     expiringSoon: false,
     lowStock: false,
   },
-  visibleFields: new Set(DEFAULT_VISIBLE_FIELDS),
+  visibleFields: DEFAULT_VISIBLE_FIELDS_SET,
 };
 
 export default function inventoryReducer(state, action) {
@@ -63,12 +61,12 @@ export default function inventoryReducer(state, action) {
       return {
         ...state,
         items: state.items.map((item) =>
-          item.id === action.payload
+          item.id === action.payload.id
             ? {
                 ...item,
                 Status: "archived",
                 NeedRestock: false,
-                LastUpdated: new Date().toISOString(),
+                LastUpdated: action.payload.timestamp,
               }
             : item,
         ),
@@ -78,11 +76,11 @@ export default function inventoryReducer(state, action) {
       return {
         ...state,
         items: state.items.map((item) =>
-          item.id === action.payload
+          item.id === action.payload.id
             ? {
                 ...item,
                 Status: null,
-                LastUpdated: new Date().toISOString(),
+                LastUpdated: action.payload.timestamp,
               }
             : item,
         ),
@@ -97,7 +95,7 @@ export default function inventoryReducer(state, action) {
                 ...item,
                 ...action.payload.fields,
                 LastUpdated:
-                  action.payload.fields.LastUpdated ?? new Date().toISOString(),
+                  action.payload.fields.LastUpdated ?? action.payload.timestamp,
               }
             : item,
         ),
@@ -112,7 +110,7 @@ export default function inventoryReducer(state, action) {
                 ...item,
                 NeedRestock: true,
                 TargetQty: action.payload.targetQty,
-                LastUpdated: new Date().toISOString(),
+                LastUpdated: action.payload.timestamp,
               }
             : item,
         ),
@@ -122,19 +120,19 @@ export default function inventoryReducer(state, action) {
       return {
         ...state,
         items: state.items.map((item) =>
-          item.id === action.payload
+          item.id === action.payload.id
             ? {
                 ...item,
                 NeedRestock: false,
                 TargetQty: item.QtyOnHand,
-                LastUpdated: new Date().toISOString(),
+                LastUpdated: action.payload.timestamp,
               }
             : item,
         ),
       };
 
     case actions.updateTargetQty: {
-      const { id, targetQty } = action.payload;
+      const { id, targetQty, timestamp } = action.payload;
       return {
         ...state,
         items: state.items.map((item) => {
@@ -144,13 +142,13 @@ export default function inventoryReducer(state, action) {
               ...item,
               NeedRestock: false,
               TargetQty: item.QtyOnHand,
-              LastUpdated: new Date().toISOString(),
+              LastUpdated: timestamp,
             };
           }
           return {
             ...item,
             TargetQty: targetQty,
-            LastUpdated: new Date().toISOString(),
+            LastUpdated: timestamp,
           };
         }),
       };
@@ -213,15 +211,13 @@ export default function inventoryReducer(state, action) {
     }
 
     case actions.resetFields:
-      return { ...state, visibleFields: new Set(DEFAULT_VISIBLE_FIELDS) };
+      return { ...state, visibleFields: new Set(DEFAULT_VISIBLE_FIELDS_SET) };
 
     case actions.clearFilters:
       return {
         ...state,
         filters: {
           categories: [],
-          location: null,
-          needRestock: false,
           status: "",
           expiringSoon: false,
           lowStock: false,

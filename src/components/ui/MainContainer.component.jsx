@@ -1,4 +1,5 @@
 import { STALE_TIME_MS } from "../../data/inventoryUtils";
+import { SHOPPING_LIST_FIELDS } from "../../data/fieldConfig";
 import useFilteredInventory from "../../hooks/useFilteredInventory";
 import useAutoRefresh from "../../hooks/useAutoRefresh";
 import LoadingState from "./LoadingState.component";
@@ -32,6 +33,7 @@ function MainContainer({ inventory }) {
     setSearch,
     setSort,
     setFilters,
+    clearFilters,
     visibleFields,
     toggleQuickAdd,
     toggleShowArchived,
@@ -82,8 +84,10 @@ function MainContainer({ inventory }) {
               onSearch={setSearch}
               onSort={setSort}
               onFilter={setFilters}
+              onClearFilters={clearFilters}
               sortField={sortConfig.field}
               sortDirection={sortConfig.direction}
+              searchTerm={searchTerm}
               filters={filters}
               inventoryItems={inventoryItems}
               handleRefresh={refetch}
@@ -155,6 +159,7 @@ function MainContainer({ inventory }) {
             id="shopping-list"
             title="Shopping List"
             updateTargetQty={updateTargetQty}
+            visibleFields={SHOPPING_LIST_FIELDS}
             items={shoppingListItems}
           />
           {/* Archived Items Toggle & Section */}

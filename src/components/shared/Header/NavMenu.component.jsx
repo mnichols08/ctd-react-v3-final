@@ -30,14 +30,13 @@ function NavMenu({
           <a href="#shopping-list">Shopping List</a>
         </li>
         <li>
-          <a
-            href="#field-selector"
+          <button
             onClick={toggleFieldSelector}
             aria-label="Select visible fields"
             title="Select visible fields"
           >
             Edit Visible Fields
-          </a>
+          </button>
         </li>
         {archivedItemsExist && (
           <li>

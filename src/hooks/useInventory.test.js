@@ -68,7 +68,6 @@ describe("useInventory", () => {
   });
 
   it("deleteItem removes an item in sample-data mode", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const result = await renderAndLoad();
     const firstItem = result.current.items[0];
     const initialCount = result.current.items.length;
@@ -76,8 +75,6 @@ describe("useInventory", () => {
     await act(async () => {
       await result.current.deleteItem(firstItem.id);
     });
-
-    confirmSpy.mockRestore();
 
     expect(result.current.items).toHaveLength(initialCount - 1);
     expect(result.current.items.find((i) => i.id === firstItem.id)).toBeFalsy();
@@ -88,7 +85,7 @@ describe("useInventory", () => {
     const firstItem = result.current.items[0];
 
     await act(async () => {
-      await result.current.updateItem(firstItem.id, { ItemName: "Updated" });
+      await result.current.updateItem({ ...firstItem, ItemName: "Updated" });
     });
 
     const updated = result.current.items.find((i) => i.id === firstItem.id);
@@ -129,6 +126,40 @@ describe("useInventory", () => {
     expect(typeof result.current.toggleQuickAdd).toBe("function");
     expect(typeof result.current.toggleShowArchived).toBe("function");
     expect(typeof result.current.dismissSaveError).toBe("function");
+  });
+
+  describe("loadSampleData error path", () => {
+    it("sets error when Math.random triggers simulated failure", async () => {
+      // Override the global mock so randomFailure = (0 < 0.33) → true
+      import.meta.env.VITE_SIMULATE_ERRORS = "true";
+      vi.spyOn(Math, "random").mockReturnValue(0);
+
+      const { result } = renderHook(() => useInventory());
+      await act(() => vi.runAllTimers());
+
+      expect(result.current.error).toBe(
+        "Failed to load sample data. Please try again.",
+      );
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.items).toHaveLength(0);
+    });
+
+    it("recovers after refetch when failure clears", async () => {
+      import.meta.env.VITE_SIMULATE_ERRORS = "true";
+      vi.spyOn(Math, "random").mockReturnValue(0);
+
+      const { result } = renderHook(() => useInventory());
+      await act(() => vi.runAllTimers());
+      expect(result.current.error).toBeTruthy();
+
+      // Next call succeeds
+      vi.mocked(Math.random).mockReturnValue(1);
+      act(() => result.current.refetch());
+      await act(() => vi.runAllTimers());
+
+      expect(result.current.error).toBeNull();
+      expect(result.current.items.length).toBeGreaterThan(0);
+    });
   });
 
   describe("refetch", () => {

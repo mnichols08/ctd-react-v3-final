@@ -15,6 +15,7 @@ import EditInventoryItemForm from "./EditInventoryItemForm.component";
 import FilterBarForm from "./FilterBarForm.component";
 import QuickAddForm from "./QuickAddForm.component";
 import ItemCard from "../cards/ItemCard.component";
+import InventorySection from "../sections/InventorySection.component";
 import ToolSection from "../sections/ToolSection.component";
 import { DEFAULT_VISIBLE_FIELDS } from "../../data/fieldConfig";
 
@@ -683,6 +684,61 @@ describe("EditInventoryItemForm", () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
+  it("submit coerces numeric fields to numbers and empty dates to null", () => {
+    const onSave = vi.fn();
+    // Start with populated numeric and date fields
+    const item = {
+      ...baseItem,
+      QtyOnHand: 2,
+      TargetQty: 5,
+      PurchasePrice: 4.99,
+      UnitCost: null,
+      ExpiresOn: "2026-06-01",
+      DatePurchased: "2026-02-15",
+      DateFrozen: "2026-02-16",
+    };
+
+    const { container } = render(
+      <EditInventoryItemForm item={item} onSave={onSave} onCancel={() => {}} />,
+    );
+
+    // Update QtyOnHand and clear ExpiresOn + DateFrozen
+    fireEvent.change(screen.getByLabelText("Quantity on Hand:"), {
+      target: { value: "10" },
+    });
+    fireEvent.change(screen.getByLabelText("Target Qty:"), {
+      target: { value: "" },
+    });
+    fireEvent.change(screen.getByLabelText("Expires On:"), {
+      target: { value: "" },
+    });
+    fireEvent.change(screen.getByLabelText("Date Frozen:"), {
+      target: { value: "" },
+    });
+
+    const form = container.querySelector("form");
+    fireEvent(form, createEvent.submit(form));
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    const saved = onSave.mock.calls[0][0];
+
+    // Numeric fields: non-empty → parseFloat, empty → null
+    expect(saved.QtyOnHand).toBe(10);
+    expect(typeof saved.QtyOnHand).toBe("number");
+    expect(saved.TargetQty).toBeNull();
+    expect(saved.PurchasePrice).toBe(4.99);
+    expect(saved.UnitCost).toBeNull();
+
+    // Date fields: cleared → null, kept → string
+    expect(saved.ExpiresOn).toBeNull();
+    expect(saved.DatePurchased).toBe("2026-02-15");
+    expect(saved.DateFrozen).toBeNull();
+
+    // Original item fields preserved
+    expect(saved.id).toBe(10);
+    expect(saved.ItemName).toBe("Blueberries");
+  });
+
   it("LastUpdated is auto-set to current timestamp on save", () => {
     const onSave = vi.fn();
     const before = new Date().toISOString();
@@ -1083,14 +1139,15 @@ describe("Integration: EditInventoryItemForm in ItemCard", () => {
     LastUpdated: "2026-01-01T00:00:00.000Z",
   };
 
-  it("renders EditInventoryItemForm inside ItemCard when Edit is clicked", () => {
-    const handleUpdateItem = vi.fn();
+  it("renders EditInventoryItemForm in a dialog when Edit is clicked", () => {
+    const updateItem = vi.fn();
 
     render(
-      <ItemCard
-        item={editableItem}
-        addToShoppingList={() => {}}
-        handleUpdateItem={handleUpdateItem}
+      <InventorySection
+        id="active"
+        title="Active Items"
+        items={[editableItem]}
+        updateItem={updateItem}
       />,
     );
 
@@ -1102,28 +1159,25 @@ describe("Integration: EditInventoryItemForm in ItemCard", () => {
     // Click Edit
     fireEvent.click(screen.getByRole("button", { name: "Edit" }));
 
-    // Now the edit form should be visible
+    // Now the edit form should be visible inside a dialog
     expect(
       screen.getByRole("form", { name: "Edit Inventory Item" }),
     ).toBeTruthy();
-
-    // The card heading should be replaced by the form
-    expect(
-      screen.queryByRole("heading", { name: "Cheddar Cheese", level: 2 }),
-    ).toBeNull();
+    expect(screen.getByRole("dialog")).toBeTruthy();
   });
 
-  it("editing an item in ItemCard updates the rendered card content", () => {
-    let currentItem = { ...editableItem };
-    const handleUpdateItem = vi.fn((updatedItem) => {
-      currentItem = updatedItem;
+  it("editing an item via the dialog calls updateItem and closes the dialog", () => {
+    let currentItems = [{ ...editableItem }];
+    const updateItem = vi.fn((updatedItem) => {
+      currentItems = [updatedItem];
     });
 
     const { rerender } = render(
-      <ItemCard
-        item={currentItem}
-        addToShoppingList={() => {}}
-        handleUpdateItem={handleUpdateItem}
+      <InventorySection
+        id="active"
+        title="Active Items"
+        items={currentItems}
+        updateItem={updateItem}
       />,
     );
 
@@ -1137,15 +1191,19 @@ describe("Integration: EditInventoryItemForm in ItemCard", () => {
     // Submit the form
     fireEvent.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(handleUpdateItem).toHaveBeenCalledTimes(1);
-    expect(handleUpdateItem.mock.calls[0][0].ItemName).toBe("Gouda Cheese");
+    expect(updateItem).toHaveBeenCalledTimes(1);
+    expect(updateItem.mock.calls[0][0].ItemName).toBe("Gouda Cheese");
 
-    // Rerender with the updated item (simulating parent state update)
+    // Dialog should be closed
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    // Rerender with the updated item
     rerender(
-      <ItemCard
-        item={currentItem}
-        addToShoppingList={() => {}}
-        handleUpdateItem={handleUpdateItem}
+      <InventorySection
+        id="active"
+        title="Active Items"
+        items={currentItems}
+        updateItem={updateItem}
       />,
     );
 
@@ -1153,8 +1211,5 @@ describe("Integration: EditInventoryItemForm in ItemCard", () => {
     expect(
       screen.getByRole("heading", { name: "Gouda Cheese", level: 2 }),
     ).toBeTruthy();
-    expect(
-      screen.queryByRole("heading", { name: "Cheddar Cheese" }),
-    ).toBeNull();
   });
 });

@@ -61,7 +61,7 @@ export function sortItems(items, sortField, sortDirection) {
 }
 
 export function formatRelativeTime(timestamp) {
-  if (timestamp === null) {
+  if (timestamp == null) {
     return null;
   }
   const now = Date.now();
@@ -118,7 +118,6 @@ export function fetchParamsEqual(a, b) {
   if (
     fa.expiringSoon !== fb.expiringSoon ||
     fa.lowStock !== fb.lowStock ||
-    fa.needRestock !== fb.needRestock ||
     fa.status !== fb.status
   ) {
     return false;

@@ -374,6 +374,7 @@ describe("MainContainer", () => {
 
   it("error message and Retry button render when error is set", () => {
     // Make Math.random return 0 so loadSampleData triggers its failure branch
+    import.meta.env.VITE_SIMULATE_ERRORS = "true";
     vi.spyOn(Math, "random").mockReturnValue(0);
 
     render(<TestMainContainer />);
@@ -395,6 +396,7 @@ describe("MainContainer", () => {
 
   it("Retry clears error and re-fetches", () => {
     // First render triggers a failure
+    import.meta.env.VITE_SIMULATE_ERRORS = "true";
     vi.spyOn(Math, "random").mockReturnValue(0);
 
     render(<TestMainContainer />);
@@ -457,7 +459,7 @@ describe("MainContainer", () => {
         .filter((r) => r.title === "Pantry")
         .pop();
 
-      // Toggle showQuickAdd â€” an unrelated state change
+      // Toggle showQuickAdd - an unrelated state change
       fireEvent.click(
         screen.getByRole("button", { name: "Switch to Full Form" }),
       );
@@ -466,7 +468,7 @@ describe("MainContainer", () => {
         .filter((r) => r.title === "Pantry")
         .pop();
 
-      // useMemo should return the cached array â€” same reference
+      // useMemo should return the cached array - same reference
       expect(pantryAfter.items).toBe(pantryBefore.items);
     });
 
@@ -487,7 +489,7 @@ describe("MainContainer", () => {
         .filter((r) => r.title === "Pantry")
         .pop();
 
-      // New reference â€” useMemo recomputed
+      // New reference - useMemo recomputed
       expect(pantryAfter.items).not.toBe(pantryBefore.items);
       expect(pantryAfter.items.length).toBeLessThan(pantryBefore.items.length);
     });
@@ -509,7 +511,7 @@ describe("MainContainer", () => {
         .filter((r) => r.title === "Fridge")
         .pop();
 
-      // New reference â€” useMemo recomputed due to sort dependency change
+      // New reference - useMemo recomputed due to sort dependency change
       expect(fridgeAfter.items).not.toBe(fridgeBefore.items);
     });
 
@@ -606,7 +608,7 @@ describe("MainContainer", () => {
         .filter((r) => r.title === "Pantry")
         .pop();
 
-      // Toggle showQuickAdd â€” an unrelated state change that does not
+      // Toggle showQuickAdd - an unrelated state change that does not
       // affect any useCallback dependency array
       fireEvent.click(
         screen.getByRole("button", { name: "Switch to Full Form" }),
@@ -616,7 +618,7 @@ describe("MainContainer", () => {
         .filter((r) => r.title === "Pantry")
         .pop();
 
-      // useCallback should return the cached function â€” same reference
+      // useCallback should return the cached function - same reference
       expect(pantryAfter.addToShoppingList).toBe(
         pantryBefore.addToShoppingList,
       );
@@ -721,7 +723,7 @@ describe("MainContainer", () => {
       // Initial mount triggers one fetch
       expect(fetchInventoryItems).toHaveBeenCalledTimes(1);
 
-      // Change sort â€” should NOT trigger a re-fetch because server-side
+      // Change sort - should NOT trigger a re-fetch because server-side
       // filtering is disabled
       fireEvent.click(
         screen.getByRole("button", { name: "mock-sort-category-desc" }),
@@ -739,7 +741,7 @@ describe("MainContainer", () => {
       // Initial mount fetch
       expect(fetchInventoryItems).toHaveBeenCalledTimes(1);
 
-      // Change sort â€” should trigger a re-fetch with server-side filtering
+      // Change sort - should trigger a re-fetch with server-side filtering
       fireEvent.click(
         screen.getByRole("button", { name: "mock-sort-category-desc" }),
       );

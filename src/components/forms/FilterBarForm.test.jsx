@@ -114,7 +114,7 @@ describe("Search", () => {
     typeSearch("Dairy");
     expect(getSectionItemNames("Fridge")).toEqual(["Low Fat Vanilla Yogurt"]);
 
-    // Tags and Notes are null for all sample items â€” covered by the null-safe test
+    // Tags and Notes are null for all sample items - covered by the null-safe test
   });
 
   it("search is case-insensitive", () => {
@@ -239,7 +239,7 @@ describe("Sort", () => {
     render(<App />);
     act(() => vi.runAllTimers());
 
-    // Default ItemName asc â€” Fridge: Apple Sauce, Yogurt
+    // Default ItemName asc - Fridge: Apple Sauce, Yogurt
     expect(getSectionItemNames("Fridge")).toEqual([
       "Apple Sauce",
       "Low Fat Vanilla Yogurt",

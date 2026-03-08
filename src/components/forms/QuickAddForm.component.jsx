@@ -1,11 +1,13 @@
-import { memo, useCallback, useRef } from "react";
+import { memo, useRef } from "react";
 import useFormData from "../../hooks/useFormData";
+import { CATEGORIES, LOCATIONS, formatLocation } from "../../data/fieldConfig";
 
 const initialFormState = {
   ItemName: "",
   Category: "",
   ExpiresOn: "",
   Location: "",
+  SubLocation: "",
   QtyOnHand: "",
   QtyUnit: "",
 };
@@ -19,52 +21,49 @@ function QuickAddForm({ addInventoryItem }) {
   // State to manage form data, initialized with empty values for the required fields
   const { formData, handleChange, resetForm } = useFormData(initialFormState);
   // Handle form submission by creating a new item object with the provided data and default values for other fields
-  const handleSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      // Extract only the necessary fields for quick addition, and set defaults for the rest
-      const { ItemName, Category, ExpiresOn, Location, QtyOnHand, QtyUnit } =
-        formData;
-      // Basic validation to ensure required fields are provided
-      if (!ItemName.trim()) return;
-      // Create a new item object with the provided data and default values for other fields
-      const newItem = {
-        id: Date.now(),
-        ItemName: ItemName.trim(),
-        ItemDescription: null,
-        Brand: null,
-        PackageSize: null,
-        UPC: null,
-        Category: Category,
-        SubCategory: null,
-        Location,
-        QtyOnHand: Number(QtyOnHand),
-        QtyUnit,
-        TargetQty: 0,
-        NeedRestock: false,
-        ExpiresOn: ExpiresOn || null,
-        DatePurchased: null,
-        DateFrozen: null,
-        PurchasePrice: null,
-        Store: null,
-        UnitCost: null,
-        Notes: null,
-        Tags: null,
-        Allergens: null,
-        ImageRef: null,
-        Status: null,
-        ProductUrl: null,
-        LastUpdated: new Date().toISOString(),
-      };
-      // Call addInventoryItem to add the new item to the inventory
-      const success = await addInventoryItem(newItem);
-      if (success === false) return;
-      // Reset the form and focus the item name input for quick entry of the next item
-      resetForm();
-      itemNameRef.current?.focus();
-    },
-    [formData, addInventoryItem],
-  );
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // Extract only the necessary fields for quick addition, and set defaults for the rest
+    const { ItemName, Category, ExpiresOn, Location, QtyOnHand, QtyUnit } =
+      formData;
+    // Basic validation to ensure required fields are provided
+    if (!ItemName.trim()) return;
+    // Create a new item object with the provided data and default values for other fields
+    const newItem = {
+      id: crypto.randomUUID(),
+      ItemName: ItemName.trim(),
+      ItemDescription: null,
+      Brand: null,
+      PackageSize: null,
+      UPC: null,
+      Category: Category,
+      SubCategory: null,
+      Location: formatLocation(Location, formData.SubLocation),
+      QtyOnHand: QtyOnHand === "" ? 0 : Number(QtyOnHand),
+      QtyUnit,
+      TargetQty: 0,
+      NeedRestock: false,
+      ExpiresOn: ExpiresOn || null,
+      DatePurchased: null,
+      DateFrozen: null,
+      PurchasePrice: null,
+      Store: null,
+      UnitCost: null,
+      Notes: null,
+      Tags: null,
+      Allergens: null,
+      ImageRef: null,
+      Status: null,
+      ProductUrl: null,
+      LastUpdated: new Date().toISOString(),
+    };
+    // Call addInventoryItem to add the new item to the inventory
+    const success = await addInventoryItem(newItem);
+    if (success === false) return;
+    // Reset the form and focus the item name input for quick entry of the next item
+    resetForm();
+    itemNameRef.current?.focus();
+  };
   return (
     <form onSubmit={handleSubmit} aria-label="Quick add inventory item">
       <fieldset>
@@ -93,15 +92,11 @@ function QuickAddForm({ addInventoryItem }) {
             required
           >
             <option value="">Select Category</option>
-            <option value="Drinks">Drinks</option>
-            <option value="Dairy">Dairy</option>
-            <option value="Dry">Dry</option>
-            <option value="Produce">Produce</option>
-            <option value="Meat">Meat</option>
-            <option value="Frozen">Frozen</option>
-            <option value="Condiments">Condiments</option>
-            <option value="Snacks">Snacks</option>
-            <option value="Other">Other</option>
+            {CATEGORIES.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
           </select>
         </p>
 
@@ -126,10 +121,24 @@ function QuickAddForm({ addInventoryItem }) {
             required
           >
             <option value="">Select Location</option>
-            <option value="Fridge">Fridge</option>
-            <option value="Freezer">Freezer</option>
-            <option value="Pantry">Pantry</option>
+            {LOCATIONS.map((loc) => (
+              <option key={loc} value={loc}>
+                {loc}
+              </option>
+            ))}
           </select>
+        </p>
+
+        <p>
+          <label htmlFor="quick-SubLocation">Sub-Location: </label>
+          <input
+            value={formData.SubLocation}
+            onChange={handleChange}
+            type="text"
+            id="quick-SubLocation"
+            name="SubLocation"
+            placeholder="e.g. Shelf 3, Door, Drawer 2"
+          />
         </p>
 
         <p>
