@@ -65,16 +65,17 @@ export function formateRelativeTime(timestamp) {
     return null;
   }
   const now = Date.now();
-  if (timestamp - now < 60 * 1000) return "Just now";
-  if (timestamp - now < 60 * 60 * 1000) {
-    const mins = Math.round((timestamp - now) / (60 * 1000));
+  const diff = now - timestamp;
+  if (diff < 60 * 1000) return "Just now";
+  if (diff < 60 * 60 * 1000) {
+    const mins = Math.round(diff / (60 * 1000));
     return `${mins} minute${mins !== 1 ? "s" : ""} ago`;
   }
-  if (timestamp - now < 24 * 60 * 60 * 1000) {
-    const hours = Math.round((timestamp - now) / (60 * 60 * 1000));
+  if (diff < 24 * 60 * 60 * 1000) {
+    const hours = Math.round(diff / (60 * 60 * 1000));
     return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
   } else {
-    const days = Math.round((timestamp - now) / (24 * 60 * 60 * 1000));
+    const days = Math.round(diff / (24 * 60 * 60 * 1000));
     return `${days} day${days !== 1 ? "s" : ""} ago`;
   }
 }
