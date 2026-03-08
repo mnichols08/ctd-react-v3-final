@@ -31,9 +31,6 @@ function FilterBarForm({
     [inventoryItems],
   );
 
-  // Count active filters
-  const activeFilterCount = getActiveFilterCount(filters);
-
   const handleSortChange = (e) => {
     const value = e.target.value;
     // Toggle sort direction if the same field is selected again

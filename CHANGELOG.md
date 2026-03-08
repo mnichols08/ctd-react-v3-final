@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.5.4] - 2026-03-07
+
+### Fixed
+
+- Remove active filter count calculation from FilterBarForm, causing linting error.
+
+---
+
 ## [0.5.3] - 2026-03-07
 
 ### Added
