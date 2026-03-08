@@ -66,6 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace free-text `<input>` for Location in `EditInventoryItemForm` with a `<select>` dropdown using the shared `LOCATIONS` constant, matching the add forms and preventing case-sensitive mismatches that caused edited items to vanish from location sections
 - Return `sortedItems` as `filterAppliedItems` from `useFilteredInventory` so consumers receive filtered-and-sorted data instead of filtered-only; existing consumers only used `.length` so behavior was correct but the unsorted return was misleading
 - Simplify redundant `itemCount > 0 && items && items.length > 0` condition in `InventorySection` to just `itemCount > 0`, since `itemCount` is already derived from `items.length`
+- Use `useRef` instead of a closure dependency for `initialState` in `useFormData`, making `resetForm` referentially stable even when callers pass a new object literal on every render (e.g. the edit form)
 
 ### Removed
 

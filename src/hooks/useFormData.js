@@ -1,4 +1,4 @@
-import { useCallback, useReducer } from "react";
+import { useCallback, useReducer, useRef } from "react";
 
 const actions = {
   change: "change",
@@ -21,6 +21,7 @@ function formDataReducer(state, action) {
 
 export default function useFormData(initialState) {
   const [formData, dispatch] = useReducer(formDataReducer, initialState);
+  const initialStateRef = useRef(initialState);
 
   const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
@@ -30,12 +31,12 @@ export default function useFormData(initialState) {
     });
   }, []);
 
-  const resetForm = useCallback(
-    (nextState) => {
-      dispatch({ type: actions.reset, payload: nextState ?? initialState });
-    },
-    [initialState],
-  );
+  const resetForm = useCallback((nextState) => {
+    dispatch({
+      type: actions.reset,
+      payload: nextState ?? initialStateRef.current,
+    });
+  }, []);
 
   const setFormData = useCallback((value) => {
     dispatch({ type: actions.set, payload: value });
