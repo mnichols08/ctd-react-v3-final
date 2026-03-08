@@ -1,6 +1,12 @@
+import { memo } from "react";
 import NavMenu from "./NavMenu.component";
 
-function Header({ visibleFields, onToggleField, onResetFields, archivedItemsExist }) {
+function Header({
+  visibleFields,
+  onToggleField,
+  onResetFields,
+  archivedItemsExist,
+}) {
   return (
     <header>
       <h1>Kitchen Inventory</h1>
@@ -15,4 +21,4 @@ function Header({ visibleFields, onToggleField, onResetFields, archivedItemsExis
   );
 }
 
-export default Header;
+export default memo(Header);

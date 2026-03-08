@@ -21,6 +21,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.5.1] - 2026-03-07
+
+### Changed
+
+- Wrap handlers and callbacks in useCallback for performance optimization
+- Wrap handleChange and handleSubmit in useCallback for performance optimization
+- Wrap handleAdd, handleDecrement, and handleIncrement in useCallback for performance optimization
+- Wrap all components in memo for performance optimization
+- Wrap toggleField and resetFields in useCallback for performance optimization
+- Refactor MainContainer to use useRef for inventoryItems in callbacks for improved performance
+
+---
+
 ## [0.5.0] - 2026-03-07
 
 ### Changed
