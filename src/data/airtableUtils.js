@@ -111,6 +111,7 @@ export const fetchInventoryItems = async ({
   filterConfig,
   searchTerm,
   setLastFetchedAt = () => {},
+  signal,
 }) => {
   setIsLoading(true);
   setError(null);
@@ -126,6 +127,7 @@ export const fetchInventoryItems = async ({
     headers: {
       Authorization: AUTH_TOKEN,
     },
+    ...(signal && { signal }),
   };
   try {
     let resp;
@@ -193,10 +195,13 @@ export const fetchInventoryItems = async ({
     );
     setLastFetchedAt(new Date());
   } catch (error) {
+    if (signal?.aborted) return; // Request was intentionally cancelled
     console.error(error);
     setError(error.message);
   } finally {
-    setIsLoading(false);
+    if (!signal?.aborted) {
+      setIsLoading(false);
+    }
   }
 };
 

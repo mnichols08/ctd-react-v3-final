@@ -104,8 +104,8 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
   const lastFetchedParamsRef = useRef(null);
   // Track the timestamp of the last successful fetch to help with debugging and ensuring data freshness
   const [lastFetchedAt, setLastFetchedAt] = useState(null);
-  // Guard against concurrent in-flight fetch requests
-  const fetchInProgressRef = useRef(false);
+  // AbortController for cancelling in-flight fetch requests
+  const abortControllerRef = useRef(null);
 
   // Keep a ref to the latest inventoryItems so handlers can read current
   // state without needing inventoryItems in their dependency arrays.
@@ -163,43 +163,21 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     fetchParamsRef.current = { sortField, sortDirection, filters, searchTerm };
   }, [sortField, sortDirection, filters, searchTerm]);
 
-  // Track a pending fetch request that arrives while another fetch is in progress.
-  const pendingFetchRef = useRef(false);
-  const pendingOverridesRef = useRef(null);
-
-  // Wrapper that prevents overlapping fetch requests, but ensures the latest
-  // request is not dropped.  When a fetch is already in flight, the new request
-  // is queued and automatically fired once the current one completes — using the
-  // latest params from fetchParamsRef so the retry is never stale.
+  // Cancels the in-flight request (if any) and starts a fresh fetch using the
+  // latest params from fetchParamsRef.  Callers can pass { setIsLoading: () => {} }
+  // to suppress the loading indicator (e.g. background auto-refresh).
   const doFetch = useCallback(
     (overrides = {}) => {
-      if (fetchInProgressRef.current) {
-        // Remember that a new fetch was requested while one is in progress.
-        pendingFetchRef.current = true;
-        pendingOverridesRef.current = overrides;
-        return;
+      // Cancel any in-flight request so its response never updates state
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
-      fetchInProgressRef.current = true;
 
-      const wrappedSetIsLoading = (val) => {
-        if (!val) {
-          // Current fetch has finished.
-          fetchInProgressRef.current = false;
-          // If a fetch was requested while this one was in-flight, fire it now
-          // using the latest params (not the ones captured by the outer closure).
-          if (pendingFetchRef.current) {
-            const pendingOverrides = pendingOverridesRef.current;
-            pendingFetchRef.current = false;
-            pendingOverridesRef.current = null;
-            doFetch(pendingOverrides || {});
-            return;
-          }
-        }
-        (overrides.setIsLoading ?? setIsLoading)(val);
-      };
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
 
-      // Read current params from the ref so both the initial call and any
-      // pending retry always use the most up-to-date values.
+      // Read current params from the ref so we always use the most
+      // up-to-date values regardless of when this callback was created.
       const {
         sortField: sf,
         sortDirection: sd,
@@ -216,12 +194,13 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
 
       fetchInventoryItems({
         setInventoryItems,
-        setIsLoading: wrappedSetIsLoading,
+        setIsLoading: overrides.setIsLoading ?? setIsLoading,
         setError,
         sortConfig: { field: sf, direction: sd },
         filterConfig: f,
         searchTerm: st,
         setLastFetchedAt,
+        signal: controller.signal,
       });
     },
     [], // stable — reads everything from refs
@@ -528,6 +507,15 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Cancel in-flight fetch on unmount to prevent state updates after cleanup
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
   // Retry handler for error state — re-fetches or reloads sample data
   const handleRetry = useCallback(() => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
@@ -537,13 +525,11 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     }
   }, [doFetch]);
 
-  // Force a re-fetch regardless of whether parameters changed
+  // Force a re-fetch — cancels any in-flight request and starts fresh
   const handleRefresh = useCallback(() => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
       loadSampleData({ setInventoryItems, setIsLoading, setError });
     } else {
-      // Manual refresh always fires — bypass the in-progress guard
-      fetchInProgressRef.current = false;
       doFetch();
     }
   }, [doFetch]);
