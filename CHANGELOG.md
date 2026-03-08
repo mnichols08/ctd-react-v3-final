@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Remove active filter count calculation from FilterBarForm, causing linting error.
+- Add useEffect to MemoChild for accurate render count tracking
 
 ---
 

@@ -7,7 +7,7 @@ import {
   screen,
   within,
 } from "@testing-library/react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 
 import MainContainer from "./MainContainer.component";
 import inventorySampleData from "../../data/inventorySample.json";
@@ -650,7 +650,9 @@ describe("MainContainer", () => {
       const childRenderCount = { current: 0 };
 
       const MemoChild = memo(function MemoChild({ onClick }) {
-        childRenderCount.current += 1;
+        useEffect(() => {
+          childRenderCount.current += 1;
+        });
         return <button onClick={onClick}>child-action</button>;
       });
 
