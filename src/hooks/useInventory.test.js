@@ -124,9 +124,11 @@ describe("useInventory", () => {
     expect(restored.Status).toBeNull();
   });
 
-  it("exposes dispatch function", async () => {
+  it("exposes toggleQuickAdd, toggleShowArchived, and dismissSaveError functions", async () => {
     const result = await renderAndLoad();
-    expect(typeof result.current.dispatch).toBe("function");
+    expect(typeof result.current.toggleQuickAdd).toBe("function");
+    expect(typeof result.current.toggleShowArchived).toBe("function");
+    expect(typeof result.current.dismissSaveError).toBe("function");
   });
 
   describe("refetch", () => {

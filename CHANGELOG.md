@@ -41,14 +41,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor MainContainer to simplify state management and remove unused handlers
 - - Refactored `useToggle`, `useFormData`, and `useStaleFetchDisplay` hooks from `useState` to `useReducer` for consistent state management across the codebase.
 - Simplify MainContainer to mostly JSX and hook calls by moving filtering/sorting/partitioning into `useFilteredInventory` and auto-refresh effects into `useAutoRefresh`
+- Encapsulate dispatch in useInventory: add `toggleQuickAdd`, `toggleShowArchived`, and `dismissSaveError` wrapper functions so all state changes go through named action functions
+- Compose `useShoppingList` inside `useInventory` to keep `dispatch` private; shopping list functions are now returned directly from `useInventory`
+- Remove raw `dispatch` from `useInventory` return value; MainContainer no longer imports `useShoppingList` or calls `dispatch` directly
 
 ### Removed
 
 - Remove useFilters hook usage and separate visibleFields/archivedItemsExist useState instances from App and MainContainer in favor of the unified reducer
 
 ### Fixed
+
 - Restored missing `useCallback` declaration for `handleSubmit` in `EditInventoryItemForm`, which caused a parse error breaking five test suites.
 - Added `window.confirm` mock in `useInventory` delete test to support jsdom environment.
+- Update useInventory test to verify new wrapper functions instead of raw dispatch exposure
 
 ---
 

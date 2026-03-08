@@ -10,6 +10,7 @@ import {
   patchInventoryItem,
   deleteInventoryItem,
 } from "../data/airtableUtils";
+import useShoppingList from "./useShoppingList";
 
 export default function useInventory() {
   const [state, dispatch] = useReducer(inventoryReducer, initialState);
@@ -258,6 +259,26 @@ export default function useInventory() {
     dispatch({ type: actions.resetFields });
   }, []);
 
+  const toggleQuickAdd = useCallback(() => {
+    dispatch({ type: actions.toggleQuickAdd });
+  }, []);
+
+  const toggleShowArchived = useCallback(() => {
+    dispatch({ type: actions.toggleShowArchived });
+  }, []);
+
+  const dismissSaveError = useCallback(() => {
+    dispatch({ type: actions.setSaveError, payload: null });
+  }, []);
+
+  const {
+    shoppingListItems,
+    shoppingListCount,
+    addToShoppingList,
+    removeFromShoppingList,
+    updateTargetQty,
+  } = useShoppingList({ items, dispatch });
+
   return {
     items,
     isLoading,
@@ -266,7 +287,6 @@ export default function useInventory() {
     showArchived,
     isSaving,
     saveError,
-    dispatch,
     addItem,
     deleteItem,
     updateItem,
@@ -284,5 +304,13 @@ export default function useInventory() {
     visibleFields,
     toggleField,
     resetFields,
+    toggleQuickAdd,
+    toggleShowArchived,
+    dismissSaveError,
+    shoppingListItems,
+    shoppingListCount,
+    addToShoppingList,
+    removeFromShoppingList,
+    updateTargetQty,
   };
 }

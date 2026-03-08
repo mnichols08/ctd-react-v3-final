@@ -1,5 +1,4 @@
 import { STALE_TIME_MS } from "../../data/inventoryUtils";
-import useShoppingList from "../../hooks/useShoppingList";
 import useFilteredInventory from "../../hooks/useFilteredInventory";
 import useAutoRefresh from "../../hooks/useAutoRefresh";
 import LoadingState from "./LoadingState.component";
@@ -20,7 +19,6 @@ function MainContainer({ inventory }) {
     showArchived,
     isSaving,
     saveError,
-    dispatch,
     addItem,
     deleteItem,
     updateItem,
@@ -35,10 +33,13 @@ function MainContainer({ inventory }) {
     setSort,
     setFilters,
     visibleFields,
+    toggleQuickAdd,
+    toggleShowArchived,
+    dismissSaveError,
+    addToShoppingList,
+    removeFromShoppingList,
+    updateTargetQty,
   } = inventory;
-
-  const { addToShoppingList, removeFromShoppingList, updateTargetQty } =
-    useShoppingList({ items: inventoryItems, dispatch });
 
   const {
     filterAppliedItems,
@@ -98,19 +99,14 @@ function MainContainer({ inventory }) {
           </ToolSection>
           <ToolSection id="add-item" title="Add Item">
             {/*  Toggle between Quick Add and Full Form */}
-            <button onClick={() => dispatch({ type: "toggleQuickAdd" })}>
+            <button onClick={toggleQuickAdd}>
               {showQuickAdd ? "Switch to Full Form" : "Switch to Quick Add"}
             </button>
             {isSaving && <p role="status">Saving item to Airtable…</p>}
             {saveError && (
               <div role="alert">
                 <p>Error: {saveError}</p>
-                <button
-                  type="button"
-                  onClick={() =>
-                    dispatch({ type: "setSaveError", payload: null })
-                  }
-                >
+                <button type="button" onClick={dismissSaveError}>
                   Dismiss
                 </button>
               </div>
@@ -164,10 +160,7 @@ function MainContainer({ inventory }) {
           {/* Archived Items Toggle & Section */}
           {archivedItems.length > 0 && (
             <div id="archived">
-              <button
-                type="button"
-                onClick={() => dispatch({ type: "toggleShowArchived" })}
-              >
+              <button type="button" onClick={toggleShowArchived}>
                 {showArchived ? "Hide Archived Items" : `Show Archived Items`} (
                 {archivedItems.length})
               </button>
