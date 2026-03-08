@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Wire orphaned `clearFilters` action through `MainContainer` into `FilterBarForm`. The reset button now dispatches the reducer's `clearFilters` action via a new `onClearFilters` prop instead of manually calling `onSearch("")` and `onFilter(DEFAULT_FILTERS)` separately.
 - Diff form fields against the previous item in `updateItem` before sending to Airtable, so PATCH requests only include changed fields instead of all 25+ form fields. Skips the network call entirely when nothing changed.
 - Gate `loadSampleData` random failure behind `VITE_SIMULATE_ERRORS` env flag so developers using `VITE_SAMPLE_DATA=true` no longer hit unexplained 33% load failures by default
+- Extract shared `InventoryFormFields` component from duplicate field markup in `AddInventoryItemForm` and `EditInventoryItemForm`, reducing each form to ~80 lines of unique logic (state init, submit handling, buttons) while the shared component renders all 7 fieldsets
 
 ### Fixed
 
