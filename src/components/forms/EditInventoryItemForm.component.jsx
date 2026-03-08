@@ -1,5 +1,6 @@
 import { memo, useEffect, useRef } from "react";
 import useFormData from "../../hooks/useFormData";
+import { LOCATIONS } from "../../data/fieldConfig";
 
 function EditInventoryItemForm({ item, onSave, onCancel }) {
   // Destructure item properties for easier access and initialize form state with existing item data
@@ -144,14 +145,20 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
         />
 
         <label htmlFor={`Location-${item.id}`}>Location:</label>
-        <input
+        <select
           value={formData.Location}
           onChange={handleChange}
-          type="text"
           id={`Location-${item.id}`}
           name="Location"
           required
-        />
+        >
+          <option value="">Select location</option>
+          {LOCATIONS.map((loc) => (
+            <option key={loc} value={loc}>
+              {loc}
+            </option>
+          ))}
+        </select>
 
         <label htmlFor={`Tags-${item.id}`}>Tags:</label>
         <input
