@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.6.2] - 2026-03-08
 
+### Added
+
+- Add refetch functionality to useInventory hook and enhance tests for data fetching
+
 ### Changed
 
 - Refactor useInventory hook to replace useState with useReducer for lastFetchedAt management 
