@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 
 const DEFAULT_FILTERS = {
   categories: [],
@@ -14,16 +14,22 @@ function FilterBarForm({
   onClearFilters = () => {},
   sortField,
   sortDirection,
+  searchTerm = "",
   filters = DEFAULT_FILTERS,
   inventoryItems = [],
   handleRefresh = () => {},
 }) {
-  const searchInputRef = useRef(null);
+  const [localSearch, setLocalSearch] = useState(searchTerm);
   const debounceTimer = useRef(null);
 
   useEffect(() => {
     return () => clearTimeout(debounceTimer.current);
   }, []);
+
+  // Sync local input when external searchTerm changes (e.g. reset)
+  useEffect(() => {
+    setLocalSearch(searchTerm);
+  }, [searchTerm]);
 
   // Derive available categories from inventory items
   const availableCategories = useMemo(
@@ -46,6 +52,7 @@ function FilterBarForm({
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
+    setLocalSearch(value);
     clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
       onSearch(value);
@@ -64,9 +71,6 @@ function FilterBarForm({
   };
 
   const handleReset = () => {
-    if (searchInputRef.current) {
-      searchInputRef.current.value = "";
-    }
     clearTimeout(debounceTimer.current);
     onSort("", "asc");
     onClearFilters();
@@ -76,7 +80,7 @@ function FilterBarForm({
     <form onSubmit={(e) => e.preventDefault()}>
       <label htmlFor="search">Search:</label>
       <input
-        ref={searchInputRef}
+        value={localSearch}
         onChange={handleSearchChange}
         type="text"
         id="search"

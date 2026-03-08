@@ -86,6 +86,7 @@ function MainContainer({ inventory }) {
               onClearFilters={clearFilters}
               sortField={sortConfig.field}
               sortDirection={sortConfig.direction}
+              searchTerm={searchTerm}
               filters={filters}
               inventoryItems={inventoryItems}
               handleRefresh={refetch}

@@ -60,6 +60,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed misleading `useCallback` wrapper from `handleChange` and `handleSubmit` in `AddInventoryItemForm`, `QuickAddForm` and `EditInventoryItemForm`. The `formData` dependency changed on every keystroke, so the memoization had no effect. Replaced with a plain function for clarity.
 - Fix stale comment in test-setup.js (was < 0.55 / 1750 ms, now matches actual < 0.33 / 500 ms)
 - Fix misleading destructure alias in patchInventoryItem: renamed \_id to \_isDeleting to correctly reflect that the discarded property is the UI-only isDeleting flag, not an id field
+- Make `FilterBarForm` search input controlled via local state synced to the parent `searchTerm` prop, replacing the uncontrolled ref-based approach. The input now stays in sync when `searchTerm` is cleared externally (e.g. via `clearFilters`) while preserving the 300ms debounce on `onSearch`.
 
 ### Removed
 
