@@ -215,7 +215,7 @@ export const loadSampleData = ({
   if (randomFailure) {
     setError("Failed to load sample data. Please try again.");
     setIsLoading(false);
-    return;
+    return () => {};
   }
   setInventoryItems(sampleData.records.map((item) => ({ ...item })));
   const simulateLoad = setTimeout(() => {

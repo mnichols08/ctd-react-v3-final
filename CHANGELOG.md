@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix error handling in deleteItem action to use setSaveError
 - Prevent debounced search callback from firing after FilterBarForm unmount by adding useEffect cleanup to clear pending timer
 - Prevent potentialy null/undefined location by adding   optional chaining for Location checks in useFilteredInventory
+- Return no-op cleanup function from `loadSampleData` error path so the return type is consistent with the success path
 
 ---
 
