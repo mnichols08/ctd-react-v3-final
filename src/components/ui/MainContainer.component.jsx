@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
   getActiveFilterCount,
   isExpiringSoon,
@@ -49,12 +49,6 @@ function MainContainer({ inventory }) {
   const { addToShoppingList, removeFromShoppingList, updateTargetQty } =
     useShoppingList({ items: inventoryItems, dispatch });
 
-  // Ref for stable callbacks that need current items
-  const inventoryItemsRef = useRef(inventoryItems);
-  useEffect(() => {
-    inventoryItemsRef.current = inventoryItems;
-  }, [inventoryItems]);
-
   // Filter inventory items by search term across searchable fields (case-insensitive, null-safe)
   const filteredItems = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -90,73 +84,6 @@ function MainContainer({ inventory }) {
   const activeFilterCount = useMemo(
     () => getActiveFilterCount(filters),
     [filters],
-  );
-
-  // --- Adapters / handlers ---
-
-  // Adapter: EditForm passes full item object; compute changed fields
-  const updateInventoryItem = useCallback(
-    async (updatedItem) => {
-      const previousItem = inventoryItemsRef.current.find(
-        (i) => i.id === updatedItem.id,
-      );
-      if (!previousItem) return;
-
-      const changedFields = {};
-      for (const key of Object.keys(updatedItem)) {
-        if (key === "id" || key === "LastUpdated") continue;
-        if (updatedItem[key] !== previousItem[key]) {
-          changedFields[key] = updatedItem[key];
-        }
-      }
-
-      if (Object.keys(changedFields).length > 0) {
-        await updateItem(updatedItem.id, changedFields);
-      }
-    },
-    [updateItem],
-  );
-
-  // Adapter: Add item with save-error handling
-  const handleAddItem = useCallback(
-    async (item) => {
-      dispatch({ type: "setSaveError", payload: null });
-      dispatch({ type: "setIsSaving", payload: true });
-      try {
-        const success = await addItem(item);
-        return success;
-      } catch (err) {
-        dispatch({ type: "setSaveError", payload: err.message });
-        return false;
-      } finally {
-        dispatch({ type: "setIsSaving", payload: false });
-      }
-    },
-    [addItem, dispatch],
-  );
-
-  // Adapter: Delete with confirmation dialog
-  const handleDeleteItem = useCallback(
-    async (itemId) => {
-      const item = inventoryItemsRef.current.find((i) => i.id === itemId);
-      if (!item || item.isDeleting) return;
-
-      if (
-        !window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)
-      ) {
-        return;
-      }
-      await deleteItem(itemId);
-    },
-    [deleteItem],
-  );
-
-  // Handler to update sort field and direction
-  const handleSort = useCallback(
-    (field, direction) => {
-      setSort(field, direction);
-    },
-    [setSort],
   );
 
   // Sort filtered items by the selected field and direction
@@ -284,21 +211,12 @@ function MainContainer({ inventory }) {
     return () => clearInterval(id);
   }, [lastFetchedAt, isLoading, refetch]);
 
-  // Retry/Refresh handlers
-  const handleRetry = useCallback(() => {
-    refetch();
-  }, [refetch]);
-
-  const handleRefresh = useCallback(() => {
-    refetch();
-  }, [refetch]);
-
   return (
     <main>
       {isLoading ? (
         <LoadingState isLoading={isLoading} />
       ) : error ? (
-        <ErrorState error={error} onRetry={handleRetry} />
+        <ErrorState error={error} onRetry={refetch} />
       ) : (
         <>
           <ToolSection id="stats" title="Quick Stats">
@@ -313,13 +231,13 @@ function MainContainer({ inventory }) {
           <ToolSection id="filter" title="Filter & Sort">
             <FilterBarForm
               onSearch={setSearch}
-              onSort={handleSort}
+              onSort={setSort}
               onFilter={setFilters}
               sortField={sortConfig.field}
               sortDirection={sortConfig.direction}
               filters={filters}
               inventoryItems={inventoryItems}
-              handleRefresh={handleRefresh}
+              handleRefresh={refetch}
             />
             {(searchTerm.trim() || activeFilterCount > 0) && (
               <p>
@@ -350,9 +268,9 @@ function MainContainer({ inventory }) {
               </div>
             )}
             {showQuickAdd ? (
-              <QuickAddForm addInventoryItem={handleAddItem} />
+              <QuickAddForm addInventoryItem={addItem} />
             ) : (
-              <AddInventoryItemForm addInventoryItem={handleAddItem} />
+              <AddInventoryItemForm addInventoryItem={addItem} />
             )}
           </ToolSection>
           <InventorySection
@@ -360,33 +278,33 @@ function MainContainer({ inventory }) {
             title="Fridge"
             addToShoppingList={addToShoppingList}
             removeFromShoppingList={removeFromShoppingList}
-            updateItem={updateInventoryItem}
+            updateItem={updateItem}
             visibleFields={visibleFields}
             items={fridgeItems}
             archiveItem={archiveItem}
-            deleteItem={handleDeleteItem}
+            deleteItem={deleteItem}
           />
           <InventorySection
             id="freezer"
             title="Freezer"
             addToShoppingList={addToShoppingList}
             removeFromShoppingList={removeFromShoppingList}
-            updateItem={updateInventoryItem}
+            updateItem={updateItem}
             visibleFields={visibleFields}
             items={freezerItems}
             archiveItem={archiveItem}
-            deleteItem={handleDeleteItem}
+            deleteItem={deleteItem}
           />
           <InventorySection
             id="pantry"
             title="Pantry"
             addToShoppingList={addToShoppingList}
             removeFromShoppingList={removeFromShoppingList}
-            updateItem={updateInventoryItem}
+            updateItem={updateItem}
             visibleFields={visibleFields}
             items={pantryItems}
             archiveItem={archiveItem}
-            deleteItem={handleDeleteItem}
+            deleteItem={deleteItem}
           />
           {/* Render Shopping List based upon NeedRestock and TargetQty vs QtyOnHand */}
           <InventorySection
@@ -410,7 +328,7 @@ function MainContainer({ inventory }) {
                   title="Archived Items"
                   items={archivedItems}
                   unarchiveItem={unarchiveItem}
-                  deleteItem={handleDeleteItem}
+                  deleteItem={deleteItem}
                 />
               )}
             </div>

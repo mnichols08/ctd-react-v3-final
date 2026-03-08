@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename shopping list handler props (updateItemQuantity → updateTargetQty) across InventorySection, ItemCard, and ShoppingListControl for consistency
 - Extract shared constants and utilities (SEARCHABLE_FIELDS, staleness helpers, comparison helpers) into fieldConfig.js and inventoryUtils.js
 - Update MainContainer and component tests to reflect new prop-driven architecture and renamed handlers
+- Refactor MainContainer to simplify state management and remove unused handlers
 
 ### Removed
 
