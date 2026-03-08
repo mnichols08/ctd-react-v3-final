@@ -20,7 +20,7 @@ function ShoppingListControl({
   const isInShoppingList = needRestock && targetQty > qtyOnHand;
 
   const handleAdd = useCallback(() => {
-    addToShoppingList(id, 1);
+    addToShoppingList?.(id, 1);
   }, [addToShoppingList, id]);
 
   const handleDecrement = useCallback(() => {
