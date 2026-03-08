@@ -36,10 +36,6 @@ function InventorySection({
       <h2
         id={`${id}-heading`}
         onClick={handleClick}
-        style={{
-          cursor: itemCount > 0 ? "pointer" : "text",
-          display: "inline-block",
-        }}
       >
         {title} ({itemCount}){" "}
       </h2>{" "}
