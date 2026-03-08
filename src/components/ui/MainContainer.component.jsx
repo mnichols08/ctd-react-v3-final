@@ -149,35 +149,80 @@ function MainContainer({ visibleFields, setArchivedItemsExist = () => {} }) {
     [filters],
   );
 
-  // Wrapper that prevents overlapping fetch requests
+  // Ref that always holds the latest fetch-relevant params so the
+  // pending-retry path can read current values instead of stale closures.
+  const fetchParamsRef = useRef({
+    sortField,
+    sortDirection,
+    filters,
+    searchTerm,
+  });
+  useEffect(() => {
+    fetchParamsRef.current = { sortField, sortDirection, filters, searchTerm };
+  }, [sortField, sortDirection, filters, searchTerm]);
+
+  // Track a pending fetch request that arrives while another fetch is in progress.
+  const pendingFetchRef = useRef(false);
+  const pendingOverridesRef = useRef(null);
+
+  // Wrapper that prevents overlapping fetch requests, but ensures the latest
+  // request is not dropped.  When a fetch is already in flight, the new request
+  // is queued and automatically fired once the current one completes — using the
+  // latest params from fetchParamsRef so the retry is never stale.
   const doFetch = useCallback(
     (overrides = {}) => {
-      if (fetchInProgressRef.current) return;
+      if (fetchInProgressRef.current) {
+        // Remember that a new fetch was requested while one is in progress.
+        pendingFetchRef.current = true;
+        pendingOverridesRef.current = overrides;
+        return;
+      }
       fetchInProgressRef.current = true;
 
       const wrappedSetIsLoading = (val) => {
-        if (!val) fetchInProgressRef.current = false;
+        if (!val) {
+          // Current fetch has finished.
+          fetchInProgressRef.current = false;
+          // If a fetch was requested while this one was in-flight, fire it now
+          // using the latest params (not the ones captured by the outer closure).
+          if (pendingFetchRef.current) {
+            const pendingOverrides = pendingOverridesRef.current;
+            pendingFetchRef.current = false;
+            pendingOverridesRef.current = null;
+            doFetch(pendingOverrides || {});
+            return;
+          }
+        }
         (overrides.setIsLoading ?? setIsLoading)(val);
       };
 
+      // Read current params from the ref so both the initial call and any
+      // pending retry always use the most up-to-date values.
+      const {
+        sortField: sf,
+        sortDirection: sd,
+        filters: f,
+        searchTerm: st,
+      } = fetchParamsRef.current;
+
       lastFetchedParamsRef.current = {
-        sortField,
-        sortDirection,
-        filters,
-        searchTerm,
+        sortField: sf,
+        sortDirection: sd,
+        filters: f,
+        searchTerm: st,
       };
 
       fetchInventoryItems({
         setInventoryItems,
         setIsLoading: wrappedSetIsLoading,
         setError,
-        sortConfig: { field: sortField, direction: sortDirection },
-        filterConfig: filters,
-        searchTerm,
+        sortConfig: { field: sf, direction: sd },
+        filterConfig: f,
+        searchTerm: st,
         setLastFetchedAt,
       });
     },
-    [sortField, sortDirection, filters, searchTerm],
+    [], // stable — reads everything from refs
   );
 
   // Handler to add a new inventory item to local state
