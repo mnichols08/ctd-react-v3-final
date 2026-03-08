@@ -84,9 +84,7 @@ describe("ShoppingListControl", () => {
       NeedRestock: false,
     };
 
-    render(
-      <ShoppingListControl item={item} handleAddToShoppingList={() => {}} />,
-    );
+    render(<ShoppingListControl item={item} addToShoppingList={() => {}} />);
 
     expect(
       screen.getByRole("button", { name: "Add to Shopping List" }),
@@ -103,19 +101,14 @@ describe("ShoppingListControl", () => {
       NeedRestock: false,
     };
 
-    render(
-      <ShoppingListControl item={item} handleAddToShoppingList={handleAdd} />,
-    );
+    render(<ShoppingListControl item={item} addToShoppingList={handleAdd} />);
 
     fireEvent.click(
       screen.getByRole("button", { name: "Add to Shopping List" }),
     );
 
     expect(handleAdd).toHaveBeenCalledTimes(1);
-    expect(handleAdd).toHaveBeenCalledWith({
-      itemId: 25,
-      quantity: 1,
-    });
+    expect(handleAdd).toHaveBeenCalledWith(25, 1);
   });
 
   it("does not throw when callback prop is missing", () => {
@@ -147,10 +140,7 @@ describe("ShoppingListControl", () => {
     };
 
     render(
-      <ShoppingListControl
-        item={item}
-        handleUpdateItemQuantity={handleUpdateQty}
-      />,
+      <ShoppingListControl item={item} updateTargetQty={handleUpdateQty} />,
     );
 
     expect(
@@ -275,7 +265,7 @@ describe("ItemCard", () => {
     render(
       <ItemCard
         item={item}
-        handleAddToShoppingList={() => {}}
+        addToShoppingList={() => {}}
         visibleFields={allTestFields}
       />,
     );
@@ -306,7 +296,7 @@ describe("ItemCard", () => {
       Category: "Cooking Essentials",
     };
 
-    render(<ItemCard item={item} handleUpdateItemQuantity={handleUpdateQty} />);
+    render(<ItemCard item={item} updateTargetQty={handleUpdateQty} />);
 
     // With TargetQty 1 and QtyOnHand 0.1, decrementing would remove from list
     const removeBtn = screen.getByRole("button", {
@@ -351,8 +341,8 @@ describe("ItemCard", () => {
     render(
       <ItemCard
         item={item}
-        handleAddToShoppingList={() => {}}
-        handleUpdateItemQuantity={handleUpdateQty}
+        addToShoppingList={() => {}}
+        updateTargetQty={handleUpdateQty}
       />,
     );
 
@@ -905,9 +895,7 @@ describe("ShoppingListControl – stepper behavior", () => {
       NeedRestock: true,
     };
 
-    render(
-      <ShoppingListControl item={item} handleUpdateItemQuantity={handler} />,
-    );
+    render(<ShoppingListControl item={item} updateTargetQty={handler} />);
 
     fireEvent.click(screen.getByRole("button", { name: /increase quantity/i }));
     expect(handler).toHaveBeenCalledWith(1, 5);
@@ -923,9 +911,7 @@ describe("ShoppingListControl – stepper behavior", () => {
       NeedRestock: true,
     };
 
-    render(
-      <ShoppingListControl item={item} handleUpdateItemQuantity={handler} />,
-    );
+    render(<ShoppingListControl item={item} updateTargetQty={handler} />);
 
     fireEvent.click(screen.getByRole("button", { name: /decrease quantity/i }));
     expect(handler).toHaveBeenCalledWith(1, 4);
@@ -942,9 +928,7 @@ describe("ShoppingListControl – stepper behavior", () => {
       NeedRestock: true,
     };
 
-    render(
-      <ShoppingListControl item={item} handleUpdateItemQuantity={handler} />,
-    );
+    render(<ShoppingListControl item={item} updateTargetQty={handler} />);
 
     const removeBtn = screen.getByRole("button", { name: /remove from/i });
     expect(removeBtn.textContent).toBe("Remove");
@@ -962,15 +946,13 @@ describe("ShoppingListControl – stepper behavior", () => {
       NeedRestock: true,
     };
 
-    render(
-      <ShoppingListControl item={item} handleUpdateItemQuantity={() => {}} />,
-    );
+    render(<ShoppingListControl item={item} updateTargetQty={() => {}} />);
 
     // Math.ceil(1 - 0.1) = Math.ceil(0.9) = 1
     expect(screen.getByText("1")).toBeTruthy();
   });
 
-  it("does not render stepper when handleUpdateItemQuantity is absent even if item is on shopping list", () => {
+  it("does not render stepper when updateTargetQty is absent even if item is on shopping list", () => {
     const item = {
       id: 1,
       ItemName: "Oil",
@@ -979,9 +961,7 @@ describe("ShoppingListControl – stepper behavior", () => {
       NeedRestock: true,
     };
 
-    render(
-      <ShoppingListControl item={item} handleAddToShoppingList={() => {}} />,
-    );
+    render(<ShoppingListControl item={item} addToShoppingList={() => {}} />);
 
     // Should NOT see stepper buttons
     expect(
@@ -1013,8 +993,8 @@ describe("ShoppingListControl – remove from shopping list (location section)",
     render(
       <ShoppingListControl
         item={item}
-        handleAddToShoppingList={() => {}}
-        handleRemoveFromShoppingList={() => {}}
+        addToShoppingList={() => {}}
+        removeFromShoppingList={() => {}}
       />,
     );
 
@@ -1023,7 +1003,7 @@ describe("ShoppingListControl – remove from shopping list (location section)",
     ).toBeTruthy();
   });
 
-  it("clicking Remove from Shopping List calls handleRemoveFromShoppingList with item id", () => {
+  it("clicking Remove from Shopping List calls removeFromShoppingList with item id", () => {
     const removeFn = vi.fn();
     const item = {
       id: 5,
@@ -1036,8 +1016,8 @@ describe("ShoppingListControl – remove from shopping list (location section)",
     render(
       <ShoppingListControl
         item={item}
-        handleAddToShoppingList={() => {}}
-        handleRemoveFromShoppingList={removeFn}
+        addToShoppingList={() => {}}
+        removeFromShoppingList={removeFn}
       />,
     );
 
@@ -1059,8 +1039,8 @@ describe("ShoppingListControl – remove from shopping list (location section)",
     render(
       <ShoppingListControl
         item={item}
-        handleAddToShoppingList={() => {}}
-        handleRemoveFromShoppingList={() => {}}
+        addToShoppingList={() => {}}
+        removeFromShoppingList={() => {}}
       />,
     );
 
@@ -1109,7 +1089,7 @@ describe("Integration: EditInventoryItemForm in ItemCard", () => {
     render(
       <ItemCard
         item={editableItem}
-        handleAddToShoppingList={() => {}}
+        addToShoppingList={() => {}}
         handleUpdateItem={handleUpdateItem}
       />,
     );
@@ -1142,7 +1122,7 @@ describe("Integration: EditInventoryItemForm in ItemCard", () => {
     const { rerender } = render(
       <ItemCard
         item={currentItem}
-        handleAddToShoppingList={() => {}}
+        addToShoppingList={() => {}}
         handleUpdateItem={handleUpdateItem}
       />,
     );
@@ -1164,7 +1144,7 @@ describe("Integration: EditInventoryItemForm in ItemCard", () => {
     rerender(
       <ItemCard
         item={currentItem}
-        handleAddToShoppingList={() => {}}
+        addToShoppingList={() => {}}
         handleUpdateItem={handleUpdateItem}
       />,
     );
