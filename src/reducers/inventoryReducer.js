@@ -20,8 +20,15 @@ export const initialState = {
   isLoading: true,
   error: null,
   searchTerm: "",
-  sortConfig: { field: null, direction: "asc" },
-  filters: { categories: [], location: null, needRestock: null, status: null },
+  sortConfig: { field: "ItemName", direction: "asc" },
+  filters: {
+    categories: [],
+    location: null,
+    needRestock: false,
+    status: "",
+    expiringSoon: false,
+    lowStock: false,
+  },
 };
 
 export default function inventoryReducer(state, action) {
@@ -69,7 +76,11 @@ export default function inventoryReducer(state, action) {
         ...state,
         items: state.items.map((item) =>
           item.id === action.payload.id
-            ? { ...item, ...action.payload.fields }
+            ? {
+                ...item,
+                ...action.payload.fields,
+                LastUpdated: new Date().toISOString(),
+              }
             : item,
         ),
       };
@@ -83,6 +94,7 @@ export default function inventoryReducer(state, action) {
                 ...item,
                 NeedRestock: true,
                 TargetQty: action.payload.targetQty,
+                LastUpdated: new Date().toISOString(),
               }
             : item,
         ),
@@ -93,7 +105,12 @@ export default function inventoryReducer(state, action) {
         ...state,
         items: state.items.map((item) =>
           item.id === action.payload
-            ? { ...item, NeedRestock: false, TargetQty: item.QtyOnHand }
+            ? {
+                ...item,
+                NeedRestock: false,
+                TargetQty: item.QtyOnHand,
+                LastUpdated: new Date().toISOString(),
+              }
             : item,
         ),
       };
@@ -109,9 +126,14 @@ export default function inventoryReducer(state, action) {
               ...item,
               NeedRestock: false,
               TargetQty: item.QtyOnHand,
+              LastUpdated: new Date().toISOString(),
             };
           }
-          return { ...item, TargetQty: targetQty };
+          return {
+            ...item,
+            TargetQty: targetQty,
+            LastUpdated: new Date().toISOString(),
+          };
         }),
       };
     }

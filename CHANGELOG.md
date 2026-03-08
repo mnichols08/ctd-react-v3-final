@@ -21,6 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.6.1] - 2026-03-08
+
+### Added
+
+- Implement custom hook for inventory management with CRUD operations
+- Add custom hook for managing filters with search and sort functionality
+- Implement custom hook for managing shopping list with add, remove, and update functionalities
+- Add unit tests for custom hooks: useFilters, useInventory, and useShoppingList
+- Add refetch functionality to useInventory hook and update inventoryReducer for LastUpdated tracking
+
 ## [0.6.0] - 2026-03-08
 
 ### Added

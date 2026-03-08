@@ -1,0 +1,128 @@
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { renderHook, act } from "@testing-library/react";
+import useInventory from "./useInventory";
+
+// Mock airtableUtils — sample-data mode is active in tests (VITE_SAMPLE_DATA=true)
+// so most API functions won't be called, but loadSampleData will.
+vi.mock("../data/airtableUtils", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    patchInventoryItem: vi.fn(),
+    createInventoryItem: vi.fn(),
+    deleteInventoryItem: vi.fn(),
+  };
+});
+
+const { patchInventoryItem, createInventoryItem, deleteInventoryItem } =
+  await vi.importMock("../data/airtableUtils");
+
+describe("useInventory", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  // Helper: render and wait for sample data to load
+  async function renderAndLoad() {
+    const { result } = renderHook(() => useInventory());
+
+    // loadSampleData uses Math.random (mocked to 1 → no failure)
+    // and setTimeout for simulated loading
+    await act(() => vi.runAllTimers());
+
+    return result;
+  }
+
+  it("starts in loading state with isLoading true", () => {
+    const { result } = renderHook(() => useInventory());
+    expect(result.current.isLoading).toBe(true);
+    expect(result.current.error).toBeNull();
+  });
+
+  it("loads sample data and sets items", async () => {
+    const result = await renderAndLoad();
+
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.items.length).toBeGreaterThan(0);
+    expect(result.current.error).toBeNull();
+  });
+
+  it("addItem appends an item in sample-data mode", async () => {
+    const result = await renderAndLoad();
+    const initialCount = result.current.items.length;
+
+    const newItem = {
+      id: "test-new",
+      ItemName: "Test Item",
+      QtyOnHand: 5,
+      TargetQty: 5,
+    };
+
+    await act(async () => {
+      const success = await result.current.addItem(newItem);
+      expect(success).toBe(true);
+    });
+
+    expect(result.current.items).toHaveLength(initialCount + 1);
+    expect(result.current.items.find((i) => i.id === "test-new")).toBeTruthy();
+  });
+
+  it("deleteItem removes an item in sample-data mode", async () => {
+    const result = await renderAndLoad();
+    const firstItem = result.current.items[0];
+    const initialCount = result.current.items.length;
+
+    await act(async () => {
+      await result.current.deleteItem(firstItem.id);
+    });
+
+    expect(result.current.items).toHaveLength(initialCount - 1);
+    expect(result.current.items.find((i) => i.id === firstItem.id)).toBeFalsy();
+  });
+
+  it("updateItem optimistically updates fields", async () => {
+    const result = await renderAndLoad();
+    const firstItem = result.current.items[0];
+
+    await act(async () => {
+      await result.current.updateItem(firstItem.id, { ItemName: "Updated" });
+    });
+
+    const updated = result.current.items.find((i) => i.id === firstItem.id);
+    expect(updated.ItemName).toBe("Updated");
+  });
+
+  it("archiveItem sets Status to archived", async () => {
+    const result = await renderAndLoad();
+    const item = result.current.items.find((i) => i.Status !== "archived");
+
+    await act(async () => {
+      await result.current.archiveItem(item.id);
+    });
+
+    const archived = result.current.items.find((i) => i.id === item.id);
+    expect(archived.Status).toBe("archived");
+    expect(archived.NeedRestock).toBe(false);
+  });
+
+  it("unarchiveItem clears archived Status", async () => {
+    const result = await renderAndLoad();
+    // First archive an item
+    const item = result.current.items.find((i) => i.Status !== "archived");
+    await act(async () => {
+      await result.current.archiveItem(item.id);
+    });
+
+    await act(async () => {
+      await result.current.unarchiveItem(item.id);
+    });
+
+    const restored = result.current.items.find((i) => i.id === item.id);
+    expect(restored.Status).toBeNull();
+  });
+
+  it("exposes dispatch function", async () => {
+    const result = await renderAndLoad();
+    expect(typeof result.current.dispatch).toBe("function");
+  });
+});
