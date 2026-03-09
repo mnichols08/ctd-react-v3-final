@@ -81,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ConfirmDialog` now calls `.close()` on the native `<dialog>` before unmounting, preventing a stale open state during future exit animations
 - Shopping list partition now excludes archived items, preventing stale Airtable data with `NeedRestock: true` from leaking through
 - Fixed loadSampleData setting items before loading timer resolved, causing a flash of stale data
+- Fixed formatRelativeTime guard to handle both null and undefined timestamps
 
 ### Removed
 

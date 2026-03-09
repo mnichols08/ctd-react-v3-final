@@ -61,7 +61,7 @@ export function sortItems(items, sortField, sortDirection) {
 }
 
 export function formatRelativeTime(timestamp) {
-  if (timestamp === null) {
+  if (timestamp == null) {
     return null;
   }
   const now = Date.now();
