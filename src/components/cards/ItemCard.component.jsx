@@ -1,5 +1,8 @@
 import { memo } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
+import {
+  useInventoryUI,
+  useInventoryActions,
+} from "../../context/InventoryContext";
 import useToggle from "../../hooks/useToggle";
 import ShoppingListControl from "../forms/ShoppingListControl.component";
 import ConfirmDialog from "../ui/ConfirmDialog.component";
@@ -13,8 +16,8 @@ function formatValue(value) {
 
 // The ItemCard component represents an individual inventory item and conditionally renders forms/buttons based on its state and shopping cart status
 function ItemCard({ item, onEdit, variant }) {
-  const { visibleFields, archiveItem, unarchiveItem, deleteItem } =
-    useInventoryContext();
+  const { visibleFields } = useInventoryUI();
+  const { archiveItem, unarchiveItem, deleteItem } = useInventoryActions();
   const [showDeleteConfirm, , openDeleteConfirm, closeDeleteConfirm] =
     useToggle(false);
 

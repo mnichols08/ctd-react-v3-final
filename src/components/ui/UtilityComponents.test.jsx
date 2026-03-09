@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 
 import EmptyState from "./EmptyState.component";
 import QuickStatsBar from "./QuickStatsBar.component";
-import { InventoryContext } from "../../context/InventoryContext";
+import { InventoryDataContext } from "../../context/InventoryContext";
 import inventorySampleData from "../../data/inventorySample.json";
 
 function renderWithContext(ui, contextOverrides = {}) {
@@ -15,9 +15,11 @@ function renderWithContext(ui, contextOverrides = {}) {
     lastFetchedAt: null,
   };
   return render(
-    <InventoryContext.Provider value={{ ...defaultCtx, ...contextOverrides }}>
+    <InventoryDataContext.Provider
+      value={{ ...defaultCtx, ...contextOverrides }}
+    >
       {ui}
-    </InventoryContext.Provider>,
+    </InventoryDataContext.Provider>,
   );
 }
 

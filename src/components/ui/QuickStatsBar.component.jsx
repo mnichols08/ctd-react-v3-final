@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
+import { useInventoryData } from "../../context/InventoryContext";
 import { countExpiringSoon, STALE_TIME_MS } from "../../data/inventoryUtils";
 import useStaleFetchDisplay from "../../hooks/useStaleFetchDisplay";
 
@@ -10,7 +10,7 @@ function QuickStatsBar() {
     searchTerm,
     activeFilterCount,
     lastFetchedAt,
-  } = useInventoryContext();
+  } = useInventoryData();
 
   const isFiltered = searchTerm.trim() !== "" || activeFilterCount > 0;
   const sourceItems = isFiltered ? filterAppliedItems : items;

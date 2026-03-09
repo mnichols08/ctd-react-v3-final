@@ -1,5 +1,5 @@
 import { memo, useRef } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
+import { useInventoryActions } from "../../context/InventoryContext";
 import useFormData from "../../hooks/useFormData";
 import { formatLocation } from "../../data/fieldConfig";
 import InventoryFormFields from "./InventoryFormFields.component";
@@ -33,7 +33,7 @@ const initialFormState = {
 };
 
 function AddInventoryItemForm() {
-  const { addItem } = useInventoryContext();  
+  const { addItem } = useInventoryActions();
   // Form state to manage controlled inputs
   const { formData, handleChange, resetForm } = useFormData(initialFormState);
   const itemNameRef = useRef(null);

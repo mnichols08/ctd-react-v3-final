@@ -26,10 +26,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add origin validation to Airtable proxy function
+- Add useInventoryData() hook for reactive inventory state (items, filters, derived lists)
+- Add useInventoryUI() hook for UI-only state (showQuickAdd, showArchived, isSaving, saveError, visibleFields)
 
 ### Changed
 
 - Refactor tests to remove unused context imports and update mock components for InventorySection
+- Split single InventoryContext into three separate contexts (InventoryDataContext, InventoryUIContext, - InventoryActionsContext) to reduce unnecessary re-renders
+- Add useInventoryActions() hook for stable callbacks (addItem, deleteItem, refetch, setSearch, etc.)
+- Migrate all 11 consumer components to use the most specific hook for their needs
+- Action-only consumers (forms) no longer re-render on data or UI state changes
+- Data-only consumers (QuickStatsBar, NavMenu) no longer re-render on UI toggle changes
+- Remove backward-compatible useInventoryContext hook; all consumers now use specific hooks
 
 ---
 

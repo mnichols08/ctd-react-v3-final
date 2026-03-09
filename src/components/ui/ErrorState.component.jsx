@@ -1,8 +1,12 @@
 import { memo } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
+import {
+  useInventoryData,
+  useInventoryActions,
+} from "../../context/InventoryContext";
 
 function ErrorState() {
-  const { error, refetch } = useInventoryContext();
+  const { error } = useInventoryData();
+  const { refetch } = useInventoryActions();
   if (!error) return null;
 
   return (

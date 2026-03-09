@@ -1,12 +1,14 @@
 import { memo, useEffect, useRef } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
+import {
+  useInventoryUI,
+  useInventoryActions,
+} from "../../context/InventoryContext";
 import { ALL_FIELDS } from "../../data/fieldConfig";
 
-function FieldSelector({
-  onClose,
-}) {
+function FieldSelector({ onClose }) {
   const dialogRef = useRef(null);
-  const { visibleFields, toggleField, resetFields } = useInventoryContext();
+  const { visibleFields } = useInventoryUI();
+  const { toggleField, resetFields } = useInventoryActions();
 
   useEffect(() => {
     dialogRef.current?.showModal();

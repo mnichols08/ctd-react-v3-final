@@ -1,5 +1,5 @@
 import { memo, useRef } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
+import { useInventoryActions } from "../../context/InventoryContext";
 import useFormData from "../../hooks/useFormData";
 import { CATEGORIES, LOCATIONS, formatLocation } from "../../data/fieldConfig";
 
@@ -16,7 +16,7 @@ const initialFormState = {
 // This component is a simplified version of the AddInventoryItemForm, designed for quick addition of items with minimal required fields.
 // It focuses on essential information needed to add an item to the inventory, making it ideal for users who want to quickly log items without filling out a lengthy form.
 function QuickAddForm() {
-  const { addItem } = useInventoryContext();
+  const { addItem } = useInventoryActions();
   // Refs for item name input to reset and focus after submission
   const itemNameRef = useRef(null);
 

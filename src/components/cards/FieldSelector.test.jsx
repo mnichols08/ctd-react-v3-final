@@ -3,10 +3,14 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 import FieldSelector from "./FieldSelector.component";
 import { ALL_FIELDS, DEFAULT_VISIBLE_FIELDS } from "../../data/fieldConfig";
-import { useInventoryContext } from "../../context/InventoryContext";
+import {
+  useInventoryUI,
+  useInventoryActions,
+} from "../../context/InventoryContext";
 
 vi.mock("../../context/InventoryContext", () => ({
-  useInventoryContext: vi.fn(),
+  useInventoryUI: vi.fn(),
+  useInventoryActions: vi.fn(),
 }));
 
 afterEach(() => {
@@ -25,8 +29,10 @@ describe("FieldSelector – field visibility", () => {
   beforeEach(() => {
     mockToggleField = vi.fn();
     mockResetFields = vi.fn();
-    useInventoryContext.mockReturnValue({
+    useInventoryUI.mockReturnValue({
       visibleFields: defaultSet(),
+    });
+    useInventoryActions.mockReturnValue({
       toggleField: mockToggleField,
       resetFields: mockResetFields,
     });
@@ -87,8 +93,10 @@ describe("FieldSelector – field visibility", () => {
   });
 
   it("clicking Reset to Defaults calls onResetFields", () => {
-    useInventoryContext.mockReturnValue({
+    useInventoryUI.mockReturnValue({
       visibleFields: new Set(["ItemName"]),
+    });
+    useInventoryActions.mockReturnValue({
       toggleField: mockToggleField,
       resetFields: mockResetFields,
     });

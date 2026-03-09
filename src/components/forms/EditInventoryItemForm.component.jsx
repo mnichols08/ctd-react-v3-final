@@ -1,11 +1,11 @@
 import { memo, useEffect, useRef } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
+import { useInventoryActions } from "../../context/InventoryContext";
 import useFormData from "../../hooks/useFormData";
 import { parseLocation, formatLocation } from "../../data/fieldConfig";
 import InventoryFormFields from "./InventoryFormFields.component";
 
 function EditInventoryItemForm({ item, onClose }) {
-  const { updateItem } = useInventoryContext();
+  const { updateItem } = useInventoryActions();
   // Initialize form state with existing item data, converting null/undefined to empty strings for controlled inputs
   const { location: parsedLocation, subLocation: parsedSubLocation } =
     parseLocation(item.Location);

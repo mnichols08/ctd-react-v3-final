@@ -1,19 +1,13 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
+import {
+  useInventoryData,
+  useInventoryActions,
+} from "../../context/InventoryContext";
 
 function FilterBarForm() {
-  const inventory = useInventoryContext();
-  const {
-    items,
-    setSearch,
-    setSort,
-    setFilters,
-    clearFilters,
-    sortConfig,
-    searchTerm,
-    filters,
-    refetch,
-  } = inventory;
+  const { items, sortConfig, searchTerm, filters } = useInventoryData();
+  const { setSearch, setSort, setFilters, clearFilters, refetch } =
+    useInventoryActions();
   const { field: sortField, direction: sortDirection } = sortConfig;
   const [localSearch, setLocalSearch] = useState(searchTerm);
   const debounceTimer = useRef(null);

@@ -1,10 +1,10 @@
 import { memo, useMemo } from "react";
-import { useInventoryContext } from "../../../context/InventoryContext";
+import { useInventoryData } from "../../../context/InventoryContext";
 import useToggle from "../../../hooks/useToggle";
 import FieldSelector from "../../cards/FieldSelector.component";
 
 function NavMenu() {
-  const { items } = useInventoryContext();
+  const { items } = useInventoryData();
   const archivedItemsExist = useMemo(
     () => items.some((item) => item.Status === "archived"),
     [items],
