@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor `MainContainer` to render `LoadingState` and `ErrorState` unconditionally (both self-guard internally)
 - Refactor `LoadingState` to read `isLoading` from context instead of receiving it as a prop, matching `ErrorState` pattern
 - Simplify `MainContainer` rendering: replace nested ternary with flat conditional guard (`!isLoading && !error`)
+- Update HTML metadata for improved SEO and user experience
 
 ### Fixed
 
