@@ -77,9 +77,9 @@ export default function useFilteredInventory(
           if (loc?.includes("Fridge")) partitions.fridgeItems.push(item);
           if (loc?.includes("Freezer")) partitions.freezerItems.push(item);
           if (loc?.includes("Pantry")) partitions.pantryItems.push(item);
-        }
-        if (item.NeedRestock && item.TargetQty > item.QtyOnHand) {
-          partitions.shoppingListItems.push(item);
+          if (item.NeedRestock && item.TargetQty > item.QtyOnHand) {
+            partitions.shoppingListItems.push(item);
+          }
         }
       }
       return partitions;

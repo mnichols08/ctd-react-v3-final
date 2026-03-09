@@ -79,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Delete flow now uses `ConfirmDialog` in `ItemCard` instead of `window.confirm` in `useInventoryActions`, making the hook testable without mocking globals
 - `ConfirmDialog` now uses `useId()` for its `aria-labelledby` target, preventing duplicate DOM IDs
 - `ConfirmDialog` now calls `.close()` on the native `<dialog>` before unmounting, preventing a stale open state during future exit animations
+- Shopping list partition now excludes archived items, preventing stale Airtable data with `NeedRestock: true` from leaking through
 
 ### Removed
 
