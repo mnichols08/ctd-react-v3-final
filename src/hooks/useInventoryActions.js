@@ -73,7 +73,7 @@ export default function useInventoryActions({ items, dispatch }) {
       // Optimistic UI update with all fields
       dispatch({
         type: actions.updateItem,
-        payload: { id, fields },
+        payload: { id, fields, timestamp: new Date().toISOString() },
       });
 
       // Only send changed fields to Airtable
@@ -95,7 +95,10 @@ export default function useInventoryActions({ items, dispatch }) {
       const item = itemsRef.current.find((i) => i.id === id);
       if (!item || item.Status === "archived") return;
 
-      dispatch({ type: actions.archiveItem, payload: id });
+      dispatch({
+        type: actions.archiveItem,
+        payload: { id, timestamp: new Date().toISOString() },
+      });
 
       const changedFields = { Status: "archived", NeedRestock: false };
       await persistUpdate(id, changedFields, item);
@@ -108,7 +111,10 @@ export default function useInventoryActions({ items, dispatch }) {
       const item = itemsRef.current.find((i) => i.id === id);
       if (!item || item.Status !== "archived") return;
 
-      dispatch({ type: actions.unarchiveItem, payload: id });
+      dispatch({
+        type: actions.unarchiveItem,
+        payload: { id, timestamp: new Date().toISOString() },
+      });
 
       const changedFields = { Status: null };
       await persistUpdate(id, changedFields, item);

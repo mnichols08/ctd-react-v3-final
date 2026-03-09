@@ -29,7 +29,7 @@ export default function useShoppingList({ items, dispatch }) {
 
       dispatch({
         type: actions.addToShoppingList,
-        payload: { id: itemId, targetQty },
+        payload: { id: itemId, targetQty, timestamp: new Date().toISOString() },
       });
 
       await persistUpdate(
@@ -48,7 +48,7 @@ export default function useShoppingList({ items, dispatch }) {
 
       dispatch({
         type: actions.removeFromShoppingList,
-        payload: itemId,
+        payload: { id: itemId, timestamp: new Date().toISOString() },
       });
 
       await persistUpdate(
@@ -69,7 +69,7 @@ export default function useShoppingList({ items, dispatch }) {
 
       dispatch({
         type: actions.updateTargetQty,
-        payload: { id: itemId, targetQty },
+        payload: { id: itemId, targetQty, timestamp: new Date().toISOString() },
       });
 
       const changedFields =

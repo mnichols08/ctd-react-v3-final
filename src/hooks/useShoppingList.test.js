@@ -83,7 +83,7 @@ describe("useShoppingList", () => {
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "addToShoppingList",
-      payload: { id: "item-1", targetQty: 5 },
+      payload: expect.objectContaining({ id: "item-1", targetQty: 5 }),
     });
   });
 
@@ -128,7 +128,7 @@ describe("useShoppingList", () => {
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "removeFromShoppingList",
-      payload: "item-1",
+      payload: expect.objectContaining({ id: "item-1" }),
     });
   });
 
@@ -162,7 +162,7 @@ describe("useShoppingList", () => {
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "updateTargetQty",
-      payload: { id: "item-1", targetQty: 8 },
+      payload: expect.objectContaining({ id: "item-1", targetQty: 8 }),
     });
   });
 

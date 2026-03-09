@@ -61,12 +61,12 @@ export default function inventoryReducer(state, action) {
       return {
         ...state,
         items: state.items.map((item) =>
-          item.id === action.payload
+          item.id === action.payload.id
             ? {
                 ...item,
                 Status: "archived",
                 NeedRestock: false,
-                LastUpdated: new Date().toISOString(),
+                LastUpdated: action.payload.timestamp,
               }
             : item,
         ),
@@ -76,11 +76,11 @@ export default function inventoryReducer(state, action) {
       return {
         ...state,
         items: state.items.map((item) =>
-          item.id === action.payload
+          item.id === action.payload.id
             ? {
                 ...item,
                 Status: null,
-                LastUpdated: new Date().toISOString(),
+                LastUpdated: action.payload.timestamp,
               }
             : item,
         ),
@@ -95,7 +95,7 @@ export default function inventoryReducer(state, action) {
                 ...item,
                 ...action.payload.fields,
                 LastUpdated:
-                  action.payload.fields.LastUpdated ?? new Date().toISOString(),
+                  action.payload.fields.LastUpdated ?? action.payload.timestamp,
               }
             : item,
         ),
@@ -110,7 +110,7 @@ export default function inventoryReducer(state, action) {
                 ...item,
                 NeedRestock: true,
                 TargetQty: action.payload.targetQty,
-                LastUpdated: new Date().toISOString(),
+                LastUpdated: action.payload.timestamp,
               }
             : item,
         ),
@@ -120,19 +120,19 @@ export default function inventoryReducer(state, action) {
       return {
         ...state,
         items: state.items.map((item) =>
-          item.id === action.payload
+          item.id === action.payload.id
             ? {
                 ...item,
                 NeedRestock: false,
                 TargetQty: item.QtyOnHand,
-                LastUpdated: new Date().toISOString(),
+                LastUpdated: action.payload.timestamp,
               }
             : item,
         ),
       };
 
     case actions.updateTargetQty: {
-      const { id, targetQty } = action.payload;
+      const { id, targetQty, timestamp } = action.payload;
       return {
         ...state,
         items: state.items.map((item) => {
@@ -142,13 +142,13 @@ export default function inventoryReducer(state, action) {
               ...item,
               NeedRestock: false,
               TargetQty: item.QtyOnHand,
-              LastUpdated: new Date().toISOString(),
+              LastUpdated: timestamp,
             };
           }
           return {
             ...item,
             TargetQty: targetQty,
-            LastUpdated: new Date().toISOString(),
+            LastUpdated: timestamp,
           };
         }),
       };

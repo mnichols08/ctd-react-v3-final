@@ -55,7 +55,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Delete flow now uses `ConfirmDialog` in `ItemCard` instead of `window.confirm` in `useInventoryActions`, making the hook testable without mocking globals
 - `ItemCard` now uses `useToggle` for delete confirmation state, consistent with the editing toggle
 - Split Location field into a select dropdown (from LOCATIONS) and a free-text sub-location input across all forms
-
+- Moved new Date().toISOString() calls out of the reducer into action dispatchers for deterministic, testable state updates
 
 ### Fixed
 
