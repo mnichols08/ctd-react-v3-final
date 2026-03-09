@@ -8,9 +8,14 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
     dialogRef.current?.showModal();
   }, []);
 
+  const handleClose = () => {
+    dialogRef.current?.close();
+    onCancel();
+  };
+
   const handleClick = (e) => {
     if (e.target === dialogRef.current) {
-      onCancel();
+      handleClose();
     }
   };
 
@@ -20,13 +25,13 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
       onClick={handleClick}
       onCancel={(e) => {
         e.preventDefault();
-        onCancel();
+        handleClose();
       }}
       aria-labelledby={titleId}
     >
       <p id={titleId}>{message}</p>
       <div>
-        <button autoFocus onClick={onCancel}>
+        <button autoFocus onClick={handleClose}>
           Cancel
         </button>
         <button onClick={onConfirm}>Confirm</button>
