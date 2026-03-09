@@ -5,7 +5,7 @@ import { patchInventoryItem } from "../data/airtableUtils";
 export default function usePersistUpdate(dispatch) {
   return useCallback(
     async (itemId, changedFields, previousItem) => {
-      if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
+      if (import.meta.env.VITE_SAMPLE_DATA === "true") return true;
       try {
         // Strip client-only UI state before sending to the API layer
         const { isDeleting: _, ...apiFields } = changedFields;
@@ -14,12 +14,14 @@ export default function usePersistUpdate(dispatch) {
           type: actions.updateItem,
           payload: { id: itemId, fields: savedItem },
         });
+        return true;
       } catch (err) {
         dispatch({
           type: actions.updateItem,
           payload: { id: itemId, fields: previousItem },
         });
         dispatch({ type: actions.setSaveError, payload: err.message });
+        return false;
       }
     },
     [dispatch],

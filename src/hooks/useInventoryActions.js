@@ -84,9 +84,9 @@ export default function useInventoryActions({ items, dispatch }) {
           changedFields[key] = fields[key];
         }
       }
-      if (Object.keys(changedFields).length === 0) return;
+      if (Object.keys(changedFields).length === 0) return true;
 
-      await persistUpdate(id, changedFields, previousItem);
+      return await persistUpdate(id, changedFields, previousItem);
     },
     [dispatch, persistUpdate],
   );

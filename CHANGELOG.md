@@ -30,6 +30,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `partialLoadWarning` state to alert users when later pages fail but page 1 data is still usable
 - Add 6 pagination tests covering multi-page accumulation, progress callbacks, partial-load degradation, network errors on later pages, MAX_PAGES safety cap, and single-page backward compatibility
 
+### Fixed
+
+- Fix edit dialog closing before save completes: `handleSubmit` in `EditInventoryItemForm` now awaits `updateItem` and only calls `onClose()` on success; if the PATCH fails, the dialog stays open so the user sees the error
+- Propagate success/failure from `usePersistUpdate` (`return true`/`false`) through `useInventoryActions.updateItem` so callers can react to save outcomes
+
+### Tests
+
+- Add test: edit dialog stays open when `updateItem` rejects (mocked `InventoryActionsContext`)
+- Update 4 existing edit-form tests to use `await act(async …)` for the now-async submit handler
+
 ---
 
 ## [0.6.7] - 2026-03-09
