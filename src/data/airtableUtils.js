@@ -209,8 +209,8 @@ export const loadSampleData = ({
     setIsLoading(false);
     return () => {};
   }
-  setInventoryItems(sampleData.records.map((item) => ({ ...item })));
   const simulateLoad = setTimeout(() => {
+    setInventoryItems(sampleData.records.map((item) => ({ ...item })));
     setIsLoading(false);
   }, 500);
   return () => {
