@@ -35,12 +35,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix edit dialog closing before save completes: `handleSubmit` in `EditInventoryItemForm` now awaits `updateItem` and only calls `onClose()` on success; if the PATCH fails, the dialog stays open so the user sees the error
 - Propagate success/failure from `usePersistUpdate` (`return true`/`false`) through `useInventoryActions.updateItem` so callers can react to save outcomes
 - Fix out-of-order async writes: add per-item version counter in `usePersistUpdate` so a stale PATCH response (success or error) is silently dropped when a newer request for the same item is already in flight
+- Fix stale `saveError` persisting after subsequent successful mutations: `usePersistUpdate` now clears `saveError` before each PATCH so the error banner is dismissed when the user retries
 
 ### Tests
 
 - Add test: edit dialog stays open when `updateItem` rejects (mocked `InventoryActionsContext`)
 - Update 4 existing edit-form tests to use `await act(async …)` for the now-async submit handler
 - Add 3 race-condition tests: stale success is dropped, stale error skips rollback, concurrent patches on different items remain independent
+- Add error-lifecycle test: verify `saveError` is cleared on retry after a failed PATCH
 
 ---
 

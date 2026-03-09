@@ -11,6 +11,8 @@ export default function usePersistUpdate(dispatch) {
     async (itemId, changedFields, previousItem) => {
       if (import.meta.env.VITE_SAMPLE_DATA === "true") return true;
 
+      dispatch({ type: actions.setSaveError, payload: null });
+
       const version = (versionMap.current.get(itemId) ?? 0) + 1;
       versionMap.current.set(itemId, version);
 

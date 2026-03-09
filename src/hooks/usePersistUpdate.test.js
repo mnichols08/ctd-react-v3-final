@@ -229,4 +229,50 @@ describe("usePersistUpdate", () => {
       payload: { id: "item-A", fields: responseA },
     });
   });
+
+  it("clears stale saveError before each PATCH request", async () => {
+    // First call fails, setting saveError
+    patchInventoryItem.mockRejectedValueOnce(new Error("First failure"));
+
+    const { result } = renderHook(() => usePersistUpdate(dispatch));
+
+    await act(async () => {
+      await result.current(
+        "item-1",
+        { ItemName: "Attempt 1" },
+        { ItemName: "Original" },
+      );
+    });
+
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "setSaveError",
+      payload: "First failure",
+    });
+
+    dispatch.mockClear();
+
+    // Second call succeeds — error should be cleared at start
+    const serverFields = { ItemName: "Attempt 2", LastUpdated: "t2" };
+    patchInventoryItem.mockResolvedValueOnce(serverFields);
+
+    await act(async () => {
+      await result.current(
+        "item-1",
+        { ItemName: "Attempt 2" },
+        { ItemName: "Original" },
+      );
+    });
+
+    // First dispatch should clear the error
+    expect(dispatch.mock.calls[0][0]).toEqual({
+      type: "setSaveError",
+      payload: null,
+    });
+
+    // No further setSaveError dispatches (success path)
+    const errorCalls = dispatch.mock.calls.filter(
+      ([a]) => a.type === "setSaveError",
+    );
+    expect(errorCalls).toHaveLength(1);
+  });
 });
