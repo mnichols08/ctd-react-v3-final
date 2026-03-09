@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix stale `saveError` persisting after subsequent successful mutations: `usePersistUpdate` now clears `saveError` before each PATCH so the error banner is dismissed when the user retries
 - Fix MAX_PAGES pagination cap not surfacing a warning to UI: `fetchInventoryItems` now calls `setPartialLoadWarning` when the 50-page limit truncates results
 - Fix overlapping auto-refresh triggers permanently disabling refresh after a failed silent fetch: replace boolean `refreshingRef` guard with a timestamp-based dedup window (5 s) in `useAutoRefresh` that naturally expires, preventing a failed background fetch from blocking all future auto-refreshes
+- Fix 422 fallback leaving stale filter params for subsequent pages: after a successful unfiltered fallback on page 1, `baseParams` is now cleared so page 2+ fetches also use unfiltered params instead of re-triggering the 422
 
 ### Tests
 
@@ -46,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add 3 race-condition tests: stale success is dropped, stale error skips rollback, concurrent patches on different items remain independent
 - Add error-lifecycle test: verify `saveError` is cleared on retry after a failed PATCH
 - Add 3 overlapping-trigger tests: dedup within window, guard auto-expires after dedup window, and refresh still works after a failed silent fetch (lastFetchedAt unchanged)
+- Add 422-fallback pagination test: verify `baseParams` are cleared after fallback so page 2 fetches without the problematic filter params
 
 ---
 

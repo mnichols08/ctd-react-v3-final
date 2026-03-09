@@ -223,7 +223,7 @@ export const fetchInventoryItems = async ({
   onProgress(null);
   // When server-side filtering is enabled, append sort/filter params to the URL
   const useServerFilter = import.meta.env.VITE_SERVER_FILTER === "true";
-  const baseParams = useServerFilter
+  let baseParams = useServerFilter
     ? buildAirtableParams(sortConfig, filterConfig, searchTerm)
     : new URLSearchParams();
 
@@ -276,6 +276,7 @@ export const fetchInventoryItems = async ({
             throw new Error(friendlyErrorMessage(fallbackResp.status));
           }
           resp = fallbackResp;
+          baseParams = new URLSearchParams();
         } else if (allRecords.length === 0) {
           // First page non-ok is fatal
           throw new Error(friendlyErrorMessage(resp.status));
