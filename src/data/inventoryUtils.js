@@ -1,3 +1,5 @@
+import { formatLocation } from "./fieldConfig";
+
 export const EXPIRING_SOON_MS = 14 * 24 * 60 * 60 * 1000;
 export const LOW_STOCK_THRESHOLD = 5;
 
@@ -90,6 +92,30 @@ export const STALE_CHECK_INTERVAL_MS = 60 * 1000;
 export function isDataStale(lastFetchedAt, threshold = STALE_TIME_MS) {
   if (!lastFetchedAt) return false;
   return Date.now() - lastFetchedAt.getTime() >= threshold;
+}
+
+const NUMERIC_FIELDS = ["QtyOnHand", "TargetQty", "PurchasePrice", "UnitCost"];
+const DATE_FIELDS = ["ExpiresOn", "DatePurchased", "DateFrozen"];
+
+/**
+ * Shared form-data preparation: formats Location, coerces numeric fields,
+ * nullifies empty dates, strips SubLocation, and stamps LastUpdated.
+ */
+export function prepareItemForSave(formData) {
+  const { SubLocation, ...item } = formData;
+  item.Location = formatLocation(item.Location, SubLocation);
+  for (const field of NUMERIC_FIELDS) {
+    if (field in item) {
+      item[field] = item[field] === "" ? null : Number(item[field]);
+    }
+  }
+  for (const field of DATE_FIELDS) {
+    if (field in item && !item[field]) {
+      item[field] = null;
+    }
+  }
+  item.LastUpdated = new Date().toISOString();
+  return item;
 }
 
 /** Shallow-compare two arrays by length + strict element equality. */

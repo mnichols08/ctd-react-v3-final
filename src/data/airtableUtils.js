@@ -139,6 +139,9 @@ const throttledFetch = async (url, options) => {
   return fetch(url, options);
 };
 
+const NETWORK_ERROR =
+  "Network error: Unable to reach the server. Check your internet connection.";
+
 // ---------------------------------------------------------------------------
 // airtableFetch — unified transport that works in both modes:
 //   Direct: builds the Airtable URL and attaches the PAT header
@@ -174,6 +177,32 @@ const airtableFetch = async ({ method, recordId, params, body, signal }) => {
   });
 };
 
+/**
+ * Wraps airtableFetch with network-error handling, 429 detection, and error
+ * body parsing.  Pass allowedStatuses (e.g. [404]) to let specific non-ok
+ * codes through without throwing.
+ */
+const checkedFetch = async (fetchOptions, { allowedStatuses = [] } = {}) => {
+  let resp;
+  try {
+    resp = await airtableFetch(fetchOptions);
+  } catch {
+    throw new Error(NETWORK_ERROR);
+  }
+  if (!resp.ok && !allowedStatuses.includes(resp.status)) {
+    if (resp.status === 429) {
+      throw new Error(
+        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
+      );
+    }
+    const errorBody = await resp.json().catch(() => null);
+    throw new Error(
+      errorBody?.error?.message || `${resp.status} ${resp.statusText}`,
+    );
+  }
+  return resp;
+};
+
 export const fetchInventoryItems = async ({
   setInventoryItems,
   setIsLoading,
@@ -202,9 +231,7 @@ export const fetchInventoryItems = async ({
         signal,
       });
     } catch {
-      throw new Error(
-        "Network error: Unable to reach the server. Check your internet connection.",
-      );
+      throw new Error(NETWORK_ERROR);
     }
     if (!resp.ok) {
       // On 422 with server-side params, fall back to fetching all records
@@ -217,9 +244,7 @@ export const fetchInventoryItems = async ({
         try {
           fallbackResp = await airtableFetch({ method: "GET", signal });
         } catch {
-          throw new Error(
-            "Network error: Unable to reach the server. Check your internet connection.",
-          );
+          throw new Error(NETWORK_ERROR);
         }
         if (!fallbackResp.ok) {
           throw new Error(friendlyErrorMessage(fallbackResp.status));
@@ -295,25 +320,7 @@ export const createInventoryItem = async ({
   try {
     setError(null);
     setIsSaving(true);
-    let resp;
-    try {
-      resp = await airtableFetch({ method: "POST", body: payload });
-    } catch {
-      throw new Error(
-        "Network error: Unable to reach the server. Check your internet connection.",
-      );
-    }
-    if (!resp.ok) {
-      if (resp.status === 429) {
-        throw new Error(
-          "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
-        );
-      }
-      const errorBody = await resp.json().catch(() => null);
-      const message =
-        errorBody?.error?.message || `${resp.status} ${resp.statusText}`;
-      throw new Error(message);
-    }
+    const resp = await checkedFetch({ method: "POST", body: payload });
     const { records } = await resp.json();
     const savedItem = {
       id: records[0].id,
@@ -330,8 +337,8 @@ export const createInventoryItem = async ({
 };
 
 export const patchInventoryItem = async (id, fields) => {
-  const { isDeleting: _isDeleting, ...airtableFields } = fields;
   // Coerce empty date strings to null (Airtable rejects "")
+  const airtableFields = { ...fields };
   ["ExpiresOn", "DatePurchased", "DateFrozen"].forEach((field) => {
     if (field in airtableFields && !airtableFields[field]) {
       airtableFields[field] = null;
@@ -341,29 +348,11 @@ export const patchInventoryItem = async (id, fields) => {
     ...airtableFields,
     LastUpdated: new Date().toISOString(),
   };
-  let resp;
-  try {
-    resp = await airtableFetch({
-      method: "PATCH",
-      recordId: id,
-      body: { fields: patchFields },
-    });
-  } catch {
-    throw new Error(
-      "Network error: Unable to reach the server. Check your internet connection.",
-    );
-  }
-  if (!resp.ok) {
-    if (resp.status === 429) {
-      throw new Error(
-        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
-      );
-    }
-    const errorBody = await resp.json().catch(() => null);
-    const message =
-      errorBody?.error?.message || `${resp.status} ${resp.statusText}`;
-    throw new Error(message);
-  }
+  const resp = await checkedFetch({
+    method: "PATCH",
+    recordId: id,
+    body: { fields: patchFields },
+  });
   const record = await resp.json();
   return {
     id: record.id,
@@ -372,29 +361,13 @@ export const patchInventoryItem = async (id, fields) => {
 };
 
 export const deleteInventoryItem = async (id) => {
-  let resp;
-  try {
-    resp = await airtableFetch({ method: "DELETE", recordId: id });
-  } catch {
-    throw new Error(
-      "Network error: Unable to reach the server. Check your internet connection.",
-    );
-  }
   // 404 means the record is already gone — treat as success
+  const resp = await checkedFetch(
+    { method: "DELETE", recordId: id },
+    { allowedStatuses: [404] },
+  );
   if (resp.status === 404) {
     return { id, deleted: true };
   }
-  if (!resp.ok) {
-    if (resp.status === 429) {
-      throw new Error(
-        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
-      );
-    }
-    const errorBody = await resp.json().catch(() => null);
-    const message =
-      errorBody?.error?.message || `${resp.status} ${resp.statusText}`;
-    throw new Error(message);
-  }
-  const result = await resp.json();
-  return result;
+  return resp.json();
 };
