@@ -60,6 +60,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Filter archived items before sorting instead of sorting the entire unfiltered list in useFilteredInventory
 - FieldSelector close button now renders × (times symbol) instead of plain "x" for better screen reader clarity
 - Shopping List section now shows only relevant fields (name, quantity, unit, target, location) instead of the full default field set
+- Wrapped EmptyState, LoadingState, and ToolSection in memo() for consistency with other components
+- deleteItem now clears saveError before starting, matching addItem behavior
 
 ### Fixed
 
@@ -91,6 +93,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed ConfirmDialog not closing the dialog element before calling onConfirm
 - Fixed useFilteredInventory partitioning to derive main location via parseLocation instead of hardcoded includes
 - LoadingState now returns null when not loading instead of leaving an empty live region in the DOM
+- QuickAddForm QtyOnHand coercion now handles empty string explicitly instead of relying on Number() alone
 
 ### Removed
 

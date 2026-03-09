@@ -1,10 +1,12 @@
-function ToolSection({id, title, children}) {
-    return (
-        <section id={id}>
-            <h2>{title}</h2>
-            {children}
-        </section>
-    );
+import { memo } from "react";
+
+function ToolSection({ id, title, children }) {
+  return (
+    <section id={id}>
+      <h2>{title}</h2>
+      {children}
+    </section>
+  );
 }
 
-export default ToolSection;
+export default memo(ToolSection);

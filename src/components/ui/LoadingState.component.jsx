@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 function LoadingState({ isLoading }) {
   if (!isLoading) return null;
   return (
@@ -7,4 +9,4 @@ function LoadingState({ isLoading }) {
   );
 }
 
-export default LoadingState;
+export default memo(LoadingState);

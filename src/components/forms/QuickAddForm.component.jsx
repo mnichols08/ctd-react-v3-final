@@ -39,7 +39,7 @@ function QuickAddForm({ addInventoryItem }) {
       Category: Category,
       SubCategory: null,
       Location: formatLocation(Location, formData.SubLocation),
-      QtyOnHand: Number(QtyOnHand),
+      QtyOnHand: QtyOnHand === "" ? 0 : Number(QtyOnHand),
       QtyUnit,
       TargetQty: 0,
       NeedRestock: false,
