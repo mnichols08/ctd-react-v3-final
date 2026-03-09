@@ -10,6 +10,10 @@
 //   AIRTABLE_PAT        – Personal Access Token (no VITE_ prefix!)
 //   AIRTABLE_BASE_ID    – e.g. appXXXXXXXXXXXXXX
 //   AIRTABLE_TABLE_NAME – e.g. "Kitchen Inventory"
+//   ALLOWED_ORIGINS     – Comma-separated list of allowed origins
+//                         e.g. "https://mysite.netlify.app,https://mysite.com"
+//                         When set, requests without a matching Origin/Referer
+//                         header are rejected with 403.
 //
 // The client sends:
 //   POST /.netlify/functions/airtable
@@ -21,6 +25,50 @@
 
 const ALLOWED_METHODS = new Set(["GET", "POST", "PATCH", "DELETE"]);
 
+/**
+ * Validate the request origin against ALLOWED_ORIGINS env var.
+ * Falls back to Referer header when Origin is absent.
+ * Returns null if valid, or a 403 Response if rejected.
+ */
+function validateOrigin(req) {
+  const allowedCsv = process.env.ALLOWED_ORIGINS; // comma-separated origins
+  if (!allowedCsv) return null; // not configured — skip check (dev convenience)
+
+  const allowed = new Set(
+    allowedCsv.split(",").map((o) => o.trim().replace(/\/+$/, "")),
+  );
+
+  const origin = req.headers.get("origin");
+  if (origin) {
+    if (allowed.has(origin.replace(/\/+$/, ""))) return null;
+    return new Response(JSON.stringify({ error: "Forbidden" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // No Origin header — check Referer as fallback
+  const referer = req.headers.get("referer");
+  if (referer) {
+    try {
+      const refOrigin = new URL(referer).origin;
+      if (allowed.has(refOrigin.replace(/\/+$/, ""))) return null;
+    } catch {
+      // malformed Referer — reject
+    }
+    return new Response(JSON.stringify({ error: "Forbidden" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Neither header present — reject
+  return new Response(JSON.stringify({ error: "Forbidden" }), {
+    status: 403,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 export default async (req) => {
   // Only accept POST from the client (the body carries the real method)
   if (req.method !== "POST") {
@@ -29,6 +77,10 @@ export default async (req) => {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  // --- Origin / Referer validation --------------------------------------
+  const originError = validateOrigin(req);
+  if (originError) return originError;
 
   // --- Read server-side env vars (never exposed to the browser) ----------
   const { AIRTABLE_PAT, AIRTABLE_BASE_ID, AIRTABLE_TABLE_NAME } = process.env;

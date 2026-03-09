@@ -21,6 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.6.7] - 2026-03-09
+
+### Added
+
+- Add origin validation to Airtable proxy function
+
+### Changed
+
+- Refactor tests to remove unused context imports and update mock components for InventorySection
+
+---
+
 ## [0.6.6] - 2026-03-09
 
 ### Changed
