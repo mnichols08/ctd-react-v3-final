@@ -1,6 +1,18 @@
 import { afterEach, beforeEach, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
+// jsdom does not implement HTMLDialogElement.showModal / .close
+// ---------------------------------------------------------------------------
+if (typeof HTMLDialogElement !== "undefined") {
+  HTMLDialogElement.prototype.showModal ??= function () {
+    this.setAttribute("open", "");
+  };
+  HTMLDialogElement.prototype.close ??= function () {
+    this.removeAttribute("open");
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Global test setup – Loading/Error state POC (#37)
 // ---------------------------------------------------------------------------
 // loadSampleData simulates a random loading error (Math.random < 0.33, gated

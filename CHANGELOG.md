@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replace `useReducer` with `useState` in `useStaleFetchDisplay` so the 30-second interval tick skips re-renders when the display string and stale flag haven't changed
 - Centralized `DEFAULT_VISIBLE_FIELDS_SET` in fieldConfig; ItemCard and reducer now share the single source of truth
 - `handleClearFilters` in FilterBarForm now delegates to `onClearFilters` instead of using a local default constant
+- Replaced FieldSelector's manual modal implementation with native `<dialog>` element, removing custom focus trap, Escape handler, and backdrop logic
 
 ### Fixed
 
@@ -82,6 +83,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove redundant handleClick wrapper in InventorySection — pass toggleCollapsed directly to onClick handlers
 - Remove stale `needRestock` key from `DEFAULT_FILTERS` in `FilterBarForm` to match the reducer's `initialState.filters` and `clearFilters` case, which no longer include it
 - Remove dead `shoppingListCount` value from `useShoppingList` and `useInventory` return objects — no component consumed it; callers can use `shoppingListItems.length` directly
+- Unused `location` field from reducer `initialState.filters` and `clearFilters` action
+
 
 ---
 

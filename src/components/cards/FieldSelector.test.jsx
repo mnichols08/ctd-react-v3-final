@@ -150,7 +150,7 @@ describe("FieldSelector – field visibility", () => {
     expect(screen.getByText("Select Visible Fields")).toBeTruthy();
   });
 
-  it("pressing Escape calls onClose", () => {
+  it("pressing Escape (cancel event) calls onClose", () => {
     const closeFn = vi.fn();
     render(
       <FieldSelector
@@ -161,7 +161,8 @@ describe("FieldSelector – field visibility", () => {
       />,
     );
 
-    fireEvent.keyDown(document, { key: "Escape" });
+    const dialog = screen.getByRole("dialog");
+    fireEvent(dialog, new Event("cancel"));
     expect(closeFn).toHaveBeenCalledTimes(1);
   });
 
@@ -179,49 +180,5 @@ describe("FieldSelector – field visibility", () => {
       name: "Close field selector",
     });
     expect(document.activeElement).toBe(closeBtn);
-  });
-
-  it("traps focus: Tab from last focusable wraps to first", () => {
-    render(
-      <FieldSelector
-        visibleFields={defaultSet()}
-        onToggleField={() => {}}
-        onResetFields={() => {}}
-        onClose={() => {}}
-      />,
-    );
-
-    const doneBtn = screen.getByRole("button", { name: "Done" });
-    doneBtn.focus();
-    expect(document.activeElement).toBe(doneBtn);
-
-    fireEvent.keyDown(document, { key: "Tab" });
-
-    // Should wrap to first focusable (close button)
-    const closeBtn = screen.getByRole("button", {
-      name: "Close field selector",
-    });
-    expect(document.activeElement).toBe(closeBtn);
-  });
-
-  it("traps focus: Shift+Tab from first focusable wraps to last", () => {
-    render(
-      <FieldSelector
-        visibleFields={defaultSet()}
-        onToggleField={() => {}}
-        onResetFields={() => {}}
-        onClose={() => {}}
-      />,
-    );
-
-    const closeBtn = screen.getByRole("button", {
-      name: "Close field selector",
-    });
-    expect(document.activeElement).toBe(closeBtn);
-
-    fireEvent.keyDown(document, { key: "Tab", shiftKey: true });
-
-    const doneBtn = screen.getByRole("button", { name: "Done" });
-    expect(document.activeElement).toBe(doneBtn);
   });
 });

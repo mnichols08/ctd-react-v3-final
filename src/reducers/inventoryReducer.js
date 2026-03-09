@@ -39,7 +39,6 @@ export const initialState = {
   sortConfig: { field: "ItemName", direction: "asc" },
   filters: {
     categories: [],
-    location: null,
     status: "",
     expiringSoon: false,
     lowStock: false,
@@ -219,7 +218,6 @@ export default function inventoryReducer(state, action) {
         ...state,
         filters: {
           categories: [],
-          location: null,
           status: "",
           expiringSoon: false,
           lowStock: false,
