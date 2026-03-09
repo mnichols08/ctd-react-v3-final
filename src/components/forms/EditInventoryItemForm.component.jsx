@@ -1,9 +1,12 @@
 import { memo, useEffect, useRef } from "react";
+import { useInventoryActions } from "../../context/InventoryContext";
 import useFormData from "../../hooks/useFormData";
-import { parseLocation, formatLocation } from "../../data/fieldConfig";
+import { parseLocation } from "../../data/fieldConfig";
+import { prepareItemForSave } from "../../data/inventoryUtils";
 import InventoryFormFields from "./InventoryFormFields.component";
 
-function EditInventoryItemForm({ item, onSave, onCancel }) {
+function EditInventoryItemForm({ item, onClose }) {
+  const { updateItem } = useInventoryActions();
   // Initialize form state with existing item data, converting null/undefined to empty strings for controlled inputs
   const { location: parsedLocation, subLocation: parsedSubLocation } =
     parseLocation(item.Location);
@@ -41,25 +44,11 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
 
     const updatedItem = {
       ...item,
-      ...formData,
-      Location: formatLocation(formData.Location, formData.SubLocation),
-      QtyOnHand:
-        formData.QtyOnHand !== "" ? parseFloat(formData.QtyOnHand) : null,
-      TargetQty:
-        formData.TargetQty !== "" ? parseFloat(formData.TargetQty) : null,
-      PurchasePrice:
-        formData.PurchasePrice !== ""
-          ? parseFloat(formData.PurchasePrice)
-          : null,
-      UnitCost: formData.UnitCost !== "" ? parseFloat(formData.UnitCost) : null,
-      ExpiresOn: formData.ExpiresOn || null,
-      DatePurchased: formData.DatePurchased || null,
-      DateFrozen: formData.DateFrozen || null,
-      LastUpdated: new Date().toISOString(),
+      ...prepareItemForSave(formData),
     };
-    delete updatedItem.SubLocation;
 
-    onSave(updatedItem);
+    updateItem(updatedItem);
+    onClose();
   };
 
   // Focus the first input when the form opens
@@ -76,7 +65,7 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
         idSuffix={item.id}
       />
       <button type="submit">Save</button>
-      <button type="button" onClick={onCancel}>
+      <button type="button" onClick={onClose}>
         Cancel
       </button>
     </form>

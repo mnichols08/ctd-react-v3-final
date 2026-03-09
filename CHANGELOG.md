@@ -21,6 +21,75 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.6.7] - 2026-03-09
+
+### Added
+
+- Add origin validation to Airtable proxy function
+- Add useInventoryData() hook for reactive inventory state (items, filters, derived lists)
+- Add useInventoryUI() hook for UI-only state (showQuickAdd, showArchived, isSaving, saveError, visibleFields)
+
+### Changed
+
+- Refactor tests to remove unused context imports and update mock components for InventorySection
+- Split single InventoryContext into three separate contexts (InventoryDataContext, InventoryUIContext, - InventoryActionsContext) to reduce unnecessary re-renders
+- Add useInventoryActions() hook for stable callbacks (addItem, deleteItem, refetch, setSearch, etc.)
+- Migrate all 11 consumer components to use the most specific hook for their needs
+- Action-only consumers (forms) no longer re-render on data or UI state changes
+- Data-only consumers (QuickStatsBar, NavMenu) no longer re-render on UI toggle changes
+- Remove backward-compatible useInventoryContext hook; all consumers now use specific hooks
+- Extract `checkedFetch` helper in airtableUtils to deduplicate network-error, 429, and error-body handling across all mutation functions
+- Extract `prepareItemForSave` utility in inventoryUtils to deduplicate numeric coercion, date nullification, Location formatting, and SubLocation removal shared by AddInventoryItemForm and EditInventoryItemForm
+- Move `isDeleting` (client-only UI state) stripping from `patchInventoryItem` to `usePersistUpdate`, decoupling the API layer from UI concerns
+- Refactor `MainContainer` to render `LoadingState` and `ErrorState` unconditionally (both self-guard internally)
+- Refactor `LoadingState` to read `isLoading` from context instead of receiving it as a prop, matching `ErrorState` pattern
+- Simplify `MainContainer` rendering: replace nested ternary with flat conditional guard (`!isLoading && !error`)
+- Update HTML metadata for improved SEO and user experience
+
+### Fixed
+
+- Harden `formatRelativeTime` to accept both Date objects and numeric timestamps via `instanceof Date` normalization
+- Remove unreachable sort-direction toggle branch in `FilterBarForm.handleSortChange` (a `<select>` never fires `onChange` for the already-selected value); update misleading comment
+
+---
+
+## [0.6.6] - 2026-03-09
+
+### Changed
+
+- Replace prop drilling with `useInventoryContext()` in all components
+- Add `variant` prop (`inventory` | `shopping` | `archived`) to `InventorySection`, `ItemCard`, and `ShoppingListControl` to control rendering behavior instead of handler truthiness checks
+- `MainContainer` no longer accepts `inventory` prop; reads all state from context
+- `InventorySection` accepts only structural props (`id`, `title`, `items`, `variant`)
+- `ItemCard` accepts only per-instance props (`item`, `onEdit`, `variant`)
+- `ShoppingListControl` uses `variant` to decide stepper vs. add/remove button
+- `EditInventoryItemForm` calls `updateItem` from context; accepts `item` and `onClose`
+- `EditDialog` simplified to pass-through for `item` and `onClose`
+- `AddInventoryItemForm` and `QuickAddForm` get `addItem` from context; accept no props
+- `FilterBarForm` gets all state and handlers from context; accepts no props
+- `QuickStatsBar` gets all data from context; accepts no props
+- `Header` and `NavMenu` get all data from context; accept no props
+- `FieldSelector` gets field visibility state from context; only accepts `onClose`
+- `App.jsx` renders `<Header />`, `<MainContainer />`, `<Footer />` with zero props
+
+### Removed
+
+- Remove all inventory-related prop drilling from `MainContainer` → children
+- Remove redundant `visibleFields`, `onToggleField`, `onResetFields` props from `NavMenu` → `FieldSelector`
+- Remove `useFilteredInventory` call from `MainContainer` (now in `InventoryProvider`)
+- Remove `archivedItemsExist` derivation from `App`; moved into `NavMenu`
+
+### Fixed
+
+- Fix ShoppingListControl showing stepper on all sections after context migration by using `variant` prop instead of handler truthiness
+- Update tests to pass `variant="shopping"` where stepper behavior is expected
+
+### Deprecated
+
+- Remove unused status field from filters in inventoryReducer
+
+---
+
 ## [0.6.5] - 2026-03-08
 
 ### Added

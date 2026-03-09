@@ -3,7 +3,25 @@ import { cleanup, render, screen } from "@testing-library/react";
 
 import EmptyState from "./EmptyState.component";
 import QuickStatsBar from "./QuickStatsBar.component";
+import { InventoryDataContext } from "../../context/InventoryContext";
 import inventorySampleData from "../../data/inventorySample.json";
+
+function renderWithContext(ui, contextOverrides = {}) {
+  const defaultCtx = {
+    items: [],
+    filterAppliedItems: [],
+    searchTerm: "",
+    activeFilterCount: 0,
+    lastFetchedAt: null,
+  };
+  return render(
+    <InventoryDataContext.Provider
+      value={{ ...defaultCtx, ...contextOverrides }}
+    >
+      {ui}
+    </InventoryDataContext.Provider>,
+  );
+}
 
 afterEach(() => {
   cleanup();
@@ -61,7 +79,10 @@ describe("QuickStatsBar", () => {
       (item) => item.NeedRestock === true && item.TargetQty > item.QtyOnHand,
     ).length;
 
-    render(<QuickStatsBar inventoryItems={inventoryItems} />);
+    renderWithContext(<QuickStatsBar />, {
+      items: inventoryItems,
+      filterAppliedItems: inventoryItems,
+    });
 
     const totalHeading = screen.getByRole("heading", {
       name: "Total Items",
@@ -95,7 +116,7 @@ describe("QuickStatsBar", () => {
   });
 
   it("shows all zeros for empty inventory", () => {
-    render(<QuickStatsBar inventoryItems={[]} />);
+    renderWithContext(<QuickStatsBar />);
 
     const totalHeading = screen.getByRole("heading", {
       name: "Total Items",
@@ -128,7 +149,10 @@ describe("QuickStatsBar", () => {
       (item) => item.Status !== "archived",
     );
 
-    render(<QuickStatsBar inventoryItems={inventoryItems} />);
+    renderWithContext(<QuickStatsBar />, {
+      items: inventoryItems,
+      filterAppliedItems: inventoryItems,
+    });
 
     expect(screen.queryByText("Showing stats for filtered items")).toBeNull();
 
@@ -150,13 +174,11 @@ describe("QuickStatsBar", () => {
       (item) => item.Status !== "archived",
     );
 
-    render(
-      <QuickStatsBar
-        inventoryItems={inventoryItems}
-        filteredItems={filteredItems}
-        isFiltered
-      />,
-    );
+    renderWithContext(<QuickStatsBar />, {
+      items: inventoryItems,
+      filterAppliedItems: filteredItems,
+      activeFilterCount: 1,
+    });
 
     expect(screen.getByText("Showing stats for filtered items")).toBeTruthy();
 

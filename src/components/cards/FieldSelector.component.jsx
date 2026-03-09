@@ -1,13 +1,14 @@
 import { memo, useEffect, useRef } from "react";
+import {
+  useInventoryUI,
+  useInventoryActions,
+} from "../../context/InventoryContext";
 import { ALL_FIELDS } from "../../data/fieldConfig";
 
-function FieldSelector({
-  visibleFields,
-  onToggleField,
-  onResetFields,
-  onClose,
-}) {
+function FieldSelector({ onClose }) {
   const dialogRef = useRef(null);
+  const { visibleFields } = useInventoryUI();
+  const { toggleField, resetFields } = useInventoryActions();
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -44,7 +45,7 @@ function FieldSelector({
                 type="checkbox"
                 checked={alwaysVisible || visibleFields.has(key)}
                 disabled={alwaysVisible}
-                onChange={() => onToggleField(key)}
+                onChange={() => toggleField(key)}
               />
               {label}
             </label>
@@ -53,7 +54,7 @@ function FieldSelector({
       </ul>
 
       <div>
-        <button onClick={onResetFields}>Reset to Defaults</button>
+        <button onClick={resetFields}>Reset to Defaults</button>
         <button onClick={onClose}>Done</button>
       </div>
     </dialog>

@@ -1,15 +1,19 @@
 import { memo } from "react";
-import { countExpiringSoon } from "../../data/inventoryUtils";
+import { useInventoryData } from "../../context/InventoryContext";
+import { countExpiringSoon, STALE_TIME_MS } from "../../data/inventoryUtils";
 import useStaleFetchDisplay from "../../hooks/useStaleFetchDisplay";
 
-function QuickStatsBar({
-  inventoryItems = [],
-  filteredItems = [],
-  isFiltered = false,
-  lastFetchedAt,
-  staleTimeMs,
-} = {}) {
-  const sourceItems = isFiltered ? filteredItems : inventoryItems;
+function QuickStatsBar() {
+  const {
+    items,
+    filterAppliedItems,
+    searchTerm,
+    activeFilterCount,
+    lastFetchedAt,
+  } = useInventoryData();
+
+  const isFiltered = searchTerm.trim() !== "" || activeFilterCount > 0;
+  const sourceItems = isFiltered ? filterAppliedItems : items;
   const activeItems = sourceItems.filter((item) => item.Status !== "archived");
 
   const totalItems = activeItems.length;
@@ -22,7 +26,7 @@ function QuickStatsBar({
   ).length;
   const { lastFetchedAtDisplay, isStale } = useStaleFetchDisplay(
     lastFetchedAt,
-    staleTimeMs,
+    STALE_TIME_MS,
   );
   return (
     <>

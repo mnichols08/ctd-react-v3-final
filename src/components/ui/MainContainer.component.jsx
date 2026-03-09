@@ -1,6 +1,8 @@
-import { STALE_TIME_MS } from "../../data/inventoryUtils";
-import { SHOPPING_LIST_FIELDS } from "../../data/fieldConfig";
-import useFilteredInventory from "../../hooks/useFilteredInventory";
+import {
+  useInventoryData,
+  useInventoryUI,
+  useInventoryActions,
+} from "../../context/InventoryContext";
 import useAutoRefresh from "../../hooks/useAutoRefresh";
 import LoadingState from "./LoadingState.component";
 import ErrorState from "./ErrorState.component";
@@ -11,39 +13,15 @@ import QuickAddForm from "../forms/QuickAddForm.component";
 import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
 
-function MainContainer({ inventory }) {
+function MainContainer() {
   const {
-    items: inventoryItems,
+    items,
     isLoading,
     error,
-    showQuickAdd,
-    showArchived,
-    isSaving,
-    saveError,
-    addItem,
-    deleteItem,
-    updateItem,
-    archiveItem,
-    unarchiveItem,
-    refetch,
     lastFetchedAt,
     searchTerm,
     sortConfig,
     filters,
-    setSearch,
-    setSort,
-    setFilters,
-    clearFilters,
-    visibleFields,
-    toggleQuickAdd,
-    toggleShowArchived,
-    dismissSaveError,
-    addToShoppingList,
-    removeFromShoppingList,
-    updateTargetQty,
-  } = inventory;
-
-  const {
     filterAppliedItems,
     activeFilterCount,
     fridgeItems,
@@ -51,7 +29,10 @@ function MainContainer({ inventory }) {
     pantryItems,
     shoppingListItems,
     archivedItems,
-  } = useFilteredInventory(inventoryItems, searchTerm, filters, sortConfig);
+  } = useInventoryData();
+  const { showQuickAdd, showArchived, isSaving, saveError } = useInventoryUI();
+  const { refetch, toggleQuickAdd, toggleShowArchived, dismissSaveError } =
+    useInventoryActions();
 
   useAutoRefresh({
     sortConfig,
@@ -64,38 +45,18 @@ function MainContainer({ inventory }) {
 
   return (
     <main>
-      {isLoading ? (
-        <LoadingState isLoading={isLoading} />
-      ) : error ? (
-        <ErrorState error={error} onRetry={refetch} />
-      ) : (
+      <LoadingState />
+      <ErrorState />
+      {!isLoading && !error && (
         <>
           <ToolSection id="stats" title="Quick Stats">
-            <QuickStatsBar
-              inventoryItems={inventoryItems}
-              filteredItems={filterAppliedItems}
-              isFiltered={searchTerm.trim() !== "" || activeFilterCount > 0}
-              lastFetchedAt={lastFetchedAt}
-              staleTimeMs={STALE_TIME_MS}
-            />
+            <QuickStatsBar />
           </ToolSection>
           <ToolSection id="filter" title="Filter & Sort">
-            <FilterBarForm
-              onSearch={setSearch}
-              onSort={setSort}
-              onFilter={setFilters}
-              onClearFilters={clearFilters}
-              sortField={sortConfig.field}
-              sortDirection={sortConfig.direction}
-              searchTerm={searchTerm}
-              filters={filters}
-              inventoryItems={inventoryItems}
-              handleRefresh={refetch}
-            />
+            <FilterBarForm />
             {(searchTerm.trim() || activeFilterCount > 0) && (
               <p>
-                Showing {filterAppliedItems.length} of {inventoryItems.length}{" "}
-                items
+                Showing {filterAppliedItems.length} of {items.length} items
                 {activeFilterCount > 0 &&
                   ` (${activeFilterCount} filter${activeFilterCount !== 1 ? "s" : ""} active)`}
               </p>
@@ -109,58 +70,22 @@ function MainContainer({ inventory }) {
             {isSaving && <p role="status">Saving item to Airtable…</p>}
             {saveError && (
               <div role="alert">
-                <p>Error: {saveError}</p>
+                <p>{saveError}</p>
                 <button type="button" onClick={dismissSaveError}>
                   Dismiss
                 </button>
               </div>
             )}
-            {showQuickAdd ? (
-              <QuickAddForm addInventoryItem={addItem} />
-            ) : (
-              <AddInventoryItemForm addInventoryItem={addItem} />
-            )}
+            {showQuickAdd ? <QuickAddForm /> : <AddInventoryItemForm />}
           </ToolSection>
-          <InventorySection
-            id="fridge"
-            title="Fridge"
-            addToShoppingList={addToShoppingList}
-            removeFromShoppingList={removeFromShoppingList}
-            updateItem={updateItem}
-            visibleFields={visibleFields}
-            items={fridgeItems}
-            archiveItem={archiveItem}
-            deleteItem={deleteItem}
-          />
-          <InventorySection
-            id="freezer"
-            title="Freezer"
-            addToShoppingList={addToShoppingList}
-            removeFromShoppingList={removeFromShoppingList}
-            updateItem={updateItem}
-            visibleFields={visibleFields}
-            items={freezerItems}
-            archiveItem={archiveItem}
-            deleteItem={deleteItem}
-          />
-          <InventorySection
-            id="pantry"
-            title="Pantry"
-            addToShoppingList={addToShoppingList}
-            removeFromShoppingList={removeFromShoppingList}
-            updateItem={updateItem}
-            visibleFields={visibleFields}
-            items={pantryItems}
-            archiveItem={archiveItem}
-            deleteItem={deleteItem}
-          />
-          {/* Render Shopping List based upon NeedRestock and TargetQty vs QtyOnHand */}
+          <InventorySection id="fridge" title="Fridge" items={fridgeItems} />
+          <InventorySection id="freezer" title="Freezer" items={freezerItems} />
+          <InventorySection id="pantry" title="Pantry" items={pantryItems} />
           <InventorySection
             id="shopping-list"
             title="Shopping List"
-            updateTargetQty={updateTargetQty}
-            visibleFields={SHOPPING_LIST_FIELDS}
             items={shoppingListItems}
+            variant="shopping"
           />
           {/* Archived Items Toggle & Section */}
           {archivedItems.length > 0 && (
@@ -173,8 +98,7 @@ function MainContainer({ inventory }) {
                 <InventorySection
                   title="Archived Items"
                   items={archivedItems}
-                  unarchiveItem={unarchiveItem}
-                  deleteItem={deleteItem}
+                  variant="archived"
                 />
               )}
             </div>

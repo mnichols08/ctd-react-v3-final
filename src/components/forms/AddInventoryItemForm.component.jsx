@@ -1,6 +1,7 @@
 import { memo, useRef } from "react";
+import { useInventoryActions } from "../../context/InventoryContext";
 import useFormData from "../../hooks/useFormData";
-import { formatLocation } from "../../data/fieldConfig";
+import { prepareItemForSave } from "../../data/inventoryUtils";
 import InventoryFormFields from "./InventoryFormFields.component";
 
 // Initial form state with all fields set to empty or default values
@@ -31,7 +32,8 @@ const initialFormState = {
   ProductUrl: "",
 };
 
-function AddInventoryItemForm({ addInventoryItem }) {
+function AddInventoryItemForm() {
+  const { addItem } = useInventoryActions();
   // Form state to manage controlled inputs
   const { formData, handleChange, resetForm } = useFormData(initialFormState);
   const itemNameRef = useRef(null);
@@ -40,29 +42,9 @@ function AddInventoryItemForm({ addInventoryItem }) {
     e.preventDefault();
     const newItem = {
       id: crypto.randomUUID(),
-      ...formData,
-      Location: formatLocation(formData.Location, formData.SubLocation),
-      LastUpdated: new Date().toISOString(),
+      ...prepareItemForSave(formData),
     };
-    delete newItem.SubLocation;
-    // Coerce numeric fields from strings to numbers (or null for empty fields)
-    const numericFields = [
-      "QtyOnHand",
-      "TargetQty",
-      "PurchasePrice",
-      "UnitCost",
-    ];
-    numericFields.forEach((field) => {
-      if (Object.prototype.hasOwnProperty.call(newItem, field)) {
-        const value = newItem[field];
-        newItem[field] = value === "" ? null : Number(value);
-      }
-    });
-    // Coerce empty date strings to null (Airtable rejects "")
-    ["ExpiresOn", "DatePurchased", "DateFrozen"].forEach((field) => {
-      if (newItem[field] === "") newItem[field] = null;
-    });
-    const success = await addInventoryItem(newItem);
+    const success = await addItem(newItem);
     if (success === false) return;
     resetForm();
     itemNameRef.current?.focus();

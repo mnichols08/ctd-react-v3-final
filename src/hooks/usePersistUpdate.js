@@ -7,7 +7,9 @@ export default function usePersistUpdate(dispatch) {
     async (itemId, changedFields, previousItem) => {
       if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
       try {
-        const savedItem = await patchInventoryItem(itemId, changedFields);
+        // Strip client-only UI state before sending to the API layer
+        const { isDeleting: _, ...apiFields } = changedFields;
+        const savedItem = await patchInventoryItem(itemId, apiFields);
         dispatch({
           type: actions.updateItem,
           payload: { id: itemId, fields: savedItem },
