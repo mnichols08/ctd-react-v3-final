@@ -1,4 +1,8 @@
-import { useInventoryContext } from "../../context/InventoryContext";
+import {
+  useInventoryData,
+  useInventoryUI,
+  useInventoryActions,
+} from "../../context/InventoryContext";
 import useAutoRefresh from "../../hooks/useAutoRefresh";
 import LoadingState from "./LoadingState.component";
 import ErrorState from "./ErrorState.component";
@@ -14,18 +18,10 @@ function MainContainer() {
     items,
     isLoading,
     error,
-    showQuickAdd,
-    showArchived,
-    isSaving,
-    saveError,
-    refetch,
     lastFetchedAt,
     searchTerm,
     sortConfig,
     filters,
-    toggleQuickAdd,
-    toggleShowArchived,
-    dismissSaveError,
     filterAppliedItems,
     activeFilterCount,
     fridgeItems,
@@ -33,7 +29,10 @@ function MainContainer() {
     pantryItems,
     shoppingListItems,
     archivedItems,
-  } = useInventoryContext();
+  } = useInventoryData();
+  const { showQuickAdd, showArchived, isSaving, saveError } = useInventoryUI();
+  const { refetch, toggleQuickAdd, toggleShowArchived, dismissSaveError } =
+    useInventoryActions();
 
   useAutoRefresh({
     sortConfig,
@@ -46,11 +45,9 @@ function MainContainer() {
 
   return (
     <main>
-      {isLoading ? (
-        <LoadingState isLoading={isLoading} />
-      ) : error ? (
-        <ErrorState error={error} onRetry={refetch} />
-      ) : (
+      <LoadingState />
+      <ErrorState />
+      {!isLoading && !error && (
         <>
           <ToolSection id="stats" title="Quick Stats">
             <QuickStatsBar />

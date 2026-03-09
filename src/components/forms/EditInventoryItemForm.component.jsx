@@ -1,11 +1,12 @@
 import { memo, useEffect, useRef } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
+import { useInventoryActions } from "../../context/InventoryContext";
 import useFormData from "../../hooks/useFormData";
-import { parseLocation, formatLocation } from "../../data/fieldConfig";
+import { parseLocation } from "../../data/fieldConfig";
+import { prepareItemForSave } from "../../data/inventoryUtils";
 import InventoryFormFields from "./InventoryFormFields.component";
 
 function EditInventoryItemForm({ item, onClose }) {
-  const { updateItem } = useInventoryContext();
+  const { updateItem } = useInventoryActions();
   // Initialize form state with existing item data, converting null/undefined to empty strings for controlled inputs
   const { location: parsedLocation, subLocation: parsedSubLocation } =
     parseLocation(item.Location);
@@ -43,23 +44,8 @@ function EditInventoryItemForm({ item, onClose }) {
 
     const updatedItem = {
       ...item,
-      ...formData,
-      Location: formatLocation(formData.Location, formData.SubLocation),
-      QtyOnHand:
-        formData.QtyOnHand !== "" ? parseFloat(formData.QtyOnHand) : null,
-      TargetQty:
-        formData.TargetQty !== "" ? parseFloat(formData.TargetQty) : null,
-      PurchasePrice:
-        formData.PurchasePrice !== ""
-          ? parseFloat(formData.PurchasePrice)
-          : null,
-      UnitCost: formData.UnitCost !== "" ? parseFloat(formData.UnitCost) : null,
-      ExpiresOn: formData.ExpiresOn || null,
-      DatePurchased: formData.DatePurchased || null,
-      DateFrozen: formData.DateFrozen || null,
-      LastUpdated: new Date().toISOString(),
+      ...prepareItemForSave(formData),
     };
-    delete updatedItem.SubLocation;
 
     updateItem(updatedItem);
     onClose();

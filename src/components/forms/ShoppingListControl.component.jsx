@@ -1,12 +1,12 @@
 import { memo, useCallback } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
+import { useInventoryActions } from "../../context/InventoryContext";
 
 // Unified shopping-list control for an inventory item.
 // Shows an "Add to Shopping List" button when the item isn't on the list,
 // and a quantity stepper ([ - ] count [ + ]) when it is.
 function ShoppingListControl({ item, variant }) {
   const { addToShoppingList, removeFromShoppingList, updateTargetQty } =
-    useInventoryContext();
+    useInventoryActions();
   const {
     id,
     ItemName: itemName,

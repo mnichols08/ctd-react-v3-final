@@ -1,19 +1,13 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
+import {
+  useInventoryData,
+  useInventoryActions,
+} from "../../context/InventoryContext";
 
 function FilterBarForm() {
-  const inventory = useInventoryContext();
-  const {
-    items,
-    setSearch,
-    setSort,
-    setFilters,
-    clearFilters,
-    sortConfig,
-    searchTerm,
-    filters,
-    refetch,
-  } = inventory;
+  const { items, sortConfig, searchTerm, filters } = useInventoryData();
+  const { setSearch, setSort, setFilters, clearFilters, refetch } =
+    useInventoryActions();
   const { field: sortField, direction: sortDirection } = sortConfig;
   const [localSearch, setLocalSearch] = useState(searchTerm);
   const debounceTimer = useRef(null);
@@ -36,12 +30,8 @@ function FilterBarForm() {
 
   const handleSortChange = (e) => {
     const value = e.target.value;
-    // Toggle sort direction if the same field is selected again
-    if (value === sortField) {
-      setSort(value, sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSort(value, "asc"); // Reset to ascending when changing sort field
-    }
+    // Reset to ascending when changing sort field; direction is controlled by its own dropdown
+    setSort(value, "asc");
   };
 
   const handleSearchChange = (e) => {

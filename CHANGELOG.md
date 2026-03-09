@@ -21,6 +21,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.6.7] - 2026-03-09
+
+### Added
+
+- Add origin validation to Airtable proxy function
+- Add useInventoryData() hook for reactive inventory state (items, filters, derived lists)
+- Add useInventoryUI() hook for UI-only state (showQuickAdd, showArchived, isSaving, saveError, visibleFields)
+
+### Changed
+
+- Refactor tests to remove unused context imports and update mock components for InventorySection
+- Split single InventoryContext into three separate contexts (InventoryDataContext, InventoryUIContext, - InventoryActionsContext) to reduce unnecessary re-renders
+- Add useInventoryActions() hook for stable callbacks (addItem, deleteItem, refetch, setSearch, etc.)
+- Migrate all 11 consumer components to use the most specific hook for their needs
+- Action-only consumers (forms) no longer re-render on data or UI state changes
+- Data-only consumers (QuickStatsBar, NavMenu) no longer re-render on UI toggle changes
+- Remove backward-compatible useInventoryContext hook; all consumers now use specific hooks
+- Extract `checkedFetch` helper in airtableUtils to deduplicate network-error, 429, and error-body handling across all mutation functions
+- Extract `prepareItemForSave` utility in inventoryUtils to deduplicate numeric coercion, date nullification, Location formatting, and SubLocation removal shared by AddInventoryItemForm and EditInventoryItemForm
+- Move `isDeleting` (client-only UI state) stripping from `patchInventoryItem` to `usePersistUpdate`, decoupling the API layer from UI concerns
+- Refactor `MainContainer` to render `LoadingState` and `ErrorState` unconditionally (both self-guard internally)
+- Refactor `LoadingState` to read `isLoading` from context instead of receiving it as a prop, matching `ErrorState` pattern
+- Simplify `MainContainer` rendering: replace nested ternary with flat conditional guard (`!isLoading && !error`)
+- Update HTML metadata for improved SEO and user experience
+
+### Fixed
+
+- Harden `formatRelativeTime` to accept both Date objects and numeric timestamps via `instanceof Date` normalization
+- Remove unreachable sort-direction toggle branch in `FilterBarForm.handleSortChange` (a `<select>` never fires `onChange` for the already-selected value); update misleading comment
+
+---
+
 ## [0.6.6] - 2026-03-09
 
 ### Changed
