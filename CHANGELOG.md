@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added focus trap, Escape key dismissal, and auto-focus to the `FieldSelector` modal dialog. Screen reader and keyboard users can no longer tab into background content, and pressing Escape closes the modal. Added 4 tests covering the new behavior.
 - Add two useInventory hook tests exercising the loadSampleData simulated-failure branch: verifies error state is set when Math.random triggers the 33% failure, and verifies recovery after refetch
 - `ConfirmDialog` component using native `<dialog>` for delete confirmation
+- Added dedicated unit tests for `inventoryUtils.js` (48 tests), `usePersistUpdate` (4 tests), and `useAutoRefresh` (13 tests), bringing total test count from 199 to 264.
 
 ### Changed
 
