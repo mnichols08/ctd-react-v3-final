@@ -419,7 +419,7 @@ describe("Airtable API functions", () => {
       });
 
       expect(setInventoryItems).not.toHaveBeenCalled();
-      expect(setError).toHaveBeenCalledWith("500 Internal Server Error");
+      expect(setError).toHaveBeenCalledWith("Something went wrong on the server. Please try again in a moment.");
       expect(setIsLoading).toHaveBeenLastCalledWith(false);
     });
 
@@ -512,7 +512,7 @@ describe("Airtable API functions", () => {
       });
 
       expect(setError).toHaveBeenCalledWith(
-        "Bad request: The request was invalid. Check your query parameters and field names.",
+        "The data sent was invalid. Please check your input and try again.",
       );
     });
 

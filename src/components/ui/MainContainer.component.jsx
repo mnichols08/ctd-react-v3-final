@@ -109,7 +109,7 @@ function MainContainer({ inventory }) {
             {isSaving && <p role="status">Saving item to Airtable…</p>}
             {saveError && (
               <div role="alert">
-                <p>Error: {saveError}</p>
+                <p>{saveError}</p>
                 <button type="button" onClick={dismissSaveError}>
                   Dismiss
                 </button>
