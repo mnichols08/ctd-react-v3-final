@@ -1,6 +1,7 @@
-import { memo } from "react";
+import { memo, useCallback, useState } from "react";
 import useToggle from "../../hooks/useToggle";
 import ItemCard from "../cards/ItemCard.component";
+import EditDialog from "../ui/EditDialog.component";
 import EmptyState from "../ui/EmptyState.component";
 
 function InventorySection({
@@ -19,6 +20,20 @@ function InventorySection({
   // State to track whether the section is collapsed or expanded
   const isArchivedSection = id === "archived";
   const [isCollapsed, toggleCollapsed] = useToggle(isArchivedSection);
+
+  // Only one item can be edited at a time (opens in a dialog)
+  const [editingItemId, setEditingItemId] = useState(null);
+  const editingItem = editingItemId
+    ? (items?.find((i) => i.id === editingItemId) ?? null)
+    : null;
+  const closeEditor = useCallback(() => setEditingItemId(null), []);
+  const handleEditSave = useCallback(
+    (updatedItem) => {
+      updateItem(updatedItem);
+      setEditingItemId(null);
+    },
+    [updateItem],
+  );
 
   // Calculate the item count for display
   const itemCount = items ? items.length : 0;
@@ -57,6 +72,7 @@ function InventorySection({
                   handleArchiveItem={archiveItem}
                   handleUnarchiveItem={unarchiveItem}
                   handleDeleteItem={deleteItem}
+                  onEdit={setEditingItemId}
                 />
               ))}
             </ul>
@@ -65,6 +81,13 @@ function InventorySection({
           <EmptyState title={title.toLowerCase()} />
         )}
       </div>
+      {editingItem && (
+        <EditDialog
+          item={editingItem}
+          onSave={handleEditSave}
+          onCancel={closeEditor}
+        />
+      )}
     </section>
   );
 }

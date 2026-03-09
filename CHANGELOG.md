@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shopping List section now shows only relevant fields (name, quantity, unit, target, location) instead of the full default field set
 - Wrapped EmptyState, LoadingState, and ToolSection in memo() for consistency with other components
 - deleteItem now clears saveError before starting, matching addItem behavior
+- Edit Items now open in a native `<dialog>` modal (via new `EditDialog` component) instead of rendering inline within the card. Editing state is lifted to `InventorySection` so only one item can be edited at a time per section. `ItemCard` no longer manages its own editing toggle
 
 ### Fixed
 
