@@ -26,7 +26,6 @@ const initialFormState = {
   Tags: "",
   Allergens: "",
   ImageRef: "",
-  Status: "",
   ProductUrl: "",
 };
 

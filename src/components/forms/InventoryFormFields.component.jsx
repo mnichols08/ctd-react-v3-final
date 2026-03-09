@@ -63,14 +63,6 @@ export default function InventoryFormFields({
           name="UPC"
         />
 
-        <label htmlFor={id("Status", idSuffix)}>Status:</label>
-        <input
-          value={formData.Status}
-          onChange={handleChange}
-          type="text"
-          id={id("Status", idSuffix)}
-          name="Status"
-        />
       </fieldset>
 
       <fieldset>

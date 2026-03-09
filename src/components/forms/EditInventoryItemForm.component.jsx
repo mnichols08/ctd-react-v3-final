@@ -26,7 +26,6 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
     Tags: item.Tags || "",
     Allergens: item.Allergens || "",
     ImageRef: item.ImageRef || "",
-    Status: item.Status || "",
     ProductUrl: item.ProductUrl || "",
   });
 
