@@ -26,6 +26,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Refactor Header component to use context for inventory data and simplify props
+- Refactor MainContainer to use context for inventory management and update tests accordingly
+
+### Deprecated
+
+- Remove unused status field from filters in inventoryReducer
 
 ---
 
