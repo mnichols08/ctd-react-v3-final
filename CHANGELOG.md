@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [Unreleased]
+## [0.6.3] - 2026-03-08
 
 ### Added
 
@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add two useInventory hook tests exercising the loadSampleData simulated-failure branch: verifies error state is set when Math.random triggers the 33% failure, and verifies recovery after refetch
 - `ConfirmDialog` component using native `<dialog>` for delete confirmation
 - Added dedicated unit tests for `inventoryUtils.js` (48 tests), `usePersistUpdate` (4 tests), and `useAutoRefresh` (13 tests), bringing total test count from 199 to 264.
+- Add Netlify serverless proxy (`netlify/functions/airtable.mjs`) that forwards Airtable API calls using a server-side PAT, keeping the token out of the client bundle. When `VITE_AIRTABLE_PAT` is absent at build time, `airtableUtils.js` automatically routes through the proxy instead of calling Airtable directly.
 
 ### Changed
 
