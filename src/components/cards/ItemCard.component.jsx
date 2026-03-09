@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo } from "react";
 import useToggle from "../../hooks/useToggle";
 import ShoppingListControl from "../forms/ShoppingListControl.component";
 import EditInventoryItemForm from "../forms/EditInventoryItemForm.component";
@@ -24,7 +24,8 @@ function ItemCard({
   handleDeleteItem,
 }) {
   const [isEditing, , openEditor, closeEditor] = useToggle(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteConfirm, , openDeleteConfirm, closeDeleteConfirm] =
+    useToggle(false);
 
   const handleSave = (updatedItem) => {
     handleUpdateItem(updatedItem);
@@ -76,20 +77,17 @@ function ItemCard({
             )}
             {handleDeleteItem && (
               <>
-                <button
-                  onClick={() => setShowDeleteConfirm(true)}
-                  disabled={item.isDeleting}
-                >
+                <button onClick={openDeleteConfirm} disabled={item.isDeleting}>
                   {item.isDeleting ? "Deleting…" : "Delete"}
                 </button>
                 {showDeleteConfirm && (
                   <ConfirmDialog
                     message={`Delete "${item.ItemName}"? This cannot be undone.`}
                     onConfirm={() => {
-                      setShowDeleteConfirm(false);
+                      closeDeleteConfirm();
                       handleDeleteItem(item.id);
                     }}
-                    onCancel={() => setShowDeleteConfirm(false)}
+                    onCancel={closeDeleteConfirm}
                   />
                 )}
               </>

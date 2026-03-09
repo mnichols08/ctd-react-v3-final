@@ -53,6 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `handleClearFilters` in FilterBarForm now delegates to `onClearFilters` instead of using a local default constant
 - Replaced FieldSelector's manual modal implementation with native `<dialog>` element, removing custom focus trap, Escape handler, and backdrop logic
 - Delete flow now uses `ConfirmDialog` in `ItemCard` instead of `window.confirm` in `useInventoryActions`, making the hook testable without mocking globals
+- `ItemCard` now uses `useToggle` for delete confirmation state, consistent with the editing toggle
 
 ### Fixed
 
