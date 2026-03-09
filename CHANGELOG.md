@@ -82,6 +82,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Shopping list partition now excludes archived items, preventing stale Airtable data with `NeedRestock: true` from leaking through
 - Fixed loadSampleData setting items before loading timer resolved, causing a flash of stale data
 - Fixed formatRelativeTime guard to handle both null and undefined timestamps
+- Fixed ConfirmDialog not closing the dialog element before calling onConfirm
 
 ### Removed
 
@@ -93,7 +94,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove stale `needRestock` key from `DEFAULT_FILTERS` in `FilterBarForm` to match the reducer's `initialState.filters` and `clearFilters` case, which no longer include it
 - Remove dead `shoppingListCount` value from `useShoppingList` and `useInventory` return objects — no component consumed it; callers can use `shoppingListItems.length` directly
 - Unused `location` field from reducer `initialState.filters` and `clearFilters` action
-
+- Removed duplicate useEffect for aborting fetches on unmount in useInventory
 
 ---
 

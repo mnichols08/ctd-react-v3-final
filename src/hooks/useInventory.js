@@ -75,15 +75,6 @@ export default function useInventory() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Cancel in-flight fetch on unmount
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
-
   // Re-run the fetch/load logic (for retry, refresh, or re-fetch with new params)
   const refetch = useCallback((options = {}) => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {

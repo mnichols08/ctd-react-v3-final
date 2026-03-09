@@ -34,7 +34,14 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
         <button autoFocus onClick={handleClose}>
           Cancel
         </button>
-        <button onClick={onConfirm}>Confirm</button>
+        <button
+          onClick={() => {
+            dialogRef.current?.close();
+            onConfirm();
+          }}
+        >
+          Confirm
+        </button>
       </div>
     </dialog>
   );
