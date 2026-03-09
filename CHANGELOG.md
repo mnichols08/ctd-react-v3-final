@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added test covering `EditInventoryItemForm` submit coercion logic: numeric fields parsed to floats (or null when empty), cleared date fields set to null, and original item fields preserved through the update.
 - Added focus trap, Escape key dismissal, and auto-focus to the `FieldSelector` modal dialog. Screen reader and keyboard users can no longer tab into background content, and pressing Escape closes the modal. Added 4 tests covering the new behavior.
 - Add two useInventory hook tests exercising the loadSampleData simulated-failure branch: verifies error state is set when Math.random triggers the 33% failure, and verifies recovery after refetch
+- `ConfirmDialog` component using native `<dialog>` for delete confirmation
 
 ### Changed
 
@@ -51,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Centralized `DEFAULT_VISIBLE_FIELDS_SET` in fieldConfig; ItemCard and reducer now share the single source of truth
 - `handleClearFilters` in FilterBarForm now delegates to `onClearFilters` instead of using a local default constant
 - Replaced FieldSelector's manual modal implementation with native `<dialog>` element, removing custom focus trap, Escape handler, and backdrop logic
+- Delete flow now uses `ConfirmDialog` in `ItemCard` instead of `window.confirm` in `useInventoryActions`, making the hook testable without mocking globals
 
 ### Fixed
 
@@ -73,7 +75,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Return `sortedItems` as `filterAppliedItems` from `useFilteredInventory` so consumers receive filtered-and-sorted data instead of filtered-only; existing consumers only used `.length` so behavior was correct but the unsorted return was misleading
 - Simplify redundant `itemCount > 0 && items && items.length > 0` condition in `InventorySection` to just `itemCount > 0`, since `itemCount` is already derived from `items.length`
 - Use `useRef` instead of a closure dependency for `initialState` in `useFormData`, making `resetForm` referentially stable even when callers pass a new object literal on every render (e.g. the edit form)
-
+- Delete flow now uses `ConfirmDialog` in `ItemCard` instead of `window.confirm` in `useInventoryActions`, making the hook testable without mocking globals
 ### Removed
 
 - Remove inline styles and click handler from heading in InventorySection component

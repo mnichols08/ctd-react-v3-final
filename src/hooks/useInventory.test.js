@@ -68,7 +68,6 @@ describe("useInventory", () => {
   });
 
   it("deleteItem removes an item in sample-data mode", async () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
     const result = await renderAndLoad();
     const firstItem = result.current.items[0];
     const initialCount = result.current.items.length;
@@ -76,8 +75,6 @@ describe("useInventory", () => {
     await act(async () => {
       await result.current.deleteItem(firstItem.id);
     });
-
-    confirmSpy.mockRestore();
 
     expect(result.current.items).toHaveLength(initialCount - 1);
     expect(result.current.items.find((i) => i.id === firstItem.id)).toBeFalsy();

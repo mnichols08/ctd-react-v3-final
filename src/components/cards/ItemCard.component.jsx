@@ -1,7 +1,8 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import useToggle from "../../hooks/useToggle";
 import ShoppingListControl from "../forms/ShoppingListControl.component";
 import EditInventoryItemForm from "../forms/EditInventoryItemForm.component";
+import ConfirmDialog from "../ui/ConfirmDialog.component";
 import { ALL_FIELDS, DEFAULT_VISIBLE_FIELDS_SET } from "../../data/fieldConfig";
 
 // Helper function to format field values for display (e.g., convert booleans to "Yes"/"No")
@@ -23,6 +24,7 @@ function ItemCard({
   handleDeleteItem,
 }) {
   const [isEditing, , openEditor, closeEditor] = useToggle(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const handleSave = (updatedItem) => {
     handleUpdateItem(updatedItem);
@@ -73,12 +75,24 @@ function ItemCard({
               </>
             )}
             {handleDeleteItem && (
-              <button
-                onClick={() => handleDeleteItem(item.id)}
-                disabled={item.isDeleting}
-              >
-                {item.isDeleting ? "Deleting…" : "Delete"}
-              </button>
+              <>
+                <button
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={item.isDeleting}
+                >
+                  {item.isDeleting ? "Deleting…" : "Delete"}
+                </button>
+                {showDeleteConfirm && (
+                  <ConfirmDialog
+                    message={`Delete "${item.ItemName}"? This cannot be undone.`}
+                    onConfirm={() => {
+                      setShowDeleteConfirm(false);
+                      handleDeleteItem(item.id);
+                    }}
+                    onCancel={() => setShowDeleteConfirm(false)}
+                  />
+                )}
+              </>
             )}
             {(addToShoppingList || updateTargetQty) && (
               <ShoppingListControl

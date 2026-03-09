@@ -45,12 +45,6 @@ export default function useInventoryActions({ items, dispatch }) {
       const item = itemsRef.current.find((i) => i.id === id);
       if (!item || item.isDeleting) return;
 
-      if (
-        !window.confirm(`Delete "${item.ItemName}"? This cannot be undone.`)
-      ) {
-        return;
-      }
-
       dispatch({ type: actions.setDeleting, payload: { id, value: true } });
 
       if (import.meta.env.VITE_SAMPLE_DATA === "true") {
