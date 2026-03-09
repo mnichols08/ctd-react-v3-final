@@ -24,53 +24,6 @@ describe("useShoppingList", () => {
     vi.clearAllMocks();
   });
 
-  // --- Derived state ---
-
-  it("derives shoppingListItems from items where NeedRestock && TargetQty > QtyOnHand", () => {
-    const items = [
-      makeItem({ id: "a", NeedRestock: true, TargetQty: 5, QtyOnHand: 2 }),
-      makeItem({ id: "b", NeedRestock: false, TargetQty: 3, QtyOnHand: 3 }),
-      makeItem({ id: "c", NeedRestock: true, TargetQty: 4, QtyOnHand: 4 }),
-      makeItem({ id: "d", NeedRestock: true, TargetQty: 10, QtyOnHand: 3 }),
-    ];
-
-    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
-
-    expect(result.current.shoppingListItems).toHaveLength(2);
-    expect(result.current.shoppingListItems.map((i) => i.id)).toEqual([
-      "a",
-      "d",
-    ]);
-  });
-
-  it("returns empty list when no items need restock", () => {
-    const items = [
-      makeItem({ id: "a", NeedRestock: false }),
-      makeItem({ id: "b", NeedRestock: true, TargetQty: 3, QtyOnHand: 3 }),
-    ];
-
-    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
-
-    expect(result.current.shoppingListItems).toHaveLength(0);
-  });
-
-  it("updates derived state when items prop changes", () => {
-    const initialItems = [makeItem({ id: "a", NeedRestock: false })];
-    const { result, rerender } = renderHook(
-      ({ items }) => useShoppingList({ items, dispatch }),
-      { initialProps: { items: initialItems } },
-    );
-
-    expect(result.current.shoppingListItems).toHaveLength(0);
-
-    const updatedItems = [
-      makeItem({ id: "a", NeedRestock: true, TargetQty: 5, QtyOnHand: 2 }),
-    ];
-    rerender({ items: updatedItems });
-
-    expect(result.current.shoppingListItems).toHaveLength(1);
-  });
-
   // --- addToShoppingList ---
 
   it("addToShoppingList dispatches addToShoppingList action", async () => {

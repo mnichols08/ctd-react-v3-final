@@ -124,7 +124,6 @@ export default function useInventory() {
     useInventoryActions({ items, dispatch });
 
   const {
-    shoppingListItems,
     addToShoppingList,
     removeFromShoppingList,
     updateTargetQty,
@@ -158,7 +157,6 @@ export default function useInventory() {
     toggleQuickAdd,
     toggleShowArchived,
     dismissSaveError,
-    shoppingListItems,
     addToShoppingList,
     removeFromShoppingList,
     updateTargetQty,

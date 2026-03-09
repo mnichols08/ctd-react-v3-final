@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { actions } from "../reducers/inventoryReducer";
 import usePersistUpdate from "./usePersistUpdate";
 
@@ -7,14 +7,6 @@ export default function useShoppingList({ items, dispatch }) {
   useEffect(() => {
     itemsRef.current = items;
   }, [items]);
-
-  const shoppingListItems = useMemo(
-    () =>
-      items.filter(
-        (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
-      ),
-    [items],
-  );
 
   const persistUpdate = usePersistUpdate(dispatch);
 
@@ -83,7 +75,6 @@ export default function useShoppingList({ items, dispatch }) {
   );
 
   return {
-    shoppingListItems,
     addToShoppingList,
     removeFromShoppingList,
     updateTargetQty,

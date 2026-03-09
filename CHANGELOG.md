@@ -99,6 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unused `location` field from reducer `initialState.filters` and `clearFilters` action
 - Removed duplicate useEffect for aborting fetches on unmount in useInventory
 - Removed Status from Add, Edit, and shared form fields — status is controlled by the archive/unarchive button
+- Removed duplicate shoppingListItems computation from useShoppingList — MainContainer uses the filtered version from useFilteredInventory
 
 ---
 
