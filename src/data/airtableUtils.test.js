@@ -783,14 +783,16 @@ describe("Airtable API functions", () => {
 
       await patchInventoryItem("rec123abc", { QtyOnHand: 5 });
 
-      // inspect the body sent to fetch
+      // inspect the body sent to fetch — in proxy mode the real payload
+      // is nested inside a `body` envelope, so unwrap if needed
       const fetchCall = globalThis.fetch.mock.calls[0];
-      const body = JSON.parse(fetchCall[1].body);
+      const parsed = JSON.parse(fetchCall[1].body);
+      const fields = parsed.fields ?? parsed.body?.fields;
 
       // only QtyOnHand + auto-added LastUpdated — no other fields
-      expect(body.fields).toHaveProperty("QtyOnHand", 5);
-      expect(body.fields).toHaveProperty("LastUpdated");
-      expect(Object.keys(body.fields)).toHaveLength(2);
+      expect(fields).toHaveProperty("QtyOnHand", 5);
+      expect(fields).toHaveProperty("LastUpdated");
+      expect(Object.keys(fields)).toHaveLength(2);
     });
 
     it("throws on network failure", async () => {

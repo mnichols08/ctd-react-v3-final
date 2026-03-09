@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.6.4] - 2026-03-08
+
+### Fixed
+
+- Fix airtableUtils test failing in CI due to proxy envelope
+
+---
+
 ## [0.6.3] - 2026-03-08
 
 ### Added
