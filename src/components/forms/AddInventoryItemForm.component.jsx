@@ -1,4 +1,5 @@
 import { memo, useRef } from "react";
+import { useInventoryContext } from "../../context/InventoryContext";
 import useFormData from "../../hooks/useFormData";
 import { formatLocation } from "../../data/fieldConfig";
 import InventoryFormFields from "./InventoryFormFields.component";
@@ -31,7 +32,8 @@ const initialFormState = {
   ProductUrl: "",
 };
 
-function AddInventoryItemForm({ addInventoryItem }) {
+function AddInventoryItemForm() {
+  const { addItem } = useInventoryContext();  
   // Form state to manage controlled inputs
   const { formData, handleChange, resetForm } = useFormData(initialFormState);
   const itemNameRef = useRef(null);
@@ -62,7 +64,7 @@ function AddInventoryItemForm({ addInventoryItem }) {
     ["ExpiresOn", "DatePurchased", "DateFrozen"].forEach((field) => {
       if (newItem[field] === "") newItem[field] = null;
     });
-    const success = await addInventoryItem(newItem);
+    const success = await addItem(newItem);
     if (success === false) return;
     resetForm();
     itemNameRef.current?.focus();

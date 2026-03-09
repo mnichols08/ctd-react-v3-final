@@ -1,13 +1,15 @@
 import { memo } from "react";
+import { useInventoryContext } from "../../context/InventoryContext";
 
-function ErrorState({ error, onRetry }) {
+function ErrorState() {
+  const { error, refetch } = useInventoryContext();
   if (!error) return null;
 
   return (
     <div role="alert">
       <p>Error: {error}</p>
-      {onRetry && (
-        <button type="button" onClick={onRetry}>
+      {refetch && (
+        <button type="button" onClick={refetch}>
           Retry
         </button>
       )}

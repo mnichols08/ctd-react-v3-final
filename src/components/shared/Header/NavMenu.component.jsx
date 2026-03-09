@@ -4,8 +4,7 @@ import useToggle from "../../../hooks/useToggle";
 import FieldSelector from "../../cards/FieldSelector.component";
 
 function NavMenu() {
-    const inventory = useInventoryContext();
-  const { items, visibleFields, toggleField, resetFields } = inventory;
+  const { items } = useInventoryContext();
   const archivedItemsExist = useMemo(
     () => items.some((item) => item.Status === "archived"),
     [items],
@@ -47,14 +46,7 @@ function NavMenu() {
         )}
       </menu>
 
-      {showFieldSelector && (
-        <FieldSelector
-          visibleFields={visibleFields}
-          onToggleField={toggleField}
-          onResetFields={resetFields}
-          onClose={closeFieldSelector}
-        />
-      )}
+      {showFieldSelector && <FieldSelector onClose={closeFieldSelector} />}
     </nav>
   );
 }

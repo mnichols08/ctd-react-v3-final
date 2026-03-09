@@ -67,90 +67,92 @@ function FilterBarForm() {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()}>
-      <label htmlFor="search">Search:</label>
-      <input
-        value={localSearch}
-        onChange={handleSearchChange}
-        type="text"
-        id="search"
-        name="search"
-        placeholder="Search inventory..."
-      />
-      <label htmlFor="sort-field">Sort by:</label>
-      <select
-        id="sort-field"
-        name="sort-field"
-        value={sortField}
-        onChange={handleSortChange}
-      >
-        <option value="">None</option>
-        <option value="ItemName">Item Name</option>
-        <option value="Category">Category</option>
-        <option value="QtyOnHand">Qty on Hand</option>
-        <option value="ExpiresOn">Expires On</option>
-        <option value="LastUpdated">Last Updated</option>
-      </select>
-      <label htmlFor="sort-direction">Sort Direction:</label>
-      <select
-        id="sort-direction"
-        name="sort-direction"
-        value={sortDirection}
-        onChange={(e) => setSort(sortField, e.target.value)}
-      >
-        <option value="asc">Asc</option>
-        <option value="desc">Desc</option>
-      </select>
-      <button type="button" onClick={handleReset}>
-        Reset
-      </button>
-      {/* Filter Controls */}
-      <fieldset>
-        <legend>Filter by Category:</legend>
-        {availableCategories.map((cat) => (
-          <label key={cat}>
-            <input
-              type="checkbox"
-              checked={filters.categories.includes(cat)}
-              onChange={() => handleCategoryToggle(cat)}
-            />
-            {cat}
-          </label>
-        ))}
-      </fieldset>
-
-      <label htmlFor="filter-expiring-soon">
+    <>
+      <form onSubmit={(e) => e.preventDefault()}>
+        <label htmlFor="search">Search:</label>
         <input
-          type="checkbox"
-          id="filter-expiring-soon"
-          name="filter-expiring-soon"
-          checked={filters.expiringSoon}
-          onChange={(e) =>
-            setFilters({ ...filters, expiringSoon: e.target.checked })
-          }
+          value={localSearch}
+          onChange={handleSearchChange}
+          type="text"
+          id="search"
+          name="search"
+          placeholder="Search inventory..."
         />
-        Expiring Soon
-      </label>
+        <label htmlFor="sort-field">Sort by:</label>
+        <select
+          id="sort-field"
+          name="sort-field"
+          value={sortField}
+          onChange={handleSortChange}
+        >
+          <option value="">None</option>
+          <option value="ItemName">Item Name</option>
+          <option value="Category">Category</option>
+          <option value="QtyOnHand">Qty on Hand</option>
+          <option value="ExpiresOn">Expires On</option>
+          <option value="LastUpdated">Last Updated</option>
+        </select>
+        <label htmlFor="sort-direction">Sort Direction:</label>
+        <select
+          id="sort-direction"
+          name="sort-direction"
+          value={sortDirection}
+          onChange={(e) => setSort(sortField, e.target.value)}
+        >
+          <option value="asc">Asc</option>
+          <option value="desc">Desc</option>
+        </select>
+        <button type="button" onClick={handleReset}>
+          Reset
+        </button>
+        {/* Filter Controls */}
+        <fieldset>
+          <legend>Filter by Category:</legend>
+          {availableCategories.map((cat) => (
+            <label key={cat}>
+              <input
+                type="checkbox"
+                checked={filters.categories.includes(cat)}
+                onChange={() => handleCategoryToggle(cat)}
+              />
+              {cat}
+            </label>
+          ))}
+        </fieldset>
 
-      <label htmlFor="filter-low-stock">
-        <input
-          type="checkbox"
-          id="filter-low-stock"
-          name="filter-low-stock"
-          checked={filters.lowStock}
-          onChange={(e) =>
-            setFilters({ ...filters, lowStock: e.target.checked })
-          }
-        />
-        Low Stock
-      </label>
-      <button type="button" onClick={clearFilters}>
-        Clear All Filters
-      </button>
-      <button type="button" onClick={refetch}>
-        Refresh
-      </button>
-    </form>
+        <label htmlFor="filter-expiring-soon">
+          <input
+            type="checkbox"
+            id="filter-expiring-soon"
+            name="filter-expiring-soon"
+            checked={filters.expiringSoon}
+            onChange={(e) =>
+              setFilters({ ...filters, expiringSoon: e.target.checked })
+            }
+          />
+          Expiring Soon
+        </label>
+
+        <label htmlFor="filter-low-stock">
+          <input
+            type="checkbox"
+            id="filter-low-stock"
+            name="filter-low-stock"
+            checked={filters.lowStock}
+            onChange={(e) =>
+              setFilters({ ...filters, lowStock: e.target.checked })
+            }
+          />
+          Low Stock
+        </label>
+        <button type="button" onClick={clearFilters}>
+          Clear All Filters
+        </button>
+        <button type="button" onClick={refetch}>
+          Refresh
+        </button>
+      </form>
+    </>
   );
 }
 

@@ -7,9 +7,10 @@ import {
   screen,
   within,
 } from "@testing-library/react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useContext, useEffect, useState } from "react";
 
 import MainContainer from "./MainContainer.component";
+import { InventoryContext } from "../../context/InventoryContext";
 import { InventoryProvider } from "../../context/InventoryProvider";
 import inventorySampleData from "../../data/inventorySample.json";
 import { fetchInventoryItems } from "../../data/airtableUtils";
@@ -34,83 +35,104 @@ vi.mock("../sections/ToolSection.component", () => ({
   ),
 }));
 
-vi.mock("./QuickStatsBar.component", () => ({
-  default: ({ inventoryItems, filteredItems }) => (
-    <div data-testid="quick-stats">
-      QuickStatsBar
-      <span data-testid="stats-total">{inventoryItems?.length ?? 0}</span>
-      <span data-testid="stats-filtered">{filteredItems?.length ?? 0}</span>
-    </div>
-  ),
-}));
+vi.mock("./QuickStatsBar.component", async () => {
+  const { useInventoryContext } =
+    await import("../../context/InventoryContext");
+  return {
+    default: () => {
+      const { items, filterAppliedItems } = useInventoryContext();
+      return (
+        <div data-testid="quick-stats">
+          QuickStatsBar
+          <span data-testid="stats-total">{items?.length ?? 0}</span>
+          <span data-testid="stats-filtered">
+            {filterAppliedItems?.length ?? 0}
+          </span>
+        </div>
+      );
+    },
+  };
+});
 
-vi.mock("../forms/FilterBarForm.component", () => ({
-  default: ({ handleRefresh, onSearch, onSort }) => (
-    <div>
-      FilterBarForm
-      <button type="button" onClick={handleRefresh}>
-        Refresh
-      </button>
-      <input
-        aria-label="mock-search"
-        onChange={(e) => onSearch(e.target.value)}
-      />
-      <button
-        type="button"
-        aria-label="mock-sort-category-desc"
-        onClick={() => onSort("Category", "desc")}
-      >
-        Sort
-      </button>
-    </div>
-  ),
-}));
-
-vi.mock("../sections/InventorySection.component", () => ({
-  default: (props) => {
-    sectionRenderLog.push(props);
-    const { title, items, addToShoppingList, updateTargetQty } = props;
-    return (
-      <section>
-        <h2>{title}</h2>
-        <p>{`count:${items.length}`}</p>
-        <p>{items.map((item) => item.ItemName).join("|")}</p>
-        <p>
-          {items
-            .map(
-              (item) =>
-                `${item.ItemName}:${item.TargetQty}:${item.NeedRestock}`,
-            )
-            .join("|")}
-        </p>
-        {addToShoppingList && items[0] && (
-          <form
-            aria-label={`mock-form-${title}`}
-            onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target);
-              addToShoppingList?.(items[0].id, formData.get("quantity"));
-            }}
-          >
-            <input
-              aria-label={`mock-qty-${title}`}
-              name="quantity"
-              defaultValue="2"
-            />
-            <button type="submit">{`mock-add-${title}`}</button>
-          </form>
-        )}
-        {updateTargetQty && items[0] && (
-          <button
-            onClick={() => updateTargetQty?.(items[0].id, items[0].QtyOnHand)}
-          >
-            {`mock-remove-${title}`}
+vi.mock("../forms/FilterBarForm.component", async () => {
+  const { useInventoryContext } =
+    await import("../../context/InventoryContext");
+  return {
+    default: () => {
+      const { refetch, setSearch, setSort } = useInventoryContext();
+      return (
+        <div>
+          FilterBarForm
+          <button type="button" onClick={refetch}>
+            Refresh
           </button>
-        )}
-      </section>
-    );
-  },
-}));
+          <input
+            aria-label="mock-search"
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <button
+            type="button"
+            aria-label="mock-sort-category-desc"
+            onClick={() => setSort("Category", "desc")}
+          >
+            Sort
+          </button>
+        </div>
+      );
+    },
+  };
+});
+
+vi.mock("../sections/InventorySection.component", async () => {
+  const { useInventoryContext } =
+    await import("../../context/InventoryContext");
+  return {
+    default: (props) => {
+      sectionRenderLog.push(props);
+      const { addToShoppingList, updateTargetQty } = useInventoryContext();
+      const { title, items, variant = "inventory" } = props;
+      return (
+        <section>
+          <h2>{title}</h2>
+          <p>{`count:${items.length}`}</p>
+          <p>{items.map((item) => item.ItemName).join("|")}</p>
+          <p>
+            {items
+              .map(
+                (item) =>
+                  `${item.ItemName}:${item.TargetQty}:${item.NeedRestock}`,
+              )
+              .join("|")}
+          </p>
+          {variant === "inventory" && items[0] && (
+            <form
+              aria-label={`mock-form-${title}`}
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                addToShoppingList?.(items[0].id, formData.get("quantity"));
+              }}
+            >
+              <input
+                aria-label={`mock-qty-${title}`}
+                name="quantity"
+                defaultValue="2"
+              />
+              <button type="submit">{`mock-add-${title}`}</button>
+            </form>
+          )}
+          {variant === "shopping" && items[0] && (
+            <button
+              onClick={() => updateTargetQty?.(items[0].id, items[0].QtyOnHand)}
+            >
+              {`mock-remove-${title}`}
+            </button>
+          )}
+        </section>
+      );
+    },
+  };
+});
 
 afterEach(() => {
   cleanup();
@@ -603,7 +625,7 @@ describe("MainContainer", () => {
   });
 
   describe("useCallback behavior", () => {
-    it("handler functions maintain same reference across renders when deps unchanged", () => {
+    it("section props maintain same reference across renders when deps unchanged", () => {
       render(<TestMainContainer />);
       act(() => vi.runAllTimers());
 
@@ -621,16 +643,8 @@ describe("MainContainer", () => {
         .filter((r) => r.title === "Pantry")
         .pop();
 
-      // useCallback should return the cached function - same reference
-      expect(pantryAfter.addToShoppingList).toBe(
-        pantryBefore.addToShoppingList,
-      );
-      expect(pantryAfter.removeFromShoppingList).toBe(
-        pantryBefore.removeFromShoppingList,
-      );
-      expect(pantryAfter.updateItem).toBe(pantryBefore.updateItem);
-      expect(pantryAfter.archiveItem).toBe(pantryBefore.archiveItem);
-      expect(pantryAfter.deleteItem).toBe(pantryBefore.deleteItem);
+      // useMemo should return the cached array - same reference
+      expect(pantryAfter.items).toBe(pantryBefore.items);
     });
 
     it("handler functions get new reference when deps change", () => {

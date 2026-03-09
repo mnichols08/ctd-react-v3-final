@@ -8,6 +8,7 @@ import {
 } from "@testing-library/react";
 
 import InventorySection from "./InventorySection.component";
+import { InventoryProvider } from "../../context/InventoryProvider";
 
 afterEach(() => {
   cleanup();
@@ -32,7 +33,9 @@ const makeItems = (count) =>
 describe("InventorySection – collapsible behavior", () => {
   it("non-archived sections render expanded by default", () => {
     const { container } = render(
-      <InventorySection id="pantry" title="Pantry" items={makeItems(2)} />,
+      <InventoryProvider>
+        <InventorySection id="pantry" title="Pantry" items={makeItems(2)} />
+      </InventoryProvider>,
     );
 
     // Toggle button should say "Collapse" and aria-expanded should be true
@@ -48,11 +51,13 @@ describe("InventorySection – collapsible behavior", () => {
 
   it("archived section renders collapsed by default", () => {
     const { container } = render(
-      <InventorySection
-        id="archived"
-        title="Archived Items"
-        items={makeItems(1)}
-      />,
+      <InventoryProvider>
+        <InventorySection
+          id="archived"
+          title="Archived Items"
+          items={makeItems(1)}
+        />
+      </InventoryProvider>,
     );
 
     const toggle = container.querySelector("button[aria-expanded]");
@@ -67,7 +72,9 @@ describe("InventorySection – collapsible behavior", () => {
 
   it("clicking toggle hides the item list", () => {
     const { container } = render(
-      <InventorySection id="fridge" title="Fridge" items={makeItems(2)} />,
+      <InventoryProvider>
+        <InventorySection id="fridge" title="Fridge" items={makeItems(2)} />
+      </InventoryProvider>,
     );
 
     const toggle = container.querySelector("button[aria-expanded]");
@@ -88,7 +95,9 @@ describe("InventorySection – collapsible behavior", () => {
 
   it("clicking toggle again shows the item list", () => {
     const { container } = render(
-      <InventorySection id="fridge" title="Fridge" items={makeItems(2)} />,
+      <InventoryProvider>
+        <InventorySection id="fridge" title="Fridge" items={makeItems(2)} />
+      </InventoryProvider>,
     );
 
     const toggle = container.querySelector("button[aria-expanded]");
@@ -106,7 +115,9 @@ describe("InventorySection – collapsible behavior", () => {
 
   it("item count remains visible in heading when collapsed", () => {
     const { container } = render(
-      <InventorySection id="pantry" title="Pantry" items={makeItems(3)} />,
+      <InventoryProvider>
+        <InventorySection id="pantry" title="Pantry" items={makeItems(3)} />
+      </InventoryProvider>,
     );
 
     // Collapse
@@ -119,10 +130,12 @@ describe("InventorySection – collapsible behavior", () => {
 
   it("collapsing one section does not affect another", () => {
     const { container } = render(
-      <div>
-        <InventorySection id="fridge" title="Fridge" items={makeItems(1)} />
-        <InventorySection id="pantry" title="Pantry" items={makeItems(1)} />
-      </div>,
+      <InventoryProvider>
+        <div>
+          <InventorySection id="fridge" title="Fridge" items={makeItems(1)} />
+          <InventorySection id="pantry" title="Pantry" items={makeItems(1)} />
+        </div>
+      </InventoryProvider>,
     );
 
     const sections = container.querySelectorAll("section");
@@ -143,7 +156,9 @@ describe("InventorySection – collapsible behavior", () => {
 
   it("shows EmptyState when items array is empty", () => {
     const { container } = render(
-      <InventorySection id="freezer" title="Freezer" items={[]} />,
+      <InventoryProvider>
+        <InventorySection id="freezer" title="Freezer" items={[]} />
+      </InventoryProvider>,
     );
 
     expect(
