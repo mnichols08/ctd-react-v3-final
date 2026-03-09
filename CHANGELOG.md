@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.6.6] - 2026-03-08
+
+### Changed
+
+- Refactor Header component to use context for inventory data and simplify props
+
+---
+
 ## [0.6.5] - 2026-03-08
 
 ### Added
