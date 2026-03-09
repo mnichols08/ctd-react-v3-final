@@ -384,14 +384,14 @@ describe("MainContainer", () => {
     // Before timers resolve, the loading indicator should be visible
     const loadingStatus = screen.getByRole("status");
     expect(loadingStatus).toBeTruthy();
-    expect(loadingStatus.textContent).toContain("Loading...");
+    expect(loadingStatus.textContent).toContain("Loading");
 
     // Inventory sections should NOT be rendered yet
     expect(screen.queryByRole("heading", { name: "Fridge" })).toBeNull();
 
     // After loading completes, the spinner disappears
     act(() => vi.runAllTimers());
-    expect(screen.queryByText("Loading...")).toBeNull();
+    expect(screen.queryByText("Loading")).toBeNull();
     expect(screen.getByRole("heading", { name: "Fridge" })).toBeTruthy();
   });
 

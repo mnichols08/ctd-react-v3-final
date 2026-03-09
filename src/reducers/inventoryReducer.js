@@ -24,6 +24,8 @@ export const actions = {
   resetFields: "resetFields",
   clearFilters: "clearFilters",
   setDeleting: "setDeleting",
+  setLoadingProgress: "setLoadingProgress",
+  setPartialLoadWarning: "setPartialLoadWarning",
 };
 
 export const initialState = {
@@ -35,6 +37,8 @@ export const initialState = {
   isSaving: false,
   saveError: null,
   lastFetchedAt: null,
+  loadingProgress: null,
+  partialLoadWarning: null,
   searchTerm: "",
   sortConfig: { field: "ItemName", direction: "asc" },
   filters: {
@@ -198,6 +202,12 @@ export default function inventoryReducer(state, action) {
 
     case actions.setLastFetchedAt:
       return { ...state, lastFetchedAt: action.payload };
+
+    case actions.setLoadingProgress:
+      return { ...state, loadingProgress: action.payload };
+
+    case actions.setPartialLoadWarning:
+      return { ...state, partialLoadWarning: action.payload };
 
     case actions.toggleField: {
       const next = new Set(state.visibleFields);

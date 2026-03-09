@@ -269,4 +269,60 @@ describe("useAutoRefresh", () => {
       expect(props.refetch).not.toHaveBeenCalled();
     });
   });
+
+  // --- Overlapping trigger deduplication --------------------------------
+  describe("overlapping trigger deduplication", () => {
+    it("fires refetch only once when visibility and interval trigger simultaneously", () => {
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
+        writable: true,
+        configurable: true,
+      });
+
+      const props = {
+        ...defaultProps(),
+        lastFetchedAt: staleTimestamp(),
+      };
+
+      renderHook((p) => useAutoRefresh(p), { initialProps: props });
+
+      // Fire both triggers in the same tick
+      act(() => {
+        fireVisibilityChange("visible");
+        vi.advanceTimersByTime(STALE_CHECK_INTERVAL_MS);
+      });
+
+      // Should only refetch once despite two concurrent triggers
+      expect(props.refetch).toHaveBeenCalledTimes(1);
+      expect(props.refetch).toHaveBeenCalledWith({ silent: true });
+    });
+
+    it("allows a new refetch after lastFetchedAt updates (guard resets)", () => {
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
+        writable: true,
+        configurable: true,
+      });
+
+      const props = {
+        ...defaultProps(),
+        lastFetchedAt: staleTimestamp(),
+      };
+
+      const { rerender } = renderHook((p) => useAutoRefresh(p), {
+        initialProps: props,
+      });
+
+      // First trigger
+      act(() => fireVisibilityChange("visible"));
+      expect(props.refetch).toHaveBeenCalledTimes(1);
+
+      // Simulate fetch completion by updating lastFetchedAt (still stale for test)
+      rerender({ ...props, lastFetchedAt: staleTimestamp() });
+
+      // Second trigger should now be allowed
+      act(() => vi.advanceTimersByTime(STALE_CHECK_INTERVAL_MS));
+      expect(props.refetch).toHaveBeenCalledTimes(2);
+    });
+  });
 });

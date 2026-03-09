@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   isDataStale,
   fetchParamsEqual,
@@ -20,6 +20,21 @@ export default function useAutoRefresh({
     filters,
     searchTerm,
   });
+
+  // Guard against overlapping silent refreshes: visibility and interval
+  // triggers share this flag so only one in-flight fetch runs at a time.
+  const refreshingRef = useRef(false);
+
+  // Reset when the fetch completes (lastFetchedAt updates)
+  useEffect(() => {
+    refreshingRef.current = false;
+  }, [lastFetchedAt]);
+
+  const silentRefresh = useCallback(() => {
+    if (refreshingRef.current) return;
+    refreshingRef.current = true;
+    refetch({ silent: true });
+  }, [refetch]);
 
   // When server-side filtering is enabled, re-fetch on sort/filter/search changes
   useEffect(() => {
@@ -56,14 +71,14 @@ export default function useAutoRefresh({
         isDataStale(lastFetchedAt) &&
         !isLoading
       ) {
-        refetch({ silent: true });
+        silentRefresh();
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [lastFetchedAt, isLoading, refetch]);
+  }, [lastFetchedAt, isLoading, silentRefresh]);
 
   // Periodic stale-check while the tab stays visible
   useEffect(() => {
@@ -75,10 +90,10 @@ export default function useAutoRefresh({
         isDataStale(lastFetchedAt) &&
         !isLoading
       ) {
-        refetch({ silent: true });
+        silentRefresh();
       }
     }, STALE_CHECK_INTERVAL_MS);
 
     return () => clearInterval(intervalId);
-  }, [lastFetchedAt, isLoading, refetch]);
+  }, [lastFetchedAt, isLoading, silentRefresh]);
 }

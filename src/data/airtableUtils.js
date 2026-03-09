@@ -203,6 +203,8 @@ const checkedFetch = async (fetchOptions, { allowedStatuses = [] } = {}) => {
   return resp;
 };
 
+const MAX_PAGES = 50; // Safety cap: 50 pages × 100 records = 5,000 items
+
 export const fetchInventoryItems = async ({
   setInventoryItems,
   setIsLoading,
@@ -211,58 +213,107 @@ export const fetchInventoryItems = async ({
   filterConfig,
   searchTerm,
   setLastFetchedAt = () => {},
+  onProgress = () => {},
+  setPartialLoadWarning = () => {},
   signal,
 }) => {
   setIsLoading(true);
   setError(null);
+  setPartialLoadWarning(null);
+  onProgress(null);
   // When server-side filtering is enabled, append sort/filter params to the URL
   const useServerFilter = import.meta.env.VITE_SERVER_FILTER === "true";
-  const params = useServerFilter
+  const baseParams = useServerFilter
     ? buildAirtableParams(sortConfig, filterConfig, searchTerm)
     : new URLSearchParams();
-  const paramString = params.toString();
 
   try {
-    let resp;
-    try {
-      resp = await airtableFetch({
-        method: "GET",
-        params: paramString || undefined,
-        signal,
-      });
-    } catch {
-      throw new Error(NETWORK_ERROR);
-    }
-    if (!resp.ok) {
-      // On 422 with server-side params, fall back to fetching all records
-      // and let client-side filtering handle it
-      if (resp.status === 422 && useServerFilter && paramString) {
-        console.warn(
-          "Airtable returned 422 for query params — falling back to unfiltered fetch.",
+    const allRecords = [];
+    let offset = undefined;
+    let page = 0;
+
+    while (page < MAX_PAGES) {
+      page++;
+      const params = new URLSearchParams(baseParams);
+      if (offset) params.set("offset", offset);
+      const paramString = params.toString();
+
+      let resp;
+      try {
+        resp = await airtableFetch({
+          method: "GET",
+          params: paramString || undefined,
+          signal,
+        });
+      } catch (fetchErr) {
+        // First page network error is fatal; later pages keep partial data
+        if (allRecords.length === 0) throw new Error(NETWORK_ERROR);
+        console.error(fetchErr);
+        setPartialLoadWarning(
+          `Loaded ${allRecords.length} items but couldn't fetch the rest. Some items may be missing.`,
         );
-        let fallbackResp;
-        try {
-          fallbackResp = await airtableFetch({ method: "GET", signal });
-        } catch {
-          throw new Error(NETWORK_ERROR);
-        }
-        if (!fallbackResp.ok) {
-          throw new Error(friendlyErrorMessage(fallbackResp.status));
-        }
-        resp = fallbackResp;
-      } else {
-        throw new Error(friendlyErrorMessage(resp.status));
+        break;
       }
+
+      if (!resp.ok) {
+        // On 422 with server-side params on the first page, fall back to unfiltered
+        if (
+          resp.status === 422 &&
+          useServerFilter &&
+          paramString &&
+          page === 1
+        ) {
+          console.warn(
+            "Airtable returned 422 for query params — falling back to unfiltered fetch.",
+          );
+          let fallbackResp;
+          try {
+            fallbackResp = await airtableFetch({ method: "GET", signal });
+          } catch {
+            throw new Error(NETWORK_ERROR);
+          }
+          if (!fallbackResp.ok) {
+            throw new Error(friendlyErrorMessage(fallbackResp.status));
+          }
+          resp = fallbackResp;
+        } else if (allRecords.length === 0) {
+          // First page non-ok is fatal
+          throw new Error(friendlyErrorMessage(resp.status));
+        } else {
+          // Later page failure — keep partial data
+          console.error(`Page ${page} failed with status ${resp.status}`);
+          setPartialLoadWarning(
+            `Loaded ${allRecords.length} items but couldn't fetch the rest. Some items may be missing.`,
+          );
+          break;
+        }
+      }
+
+      const data = await resp.json();
+      allRecords.push(...data.records);
+
+      if (allRecords.length > 0) {
+        onProgress(allRecords.length);
+      }
+
+      offset = data.offset;
+      if (!offset) break; // No more pages
     }
-    const { records } = await resp.json();
+
+    if (page >= MAX_PAGES && offset) {
+      console.warn(
+        `Pagination stopped at ${MAX_PAGES} pages (${allRecords.length} records).`,
+      );
+      setPartialLoadWarning(
+        `Loaded ${allRecords.length} items but more may exist. Display is capped for performance.`,
+      );
+    }
+
     setInventoryItems(
-      records.map((record) => {
-        const item = {
-          id: record.id,
-          ...record.fields,
-        };
-        return item;
-      }),
+      allRecords.map((record) => ({
+        id: record.id,
+        ...record.fields,
+      })),
     );
     setLastFetchedAt(new Date());
   } catch (error) {
@@ -272,6 +323,7 @@ export const fetchInventoryItems = async ({
   } finally {
     if (!signal?.aborted) {
       setIsLoading(false);
+      onProgress(null);
     }
   }
 };

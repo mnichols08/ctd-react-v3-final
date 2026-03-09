@@ -19,6 +19,7 @@ import InventorySection from "../sections/InventorySection.component";
 import ToolSection from "../sections/ToolSection.component";
 import { DEFAULT_VISIBLE_FIELDS } from "../../data/fieldConfig";
 import { InventoryProvider } from "../../context/InventoryProvider";
+import { InventoryActionsContext } from "../../context/InventoryContext";
 
 afterEach(() => {
   cleanup();
@@ -598,7 +599,7 @@ describe("EditInventoryItemForm", () => {
     expect(screen.getByLabelText("Notes:").value).toBe("");
   });
 
-  it("modifying a field and saving calls updateItem with the updated value", () => {
+  it("modifying a field and saving calls updateItem with the updated value", async () => {
     const onClose = vi.fn();
 
     const { container } = render(
@@ -611,7 +612,7 @@ describe("EditInventoryItemForm", () => {
     fireEvent.change(nameInput, { target: { value: "Raspberries" } });
 
     const form = container.querySelector("form");
-    fireEvent(form, createEvent.submit(form));
+    await act(async () => fireEvent(form, createEvent.submit(form)));
 
     // onClose is called after saving
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -637,7 +638,7 @@ describe("EditInventoryItemForm", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("submit coerces numeric fields to numbers and empty dates to null", () => {
+  it("submit coerces numeric fields to numbers and empty dates to null", async () => {
     const onClose = vi.fn();
     // Start with populated numeric and date fields
     const item = {
@@ -672,13 +673,13 @@ describe("EditInventoryItemForm", () => {
     });
 
     const form = container.querySelector("form");
-    fireEvent(form, createEvent.submit(form));
+    await act(async () => fireEvent(form, createEvent.submit(form)));
 
     // onClose is called after saving
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("LastUpdated is auto-set to current timestamp on save", () => {
+  it("LastUpdated is auto-set to current timestamp on save", async () => {
     const onClose = vi.fn();
     const _before = new Date().toISOString();
 
@@ -689,10 +690,33 @@ describe("EditInventoryItemForm", () => {
     );
 
     const form = container.querySelector("form");
-    fireEvent(form, createEvent.submit(form));
+    await act(async () => fireEvent(form, createEvent.submit(form)));
 
     // onClose is called after saving, confirming submit completed
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not close the dialog when updateItem fails", async () => {
+    const onClose = vi.fn();
+    const mockActions = {
+      updateItem: vi.fn().mockResolvedValue(false),
+    };
+
+    const { container } = render(
+      <InventoryActionsContext.Provider value={mockActions}>
+        <EditInventoryItemForm item={baseItem} onClose={onClose} />
+      </InventoryActionsContext.Provider>,
+    );
+
+    fireEvent.change(screen.getByLabelText("Item Name:"), {
+      target: { value: "Should Not Save" },
+    });
+
+    const form = container.querySelector("form");
+    await act(async () => fireEvent(form, createEvent.submit(form)));
+
+    expect(mockActions.updateItem).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
   });
 });
 
@@ -1118,7 +1142,7 @@ describe("Integration: EditInventoryItemForm in ItemCard", () => {
     expect(screen.getByRole("dialog")).toBeTruthy();
   });
 
-  it("editing an item via the dialog calls updateItem and closes the dialog", () => {
+  it("editing an item via the dialog calls updateItem and closes the dialog", async () => {
     render(
       <InventoryProvider>
         <InventorySection
@@ -1137,7 +1161,9 @@ describe("Integration: EditInventoryItemForm in ItemCard", () => {
     fireEvent.change(nameInput, { target: { value: "Gouda Cheese" } });
 
     // Submit the form
-    fireEvent.click(screen.getByRole("button", { name: "Save" }));
+    await act(async () =>
+      fireEvent.click(screen.getByRole("button", { name: "Save" })),
+    );
 
     // Dialog should be closed after save
     expect(screen.queryByRole("dialog")).toBeNull();
