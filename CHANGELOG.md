@@ -21,6 +21,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.6.5] - 2026-03-08
+
+### Added
+
+- Add InventoryContext and provider for managing inventory state
+
+### Changed
+
+- Refactor App component to use InventoryContext and wrap with InventoryProvider
+- Wrap App component in InventoryProvider for context access in tests
+
+---
+
 ## [0.6.4] - 2026-03-08
 
 ### Fixed
