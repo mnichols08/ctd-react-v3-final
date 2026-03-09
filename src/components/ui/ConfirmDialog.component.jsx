@@ -1,7 +1,8 @@
-import { memo, useEffect, useRef } from "react";
+import { memo, useEffect, useId, useRef } from "react";
 
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   const dialogRef = useRef(null);
+  const titleId = useId();
 
   useEffect(() => {
     dialogRef.current?.showModal();
@@ -21,9 +22,9 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
         e.preventDefault();
         onCancel();
       }}
-      aria-labelledby="confirm-dialog-title"
+      aria-labelledby={titleId}
     >
-      <p id="confirm-dialog-title">{message}</p>
+      <p id={titleId}>{message}</p>
       <div>
         <button autoFocus onClick={onCancel}>
           Cancel

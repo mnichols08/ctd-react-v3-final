@@ -76,6 +76,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simplify redundant `itemCount > 0 && items && items.length > 0` condition in `InventorySection` to just `itemCount > 0`, since `itemCount` is already derived from `items.length`
 - Use `useRef` instead of a closure dependency for `initialState` in `useFormData`, making `resetForm` referentially stable even when callers pass a new object literal on every render (e.g. the edit form)
 - Delete flow now uses `ConfirmDialog` in `ItemCard` instead of `window.confirm` in `useInventoryActions`, making the hook testable without mocking globals
+- `ConfirmDialog` now uses `useId()` for its `aria-labelledby` target, preventing duplicate DOM IDs
+
 ### Removed
 
 - Remove inline styles and click handler from heading in InventorySection component
