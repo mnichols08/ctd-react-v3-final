@@ -1,16 +1,10 @@
 import { memo, useCallback, useState } from "react";
-import { useInventoryContext } from "../../context/InventoryContext";
-import { SHOPPING_LIST_FIELDS } from "../../data/fieldConfig";
 import useToggle from "../../hooks/useToggle";
 import ItemCard from "../cards/ItemCard.component";
 import EditDialog from "../ui/EditDialog.component";
 import EmptyState from "../ui/EmptyState.component";
 
 function InventorySection({ id, title, items, variant = "inventory" }) {
-  const { visibleFields, updateItem } = useInventoryContext();
-  const effectiveFields =
-    variant === "shopping" ? SHOPPING_LIST_FIELDS : visibleFields;
-
   // State to track whether the section is collapsed or expanded
   const isArchivedSection = id === "archived";
   const [isCollapsed, toggleCollapsed] = useToggle(isArchivedSection);

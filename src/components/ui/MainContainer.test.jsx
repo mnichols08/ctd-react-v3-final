@@ -7,10 +7,9 @@ import {
   screen,
   within,
 } from "@testing-library/react";
-import { memo, useCallback, useContext, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 
 import MainContainer from "./MainContainer.component";
-import { InventoryContext } from "../../context/InventoryContext";
 import { InventoryProvider } from "../../context/InventoryProvider";
 import inventorySampleData from "../../data/inventorySample.json";
 import { fetchInventoryItems } from "../../data/airtableUtils";
@@ -39,7 +38,7 @@ vi.mock("./QuickStatsBar.component", async () => {
   const { useInventoryContext } =
     await import("../../context/InventoryContext");
   return {
-    default: () => {
+    default: function MockQuickStatsBar() {
       const { items, filterAppliedItems } = useInventoryContext();
       return (
         <div data-testid="quick-stats">
@@ -58,7 +57,7 @@ vi.mock("../forms/FilterBarForm.component", async () => {
   const { useInventoryContext } =
     await import("../../context/InventoryContext");
   return {
-    default: () => {
+    default: function MockFilterBarForm() {
       const { refetch, setSearch, setSort } = useInventoryContext();
       return (
         <div>
@@ -87,7 +86,7 @@ vi.mock("../sections/InventorySection.component", async () => {
   const { useInventoryContext } =
     await import("../../context/InventoryContext");
   return {
-    default: (props) => {
+    default: function MockInventorySection(props) {
       sectionRenderLog.push(props);
       const { addToShoppingList, updateTargetQty } = useInventoryContext();
       const { title, items, variant = "inventory" } = props;

@@ -680,7 +680,7 @@ describe("EditInventoryItemForm", () => {
 
   it("LastUpdated is auto-set to current timestamp on save", () => {
     const onClose = vi.fn();
-    const before = new Date().toISOString();
+    const _before = new Date().toISOString();
 
     const { container } = render(
       <InventoryProvider>
