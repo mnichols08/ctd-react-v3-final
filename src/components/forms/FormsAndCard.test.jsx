@@ -18,6 +18,7 @@ import ItemCard from "../cards/ItemCard.component";
 import InventorySection from "../sections/InventorySection.component";
 import ToolSection from "../sections/ToolSection.component";
 import { DEFAULT_VISIBLE_FIELDS } from "../../data/fieldConfig";
+import { InventoryProvider } from "../../context/InventoryProvider";
 
 afterEach(() => {
   cleanup();
@@ -163,7 +164,11 @@ describe("ShoppingListControl", () => {
 
 describe("FilterBar", () => {
   it("renders search, sort, and filter controls", () => {
-    render(<FilterBarForm />);
+    render(
+      <InventoryProvider>
+        <FilterBarForm />
+      </InventoryProvider>,
+    );
 
     expect(screen.getByLabelText("Search:")).toBeTruthy();
     expect(screen.getByLabelText("Sort by:")).toBeTruthy();
@@ -173,7 +178,11 @@ describe("FilterBar", () => {
   });
 
   it("includes expected option sets for sort and filter", () => {
-    render(<FilterBarForm />);
+    render(
+      <InventoryProvider>
+        <FilterBarForm />
+      </InventoryProvider>,
+    );
 
     const sortOptions = screen
       .getAllByRole("option")
@@ -192,7 +201,12 @@ describe("Form submission behavior", () => {
     const formRenderers = [
       () =>
         render(<AddInventoryItemForm addInventoryItem={() => {}} lastId={0} />),
-      () => render(<FilterBarForm />),
+      () =>
+        render(
+          <InventoryProvider>
+            <FilterBarForm />
+          </InventoryProvider>,
+        ),
     ];
 
     formRenderers.forEach((renderForm) => {

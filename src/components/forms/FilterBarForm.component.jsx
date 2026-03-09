@@ -1,27 +1,23 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useInventoryContext } from "../../context/InventoryContext";
 
-const DEFAULT_FILTERS = {
-  categories: [],
-  expiringSoon: false,
-  lowStock: false,
-  status: "",
-};
-
-function FilterBarForm({
-  onSearch = () => {},
-  onSort = () => {},
-  onFilter = () => {},
-  onClearFilters = () => {},
-  sortField,
-  sortDirection,
-  searchTerm = "",
-  filters = DEFAULT_FILTERS,
-  inventoryItems = [],
-  handleRefresh = () => {},
-}) {
+function FilterBarForm() {
+  const inventory = useInventoryContext();
+  const {
+    items,
+    setSearch,
+    setSort,
+    setFilters,
+    clearFilters,
+    sortConfig,
+    searchTerm,
+    filters,
+    refetch,
+  } = inventory;
+  const { field: sortField, direction: sortDirection } = sortConfig;
   const [localSearch, setLocalSearch] = useState(searchTerm);
   const debounceTimer = useRef(null);
-
+  // Cleanup debounce timer on unmount
   useEffect(() => {
     return () => clearTimeout(debounceTimer.current);
   }, []);
@@ -34,19 +30,17 @@ function FilterBarForm({
   // Derive available categories from inventory items
   const availableCategories = useMemo(
     () =>
-      [
-        ...new Set(inventoryItems.map((item) => item.Category).filter(Boolean)),
-      ].sort(),
-    [inventoryItems],
+      [...new Set(items.map((item) => item.Category).filter(Boolean))].sort(),
+    [items],
   );
 
   const handleSortChange = (e) => {
     const value = e.target.value;
     // Toggle sort direction if the same field is selected again
     if (value === sortField) {
-      onSort(value, sortDirection === "asc" ? "desc" : "asc");
+      setSort(value, sortDirection === "asc" ? "desc" : "asc");
     } else {
-      onSort(value, "asc"); // Reset to ascending when changing sort field
+      setSort(value, "asc"); // Reset to ascending when changing sort field
     }
   };
 
@@ -55,7 +49,7 @@ function FilterBarForm({
     setLocalSearch(value);
     clearTimeout(debounceTimer.current);
     debounceTimer.current = setTimeout(() => {
-      onSearch(value);
+      setSearch(value);
     }, 300);
   };
 
@@ -63,17 +57,13 @@ function FilterBarForm({
     const updated = filters.categories.includes(category)
       ? filters.categories.filter((c) => c !== category)
       : [...filters.categories, category];
-    onFilter({ ...filters, categories: updated });
-  };
-
-  const handleClearFilters = () => {
-    onClearFilters();
+    setFilters({ ...filters, categories: updated });
   };
 
   const handleReset = () => {
     clearTimeout(debounceTimer.current);
-    onSort("", "asc");
-    onClearFilters();
+    setSort("", "asc");
+    clearFilters();
   };
 
   return (
@@ -106,7 +96,7 @@ function FilterBarForm({
         id="sort-direction"
         name="sort-direction"
         value={sortDirection}
-        onChange={(e) => onSort(sortField, e.target.value)}
+        onChange={(e) => setSort(sortField, e.target.value)}
       >
         <option value="asc">Asc</option>
         <option value="desc">Desc</option>
@@ -136,7 +126,7 @@ function FilterBarForm({
           name="filter-expiring-soon"
           checked={filters.expiringSoon}
           onChange={(e) =>
-            onFilter({ ...filters, expiringSoon: e.target.checked })
+            setFilters({ ...filters, expiringSoon: e.target.checked })
           }
         />
         Expiring Soon
@@ -148,14 +138,16 @@ function FilterBarForm({
           id="filter-low-stock"
           name="filter-low-stock"
           checked={filters.lowStock}
-          onChange={(e) => onFilter({ ...filters, lowStock: e.target.checked })}
+          onChange={(e) =>
+            setFilters({ ...filters, lowStock: e.target.checked })
+          }
         />
         Low Stock
       </label>
-      <button type="button" onClick={handleClearFilters}>
+      <button type="button" onClick={clearFilters}>
         Clear All Filters
       </button>
-      <button type="button" onClick={handleRefresh}>
+      <button type="button" onClick={refetch}>
         Refresh
       </button>
     </form>
