@@ -61,3 +61,21 @@ export const CATEGORIES = [
 ];
 
 export const LOCATIONS = ["Fridge", "Freezer", "Pantry"];
+
+const LOCATION_SEPARATOR = " - ";
+
+export function parseLocation(locationString) {
+  if (!locationString) return { location: "", subLocation: "" };
+  const idx = locationString.indexOf(LOCATION_SEPARATOR);
+  if (idx === -1) return { location: locationString, subLocation: "" };
+  return {
+    location: locationString.slice(0, idx),
+    subLocation: locationString.slice(idx + LOCATION_SEPARATOR.length),
+  };
+}
+
+export function formatLocation(location, subLocation) {
+  if (!location) return "";
+  if (!subLocation?.trim()) return location;
+  return `${location}${LOCATION_SEPARATOR}${subLocation.trim()}`;
+}

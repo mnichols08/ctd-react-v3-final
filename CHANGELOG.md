@@ -54,6 +54,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced FieldSelector's manual modal implementation with native `<dialog>` element, removing custom focus trap, Escape handler, and backdrop logic
 - Delete flow now uses `ConfirmDialog` in `ItemCard` instead of `window.confirm` in `useInventoryActions`, making the hook testable without mocking globals
 - `ItemCard` now uses `useToggle` for delete confirmation state, consistent with the editing toggle
+- Split Location field into a select dropdown (from LOCATIONS) and a free-text sub-location input across all forms
+
 
 ### Fixed
 
@@ -83,6 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed loadSampleData setting items before loading timer resolved, causing a flash of stale data
 - Fixed formatRelativeTime guard to handle both null and undefined timestamps
 - Fixed ConfirmDialog not closing the dialog element before calling onConfirm
+- Fixed useFilteredInventory partitioning to derive main location via parseLocation instead of hardcoded includes
 
 ### Removed
 

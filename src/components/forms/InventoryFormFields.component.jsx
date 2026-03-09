@@ -62,7 +62,6 @@ export default function InventoryFormFields({
           id={id("UPC", idSuffix)}
           name="UPC"
         />
-
       </fieldset>
 
       <fieldset>
@@ -100,6 +99,16 @@ export default function InventoryFormFields({
             </option>
           ))}
         </select>
+
+        <label htmlFor={id("SubLocation", idSuffix)}>Sub-Location:</label>
+        <input
+          value={formData.SubLocation}
+          onChange={handleChange}
+          type="text"
+          id={id("SubLocation", idSuffix)}
+          name="SubLocation"
+          placeholder="e.g. Shelf 3, Door, Drawer 2"
+        />
 
         <label htmlFor={id("Tags", idSuffix)}>Tags:</label>
         <input

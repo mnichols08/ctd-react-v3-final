@@ -1,5 +1,6 @@
 import { memo, useRef } from "react";
 import useFormData from "../../hooks/useFormData";
+import { formatLocation } from "../../data/fieldConfig";
 import InventoryFormFields from "./InventoryFormFields.component";
 
 // Initial form state with all fields set to empty or default values
@@ -12,6 +13,7 @@ const initialFormState = {
   Category: "",
   SubCategory: "",
   Location: "",
+  SubLocation: "",
   QtyOnHand: "",
   QtyUnit: "",
   TargetQty: "",
@@ -39,8 +41,10 @@ function AddInventoryItemForm({ addInventoryItem }) {
     const newItem = {
       id: crypto.randomUUID(),
       ...formData,
+      Location: formatLocation(formData.Location, formData.SubLocation),
       LastUpdated: new Date().toISOString(),
     };
+    delete newItem.SubLocation;
     // Coerce numeric fields from strings to numbers (or null for empty fields)
     const numericFields = [
       "QtyOnHand",

@@ -1,12 +1,13 @@
 import { memo, useRef } from "react";
 import useFormData from "../../hooks/useFormData";
-import { CATEGORIES, LOCATIONS } from "../../data/fieldConfig";
+import { CATEGORIES, LOCATIONS, formatLocation } from "../../data/fieldConfig";
 
 const initialFormState = {
   ItemName: "",
   Category: "",
   ExpiresOn: "",
   Location: "",
+  SubLocation: "",
   QtyOnHand: "",
   QtyUnit: "",
 };
@@ -37,7 +38,7 @@ function QuickAddForm({ addInventoryItem }) {
       UPC: null,
       Category: Category,
       SubCategory: null,
-      Location,
+      Location: formatLocation(Location, formData.SubLocation),
       QtyOnHand: Number(QtyOnHand),
       QtyUnit,
       TargetQty: 0,
@@ -126,6 +127,18 @@ function QuickAddForm({ addInventoryItem }) {
               </option>
             ))}
           </select>
+        </p>
+
+        <p>
+          <label htmlFor="quick-SubLocation">Sub-Location: </label>
+          <input
+            value={formData.SubLocation}
+            onChange={handleChange}
+            type="text"
+            id="quick-SubLocation"
+            name="SubLocation"
+            placeholder="e.g. Shelf 3, Door, Drawer 2"
+          />
         </p>
 
         <p>

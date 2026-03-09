@@ -1,9 +1,12 @@
 import { memo, useEffect, useRef } from "react";
 import useFormData from "../../hooks/useFormData";
+import { parseLocation, formatLocation } from "../../data/fieldConfig";
 import InventoryFormFields from "./InventoryFormFields.component";
 
 function EditInventoryItemForm({ item, onSave, onCancel }) {
   // Initialize form state with existing item data, converting null/undefined to empty strings for controlled inputs
+  const { location: parsedLocation, subLocation: parsedSubLocation } =
+    parseLocation(item.Location);
   const { formData, handleChange } = useFormData({
     ItemName: item.ItemName || "",
     ItemDescription: item.ItemDescription || "",
@@ -12,7 +15,8 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
     UPC: item.UPC || "",
     Category: item.Category || "",
     SubCategory: item.SubCategory || "",
-    Location: item.Location || "",
+    Location: parsedLocation,
+    SubLocation: parsedSubLocation,
     QtyOnHand: item.QtyOnHand != null ? String(item.QtyOnHand) : "",
     QtyUnit: item.QtyUnit || "",
     TargetQty: item.TargetQty != null ? String(item.TargetQty) : "",
@@ -38,6 +42,7 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
     const updatedItem = {
       ...item,
       ...formData,
+      Location: formatLocation(formData.Location, formData.SubLocation),
       QtyOnHand:
         formData.QtyOnHand !== "" ? parseFloat(formData.QtyOnHand) : null,
       TargetQty:
@@ -52,6 +57,7 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
       DateFrozen: formData.DateFrozen || null,
       LastUpdated: new Date().toISOString(),
     };
+    delete updatedItem.SubLocation;
 
     onSave(updatedItem);
   };

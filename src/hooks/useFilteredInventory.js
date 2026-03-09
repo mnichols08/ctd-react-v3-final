@@ -5,7 +5,11 @@ import {
   isLowStock,
   sortItems,
 } from "../data/inventoryUtils";
-import { SEARCHABLE_FIELDS } from "../data/fieldConfig";
+import {
+  SEARCHABLE_FIELDS,
+  LOCATIONS,
+  parseLocation,
+} from "../data/fieldConfig";
 
 export default function useFilteredInventory(
   inventoryItems,
@@ -64,25 +68,24 @@ export default function useFilteredInventory(
   // Partition sorted items by location / status in a single pass
   const { fridgeItems, freezerItems, pantryItems, shoppingListItems } =
     useMemo(() => {
-      const partitions = {
-        fridgeItems: [],
-        freezerItems: [],
-        pantryItems: [],
-        shoppingListItems: [],
-      };
+      const locationMap = Object.fromEntries(LOCATIONS.map((loc) => [loc, []]));
+      const shoppingListItems = [];
       for (const item of sortedItems) {
-        const loc = item.Location;
         const isArchived = item.Status === "archived";
         if (!isArchived) {
-          if (loc?.includes("Fridge")) partitions.fridgeItems.push(item);
-          if (loc?.includes("Freezer")) partitions.freezerItems.push(item);
-          if (loc?.includes("Pantry")) partitions.pantryItems.push(item);
+          const { location } = parseLocation(item.Location);
+          if (location in locationMap) locationMap[location].push(item);
           if (item.NeedRestock && item.TargetQty > item.QtyOnHand) {
-            partitions.shoppingListItems.push(item);
+            shoppingListItems.push(item);
           }
         }
       }
-      return partitions;
+      return {
+        fridgeItems: locationMap["Fridge"],
+        freezerItems: locationMap["Freezer"],
+        pantryItems: locationMap["Pantry"],
+        shoppingListItems,
+      };
     }, [sortedItems]);
 
   const archivedItems = useMemo(
