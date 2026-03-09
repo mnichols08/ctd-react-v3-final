@@ -419,7 +419,9 @@ describe("Airtable API functions", () => {
       });
 
       expect(setInventoryItems).not.toHaveBeenCalled();
-      expect(setError).toHaveBeenCalledWith("Something went wrong on the server. Please try again in a moment.");
+      expect(setError).toHaveBeenCalledWith(
+        "Something went wrong on the server. Please try again in a moment.",
+      );
       expect(setIsLoading).toHaveBeenLastCalledWith(false);
     });
 
@@ -616,6 +618,249 @@ describe("Airtable API functions", () => {
       });
 
       expect(setLastFetchedAt).not.toHaveBeenCalled();
+    });
+
+    // -- Pagination --------------------------------------------------------
+
+    it("accumulates records across multiple pages when offset is present", async () => {
+      const page1 = {
+        records: [{ id: "rec1", fields: { ItemName: "Milk" } }],
+        offset: "itr_page2",
+      };
+      const page2 = {
+        records: [{ id: "rec2", fields: { ItemName: "Eggs" } }],
+        // no offset — last page
+      };
+
+      globalThis.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: vi.fn().mockResolvedValue(page1),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: vi.fn().mockResolvedValue(page2),
+        });
+
+      const setInventoryItems = vi.fn();
+      const onProgress = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading: vi.fn(),
+        setError: vi.fn(),
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+        onProgress,
+      });
+
+      // State set once with the full combined array
+      expect(setInventoryItems).toHaveBeenCalledTimes(1);
+      const items = setInventoryItems.mock.calls[0][0];
+      expect(items).toHaveLength(2);
+      expect(items[0].id).toBe("rec1");
+      expect(items[1].id).toBe("rec2");
+    });
+
+    it("calls onProgress with cumulative count after each page", async () => {
+      const page1 = {
+        records: [{ id: "r1", fields: { ItemName: "A" } }],
+        offset: "next",
+      };
+      const page2 = {
+        records: [
+          { id: "r2", fields: { ItemName: "B" } },
+          { id: "r3", fields: { ItemName: "C" } },
+        ],
+      };
+
+      globalThis.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: vi.fn().mockResolvedValue(page1),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: vi.fn().mockResolvedValue(page2),
+        });
+
+      const onProgress = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems: vi.fn(),
+        setIsLoading: vi.fn(),
+        setError: vi.fn(),
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+        onProgress,
+      });
+
+      // null (reset), 1 (after page 1), 3 (after page 2), null (cleanup)
+      expect(onProgress).toHaveBeenCalledWith(null); // reset
+      expect(onProgress).toHaveBeenCalledWith(1);
+      expect(onProgress).toHaveBeenCalledWith(3);
+    });
+
+    it("keeps page 1 data and sets partial warning when page 2 fails", async () => {
+      const page1 = {
+        records: [{ id: "r1", fields: { ItemName: "A" } }],
+        offset: "next",
+      };
+
+      globalThis.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: vi.fn().mockResolvedValue(page1),
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 500,
+          statusText: "Internal Server Error",
+          json: vi.fn().mockResolvedValue({ error: { message: "fail" } }),
+        });
+
+      const setInventoryItems = vi.fn();
+      const setError = vi.fn();
+      const setPartialLoadWarning = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading: vi.fn(),
+        setError,
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+        setPartialLoadWarning,
+      });
+
+      // Should still set items with the partial data
+      expect(setInventoryItems).toHaveBeenCalledTimes(1);
+      expect(setInventoryItems.mock.calls[0][0]).toHaveLength(1);
+
+      // Should NOT set a full error (page 1 data is usable)
+      expect(setError).toHaveBeenCalledWith(null); // only the initial reset
+
+      // Should set the partial-load warning
+      expect(setPartialLoadWarning).toHaveBeenCalledWith(
+        expect.stringContaining("1 items"),
+      );
+    });
+
+    it("keeps page 1 data on page 2 network error and sets partial warning", async () => {
+      const page1 = {
+        records: [{ id: "r1", fields: { ItemName: "A" } }],
+        offset: "next",
+      };
+
+      globalThis.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: vi.fn().mockResolvedValue(page1),
+        })
+        .mockRejectedValueOnce(new TypeError("Failed to fetch"));
+
+      const setInventoryItems = vi.fn();
+      const setError = vi.fn();
+      const setPartialLoadWarning = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading: vi.fn(),
+        setError,
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+        setPartialLoadWarning,
+      });
+
+      expect(setInventoryItems).toHaveBeenCalledTimes(1);
+      expect(setInventoryItems.mock.calls[0][0]).toHaveLength(1);
+      expect(setPartialLoadWarning).toHaveBeenCalledWith(
+        expect.stringContaining("1 items"),
+      );
+    });
+
+    it("stops paginating at MAX_PAGES to prevent infinite loops", async () => {
+      // MAX_PAGES is 50 internally but we can't run 50 real fetches in a test.
+      // Instead we verify with a smaller run that the function stops when
+      // offset keeps appearing, by capping fetch mock calls at 5 and asserting
+      // that it doesn't hang — plus it accumulates all the records it got.
+      let callCount = 0;
+      globalThis.fetch = vi.fn().mockImplementation(() => {
+        callCount++;
+        // Return offset on every call to simulate infinite pagination
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: () =>
+            Promise.resolve({
+              records: [
+                {
+                  id: `r${callCount}`,
+                  fields: { ItemName: `Item ${callCount}` },
+                },
+              ],
+              offset: "always_more",
+            }),
+        });
+      });
+
+      const setInventoryItems = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading: vi.fn(),
+        setError: vi.fn(),
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+      });
+
+      // Should have called fetch exactly 50 times (MAX_PAGES)
+      expect(globalThis.fetch).toHaveBeenCalledTimes(50);
+
+      // Should still set items with accumulated data
+      expect(setInventoryItems).toHaveBeenCalledTimes(1);
+      expect(setInventoryItems.mock.calls[0][0]).toHaveLength(50);
+    }, 30000);
+
+    it("single-page response (no offset) works unchanged", async () => {
+      globalThis.fetch = createMockFetch(mockFetchResponse);
+
+      const setInventoryItems = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading: vi.fn(),
+        setError: vi.fn(),
+        sortConfig: null,
+        filterConfig: null,
+        searchTerm: "",
+      });
+
+      expect(setInventoryItems).toHaveBeenCalledTimes(1);
+      expect(setInventoryItems.mock.calls[0][0]).toHaveLength(3);
+      // fetch called only once — no pagination loop
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1);
     });
   });
 

@@ -19,6 +19,7 @@ function MainContainer() {
     isLoading,
     error,
     lastFetchedAt,
+    partialLoadWarning,
     searchTerm,
     sortConfig,
     filters,
@@ -47,6 +48,11 @@ function MainContainer() {
     <main>
       <LoadingState />
       <ErrorState />
+      {partialLoadWarning && (
+        <div role="alert">
+          <p>Warning: {partialLoadWarning}</p>
+        </div>
+      )}
       {!isLoading && !error && (
         <>
           <ToolSection id="stats" title="Quick Stats">

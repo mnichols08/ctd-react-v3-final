@@ -21,6 +21,8 @@ export default function useInventory() {
     isSaving,
     saveError,
     lastFetchedAt,
+    loadingProgress,
+    partialLoadWarning,
     searchTerm,
     sortConfig,
     filters,
@@ -67,6 +69,10 @@ export default function useInventory() {
       searchTerm: state.searchTerm,
       setLastFetchedAt: (date) =>
         dispatch({ type: actions.setLastFetchedAt, payload: date }),
+      onProgress: (count) =>
+        dispatch({ type: actions.setLoadingProgress, payload: count }),
+      setPartialLoadWarning: (msg) =>
+        dispatch({ type: actions.setPartialLoadWarning, payload: msg }),
       signal: controller.signal,
     });
 
@@ -104,6 +110,10 @@ export default function useInventory() {
       searchTerm: options.searchTerm ?? searchTermRef.current,
       setLastFetchedAt: (date) =>
         dispatch({ type: actions.setLastFetchedAt, payload: date }),
+      onProgress: (count) =>
+        dispatch({ type: actions.setLoadingProgress, payload: count }),
+      setPartialLoadWarning: (msg) =>
+        dispatch({ type: actions.setPartialLoadWarning, payload: msg }),
       signal: controller.signal,
     });
   }, []);
@@ -141,6 +151,8 @@ export default function useInventory() {
     unarchiveItem,
     refetch,
     lastFetchedAt,
+    loadingProgress,
+    partialLoadWarning,
     searchTerm,
     sortConfig,
     filters,
