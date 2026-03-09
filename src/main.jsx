@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
-import { InventoryProvider } from "./context/InventoryContext";
+import { InventoryProvider } from "./context/InventoryProvider";
 
 // SECURITY NOTE:
 // When VITE_AIRTABLE_PAT is set (local dev), API calls go directly to Airtable
