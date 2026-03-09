@@ -471,6 +471,24 @@ describe("MainContainer", () => {
     ).toContain(`count:${initialPantryCount}`);
   });
 
+  it("passes the archived section id when archived items are shown", () => {
+    render(<TestMainContainer />);
+    act(() => vi.runAllTimers());
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /Show Archived Items/i }),
+    );
+
+    const archivedSection = sectionRenderLog
+      .filter((renderedSection) => renderedSection.title === "Archived Items")
+      .pop();
+
+    expect(archivedSection).toMatchObject({
+      id: "archived",
+      variant: "archived",
+    });
+  });
+
   // -- useMemo / useCallback behavior --------------------------------------
 
   describe("useMemo behavior", () => {

@@ -41,18 +41,27 @@ export default function useInventory() {
 
   // AbortController for cancelling in-flight fetches
   const abortControllerRef = useRef(null);
+  const sampleDataCleanupRef = useRef(null);
+
+  const startSampleDataLoad = useCallback(() => {
+    sampleDataCleanupRef.current?.();
+    sampleDataCleanupRef.current = loadSampleData({
+      setInventoryItems: (data) =>
+        dispatch({ type: actions.setItems, payload: data }),
+      setIsLoading: (val) =>
+        dispatch({ type: actions.setLoading, payload: val }),
+      setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
+    });
+  }, []);
 
   // --- Initial data fetch ---
   useEffect(() => {
     if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      const cleanup = loadSampleData({
-        setInventoryItems: (data) =>
-          dispatch({ type: actions.setItems, payload: data }),
-        setIsLoading: (val) =>
-          dispatch({ type: actions.setLoading, payload: val }),
-        setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
-      });
-      return cleanup;
+      startSampleDataLoad();
+      return () => {
+        sampleDataCleanupRef.current?.();
+        sampleDataCleanupRef.current = null;
+      };
     }
 
     const controller = new AbortController();
@@ -79,44 +88,41 @@ export default function useInventory() {
     return () => controller.abort();
     // Run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [startSampleDataLoad]);
 
   // Re-run the fetch/load logic (for retry, refresh, or re-fetch with new params)
-  const refetch = useCallback((options = {}) => {
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
-      loadSampleData({
+  const refetch = useCallback(
+    (options = {}) => {
+      if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+        startSampleDataLoad();
+        return;
+      }
+
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      fetchInventoryItems({
         setInventoryItems: (data) =>
           dispatch({ type: actions.setItems, payload: data }),
-        setIsLoading: (val) =>
-          dispatch({ type: actions.setLoading, payload: val }),
+        setIsLoading: options.silent
+          ? () => {}
+          : (val) => dispatch({ type: actions.setLoading, payload: val }),
         setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
+        sortConfig: options.sortConfig ?? sortConfigRef.current,
+        filterConfig: options.filterConfig ?? filtersRef.current,
+        searchTerm: options.searchTerm ?? searchTermRef.current,
+        setLastFetchedAt: (date) =>
+          dispatch({ type: actions.setLastFetchedAt, payload: date }),
+        onProgress: (count) =>
+          dispatch({ type: actions.setLoadingProgress, payload: count }),
+        setPartialLoadWarning: (msg) =>
+          dispatch({ type: actions.setPartialLoadWarning, payload: msg }),
+        signal: controller.signal,
       });
-      return;
-    }
-
-    if (abortControllerRef.current) abortControllerRef.current.abort();
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    fetchInventoryItems({
-      setInventoryItems: (data) =>
-        dispatch({ type: actions.setItems, payload: data }),
-      setIsLoading: options.silent
-        ? () => {}
-        : (val) => dispatch({ type: actions.setLoading, payload: val }),
-      setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
-      sortConfig: options.sortConfig ?? sortConfigRef.current,
-      filterConfig: options.filterConfig ?? filtersRef.current,
-      searchTerm: options.searchTerm ?? searchTermRef.current,
-      setLastFetchedAt: (date) =>
-        dispatch({ type: actions.setLastFetchedAt, payload: date }),
-      onProgress: (count) =>
-        dispatch({ type: actions.setLoadingProgress, payload: count }),
-      setPartialLoadWarning: (msg) =>
-        dispatch({ type: actions.setPartialLoadWarning, payload: msg }),
-      signal: controller.signal,
-    });
-  }, []);
+    },
+    [startSampleDataLoad],
+  );
 
   // --- Composed hooks ---
 

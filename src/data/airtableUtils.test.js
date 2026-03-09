@@ -851,6 +851,83 @@ describe("Airtable API functions", () => {
       );
     }, 30000);
 
+    it("422 fallback clears filter params so page 2 fetches without them", async () => {
+      // Temporarily enable server-side filtering
+      const orig = import.meta.env.VITE_SERVER_FILTER;
+      import.meta.env.VITE_SERVER_FILTER = "true";
+
+      // Page 1 with filter params → 422
+      // Fallback (no params) → 200 with offset
+      // Page 2 (should also have no filter params) → 200, no offset
+      const fallbackPage1 = {
+        records: [{ id: "r1", fields: { ItemName: "A" } }],
+        offset: "page2",
+      };
+      const page2 = {
+        records: [{ id: "r2", fields: { ItemName: "B" } }],
+      };
+
+      let callIndex = 0;
+      globalThis.fetch = vi.fn().mockImplementation(() => {
+        callIndex++;
+        if (callIndex === 1) {
+          // Original filtered request → 422
+          return Promise.resolve({
+            ok: false,
+            status: 422,
+            statusText: "Unprocessable Entity",
+            json: () => Promise.resolve({ error: { message: "bad formula" } }),
+          });
+        }
+        if (callIndex === 2) {
+          // Unfiltered fallback → success with offset
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            statusText: "OK",
+            json: () => Promise.resolve(fallbackPage1),
+          });
+        }
+        // Page 2 → success, no offset
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          statusText: "OK",
+          json: () => Promise.resolve(page2),
+        });
+      });
+
+      const setInventoryItems = vi.fn();
+      const setError = vi.fn();
+
+      await fetchInventoryItems({
+        setInventoryItems,
+        setIsLoading: vi.fn(),
+        setError,
+        sortConfig: { field: "ItemName", direction: "asc" },
+        filterConfig: { categories: ["Dairy"] },
+        searchTerm: "",
+      });
+
+      // All records from both pages should be present
+      expect(setInventoryItems).toHaveBeenCalledTimes(1);
+      expect(setInventoryItems.mock.calls[0][0]).toHaveLength(2);
+
+      // No error should be set
+      expect(setError).toHaveBeenCalledWith(null);
+      expect(setError).toHaveBeenCalledTimes(1);
+
+      // 3 calls: filtered (422), unfiltered fallback (200+offset), page 2 (200)
+      expect(globalThis.fetch).toHaveBeenCalledTimes(3);
+
+      // Page 2 fetch (last call) should NOT include filterByFormula params.
+      // In proxy mode the params travel inside the JSON POST body.
+      const page2CallBody = globalThis.fetch.mock.calls[2][1]?.body ?? "";
+      expect(page2CallBody).not.toContain("filterByFormula");
+
+      import.meta.env.VITE_SERVER_FILTER = orig;
+    });
+
     it("single-page response (no offset) works unchanged", async () => {
       globalThis.fetch = createMockFetch(mockFetchResponse);
 

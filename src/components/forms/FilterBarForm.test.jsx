@@ -313,8 +313,8 @@ describe("Filter", () => {
 
     fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
 
-    // Dry: Pearl Couscous (active) + Bacon & Velveeta Scrambler (archived) = 2
-    expect(screen.getByText(/Showing 2 of 5 items/)).toBeTruthy();
+    // Dry: Pearl Couscous (active only; archived Bacon is excluded from count)
+    expect(screen.getByText(/Showing 1 of 5 items/)).toBeTruthy();
     expect(getSectionItemNames("Pantry")).toEqual(["Pearl Couscous"]);
     // No Dry items in Fridge
     expect(
@@ -333,8 +333,8 @@ describe("Filter", () => {
     fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
     fireEvent.click(screen.getByRole("checkbox", { name: /Dairy/ }));
 
-    // Dry (Pearl + Bacon) + Dairy (Yogurt) = 3
-    expect(screen.getByText(/Showing 3 of 5 items/)).toBeTruthy();
+    // Dry (Pearl, active only) + Dairy (Yogurt) = 2
+    expect(screen.getByText(/Showing 2 of 5 items/)).toBeTruthy();
     expect(getSectionItemNames("Pantry")).toEqual(["Pearl Couscous"]);
     expect(getSectionItemNames("Fridge")).toEqual(["Low Fat Vanilla Yogurt"]);
   });
@@ -376,8 +376,9 @@ describe("Filter", () => {
 
     fireEvent.click(screen.getByRole("checkbox", { name: /Low Stock/ }));
 
-    // All original items have QtyOnHand < 5; Bulk Rice (10) is excluded
-    expect(screen.getByText(/Showing 5 of 6 items/)).toBeTruthy();
+    // All original active items have QtyOnHand < 5; Bulk Rice (10) is excluded;
+    // archived Bacon is excluded from the count
+    expect(screen.getByText(/Showing 4 of 6 items/)).toBeTruthy();
     expect(getSectionItemNames("Pantry")).not.toContain("Bulk Rice");
     expect(getSectionItemNames("Pantry")).toContain("Pearl Couscous");
   });
@@ -420,13 +421,68 @@ describe("Filter", () => {
     act(() => vi.runAllTimers());
 
     fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
-    expect(screen.getByText(/Showing 2 of 5 items/)).toBeTruthy();
+    expect(screen.getByText(/Showing 1 of 5 items/)).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "Clear All Filters" }));
 
     expect(screen.queryByText(/Showing/)).toBeNull();
     expect(getSectionItemNames("Fridge")).toHaveLength(2);
     expect(getSectionItemNames("Pantry")).toHaveLength(2);
+  });
+
+  it("Clear All Filters preserves the search term", () => {
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
+    act(() => vi.runAllTimers());
+
+    // Search + filter
+    typeSearch("couscous");
+    fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
+    expect(getSectionItemNames("Pantry")).toEqual(["Pearl Couscous"]);
+
+    // Clear only filters — search should remain active
+    fireEvent.click(screen.getByRole("button", { name: "Clear All Filters" }));
+
+    // Search "couscous" is still in effect
+    expect(screen.getByDisplayValue("couscous")).toBeTruthy();
+    expect(getSectionItemNames("Pantry")).toEqual(["Pearl Couscous"]);
+    // Other items still filtered out by search
+    expect(
+      within(getSection("Fridge")).getByText(/will be listed here/),
+    ).toBeTruthy();
+  });
+
+  it("Reset clears search, sort, and structured filters", () => {
+    vi.useFakeTimers();
+
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
+    act(() => vi.runAllTimers());
+
+    typeSearch("couscous");
+    fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
+    fireEvent.change(screen.getByLabelText("Sort by:"), {
+      target: { value: "QtyOnHand" },
+    });
+    fireEvent.change(screen.getByLabelText("Sort Direction:"), {
+      target: { value: "desc" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+
+    expect(screen.getByLabelText("Search:").value).toBe("");
+    expect(screen.getByLabelText("Sort by:").value).toBe("");
+    expect(screen.getByLabelText("Sort Direction:").value).toBe("asc");
+    expect(screen.getByRole("checkbox", { name: /Dry/ }).checked).toBe(false);
+    expect(screen.queryByText(/Showing/)).toBeNull();
+
+    vi.useRealTimers();
   });
 });
 
@@ -474,6 +530,9 @@ describe("Archived view", () => {
     const archivedSection = screen
       .getByRole("heading", { name: /Archived Items/i, level: 2 })
       .closest("section");
+    fireEvent.click(
+      within(archivedSection).getByRole("button", { name: /Show Collapsed/i }),
+    );
     const article = within(archivedSection)
       .getByRole("heading", {
         name: "Bacon & Velveeta Scrambler",
@@ -582,7 +641,7 @@ describe("Combined search, sort, and filter", () => {
     // 4. Clear search ? category filter and sort remain
     typeSearch("");
     expect(
-      screen.getByText(/Showing 2 of 5 items.*1 filter active/),
+      screen.getByText(/Showing 1 of 5 items.*1 filter active/),
     ).toBeTruthy();
     expect(getSectionItemNames("Pantry")).toEqual(["Pearl Couscous"]);
 

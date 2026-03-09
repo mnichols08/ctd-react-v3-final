@@ -22,17 +22,16 @@ export default function useAutoRefresh({
   });
 
   // Guard against overlapping silent refreshes: visibility and interval
-  // triggers share this flag so only one in-flight fetch runs at a time.
-  const refreshingRef = useRef(false);
-
-  // Reset when the fetch completes (lastFetchedAt updates)
-  useEffect(() => {
-    refreshingRef.current = false;
-  }, [lastFetchedAt]);
+  // triggers share this timestamp so only one fetch fires within a short
+  // window.  Unlike a boolean flag, a timestamp naturally expires — a
+  // failed fetch (which never updates lastFetchedAt) can't permanently
+  // block future refreshes.
+  const DEDUP_WINDOW_MS = 5_000;
+  const lastRefreshAttemptRef = useRef(0);
 
   const silentRefresh = useCallback(() => {
-    if (refreshingRef.current) return;
-    refreshingRef.current = true;
+    if (Date.now() - lastRefreshAttemptRef.current < DEDUP_WINDOW_MS) return;
+    lastRefreshAttemptRef.current = Date.now();
     refetch({ silent: true });
   }, [refetch]);
 

@@ -95,13 +95,14 @@ function MainContainer() {
           />
           {/* Archived Items Toggle & Section */}
           {archivedItems.length > 0 && (
-            <div id="archived">
+            <div>
               <button type="button" onClick={toggleShowArchived}>
                 {showArchived ? "Hide Archived Items" : `Show Archived Items`} (
                 {archivedItems.length})
               </button>
               {showArchived && (
                 <InventorySection
+                  id="archived"
                   title="Archived Items"
                   items={archivedItems}
                   variant="archived"

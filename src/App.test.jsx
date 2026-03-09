@@ -131,8 +131,10 @@ describe("App – archive behavior", () => {
     const archivedSection = screen
       .getByRole("heading", { name: /Archived Items/i, level: 2 })
       .closest("section");
-    const toggle = archivedSection.querySelector("a[aria-expanded]");
-    if (toggle && toggle.getAttribute("aria-expanded") === "false") {
+    const toggle = within(archivedSection).getByRole("button", {
+      name: /Show Collapsed|Collapse/i,
+    });
+    if (toggle.getAttribute("aria-expanded") === "false") {
       fireEvent.click(toggle);
     }
 
