@@ -39,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix MAX_PAGES pagination cap not surfacing a warning to UI: `fetchInventoryItems` now calls `setPartialLoadWarning` when the 50-page limit truncates results
 - Fix overlapping auto-refresh triggers permanently disabling refresh after a failed silent fetch: replace boolean `refreshingRef` guard with a timestamp-based dedup window (5 s) in `useAutoRefresh` that naturally expires, preventing a failed background fetch from blocking all future auto-refreshes
 - Fix 422 fallback leaving stale filter params for subsequent pages: after a successful unfiltered fallback on page 1, `baseParams` is now cleared so page 2+ fetches also use unfiltered params instead of re-triggering the 422
+- Fix shopping-list NaN from unnormalized Airtable records: add `normalizeRecord` helper in `inventoryUtils` that coerces `QtyOnHand`, `TargetQty`, `PurchasePrice`, and `UnitCost` to proper numbers (defaulting null/undefined to 0); applied at all three record-mapping points in `airtableUtils` (`fetchInventoryItems`, `createInventoryItem`, `patchInventoryItem`)
+- Fix "Clear All Filters" unexpectedly also clearing the search term: the `clearFilters` reducer case no longer resets `searchTerm`, matching the UI label; the separate "Reset" button still clears everything
+- Fix filtered-results summary counting hidden archived items: `useFilteredInventory` now excludes archived records from the returned `filterAppliedItems`, so the "Showing X of Y" text in `MainContainer` only counts items visible in active sections
 
 ### Tests
 
@@ -48,6 +51,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add error-lifecycle test: verify `saveError` is cleared on retry after a failed PATCH
 - Add 3 overlapping-trigger tests: dedup within window, guard auto-expires after dedup window, and refresh still works after a failed silent fetch (lastFetchedAt unchanged)
 - Add 422-fallback pagination test: verify `baseParams` are cleared after fallback so page 2 fetches without the problematic filter params
+- Add 6 `normalizeRecord` unit tests: null/undefined → 0, valid numbers preserved, string coercion, NaN/Infinity → 0, absent fields untouched, no mutation
+- Add test: "Clear All Filters" preserves the active search term while clearing category/expiring/low-stock filters
+- Update 5 filter-count assertions to reflect archived items excluded from `filterAppliedItems`
 
 ---
 

@@ -230,7 +230,6 @@ export default function inventoryReducer(state, action) {
           expiringSoon: false,
           lowStock: false,
         },
-        searchTerm: "",
       };
 
     default:

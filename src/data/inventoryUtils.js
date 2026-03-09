@@ -98,6 +98,21 @@ const NUMERIC_FIELDS = ["QtyOnHand", "TargetQty", "PurchasePrice", "UnitCost"];
 const DATE_FIELDS = ["ExpiresOn", "DatePurchased", "DateFrozen"];
 
 /**
+ * Coerce numeric fields on an Airtable record to proper numbers.
+ * null / undefined / non-finite values default to 0.
+ */
+export function normalizeRecord(record) {
+  const normalized = { ...record };
+  for (const field of NUMERIC_FIELDS) {
+    if (field in normalized) {
+      const n = Number(normalized[field]);
+      normalized[field] = Number.isFinite(n) ? n : 0;
+    }
+  }
+  return normalized;
+}
+
+/**
  * Shared form-data preparation: formats Location, coerces numeric fields,
  * nullifies empty dates, strips SubLocation, and stamps LastUpdated.
  */

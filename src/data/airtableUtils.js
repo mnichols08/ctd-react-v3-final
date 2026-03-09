@@ -1,5 +1,9 @@
 import sampleData from "./inventorySample.json";
-import { EXPIRING_SOON_MS, LOW_STOCK_THRESHOLD } from "./inventoryUtils";
+import {
+  EXPIRING_SOON_MS,
+  LOW_STOCK_THRESHOLD,
+  normalizeRecord,
+} from "./inventoryUtils";
 import { SEARCHABLE_FIELDS } from "./fieldConfig";
 
 // ---------------------------------------------------------------------------
@@ -311,10 +315,12 @@ export const fetchInventoryItems = async ({
     }
 
     setInventoryItems(
-      allRecords.map((record) => ({
-        id: record.id,
-        ...record.fields,
-      })),
+      allRecords.map((record) =>
+        normalizeRecord({
+          id: record.id,
+          ...record.fields,
+        }),
+      ),
     );
     setLastFetchedAt(new Date());
   } catch (error) {
@@ -375,10 +381,10 @@ export const createInventoryItem = async ({
     setIsSaving(true);
     const resp = await checkedFetch({ method: "POST", body: payload });
     const { records } = await resp.json();
-    const savedItem = {
+    const savedItem = normalizeRecord({
       id: records[0].id,
       ...records[0].fields,
-    };
+    });
     addInventoryItem(savedItem);
     return true;
   } catch (error) {
@@ -407,10 +413,10 @@ export const patchInventoryItem = async (id, fields) => {
     body: { fields: patchFields },
   });
   const record = await resp.json();
-  return {
+  return normalizeRecord({
     id: record.id,
     ...record.fields,
-  };
+  });
 };
 
 export const deleteInventoryItem = async (id) => {
