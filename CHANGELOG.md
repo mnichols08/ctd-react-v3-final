@@ -57,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Split Location field into a select dropdown (from LOCATIONS) and a free-text sub-location input across all forms
 - Moved new Date().toISOString() calls out of the reducer into action dispatchers for deterministic, testable state updates
 - Renamed shadowed `id` variable to `intervalId` in useAutoRefresh for clarity
+- Filter archived items before sorting instead of sorting the entire unfiltered list in useFilteredInventory
 
 ### Fixed
 

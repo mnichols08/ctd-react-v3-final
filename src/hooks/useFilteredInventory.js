@@ -53,12 +53,6 @@ export default function useFilteredInventory(
     [filters],
   );
 
-  // Sort all items once (used for archived partition)
-  const allSortedItems = useMemo(
-    () => sortItems(inventoryItems, sortConfig.field, sortConfig.direction),
-    [inventoryItems, sortConfig.field, sortConfig.direction],
-  );
-
   // Sort filtered items
   const sortedItems = useMemo(
     () => sortItems(filterAppliedItems, sortConfig.field, sortConfig.direction),
@@ -89,8 +83,13 @@ export default function useFilteredInventory(
     }, [sortedItems]);
 
   const archivedItems = useMemo(
-    () => allSortedItems.filter((item) => item.Status === "archived"),
-    [allSortedItems],
+    () =>
+      sortItems(
+        inventoryItems.filter((item) => item.Status === "archived"),
+        sortConfig.field,
+        sortConfig.direction,
+      ),
+    [inventoryItems, sortConfig.field, sortConfig.direction],
   );
 
   return {
