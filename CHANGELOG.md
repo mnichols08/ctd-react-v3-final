@@ -21,6 +21,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.6.6] - 2026-03-09
+
+### Changed
+
+- Replace prop drilling with `useInventoryContext()` in all components
+- Add `variant` prop (`inventory` | `shopping` | `archived`) to `InventorySection`, `ItemCard`, and `ShoppingListControl` to control rendering behavior instead of handler truthiness checks
+- `MainContainer` no longer accepts `inventory` prop; reads all state from context
+- `InventorySection` accepts only structural props (`id`, `title`, `items`, `variant`)
+- `ItemCard` accepts only per-instance props (`item`, `onEdit`, `variant`)
+- `ShoppingListControl` uses `variant` to decide stepper vs. add/remove button
+- `EditInventoryItemForm` calls `updateItem` from context; accepts `item` and `onClose`
+- `EditDialog` simplified to pass-through for `item` and `onClose`
+- `AddInventoryItemForm` and `QuickAddForm` get `addItem` from context; accept no props
+- `FilterBarForm` gets all state and handlers from context; accepts no props
+- `QuickStatsBar` gets all data from context; accepts no props
+- `Header` and `NavMenu` get all data from context; accept no props
+- `FieldSelector` gets field visibility state from context; only accepts `onClose`
+- `App.jsx` renders `<Header />`, `<MainContainer />`, `<Footer />` with zero props
+
+### Removed
+
+- Remove all inventory-related prop drilling from `MainContainer` → children
+- Remove redundant `visibleFields`, `onToggleField`, `onResetFields` props from `NavMenu` → `FieldSelector`
+- Remove `useFilteredInventory` call from `MainContainer` (now in `InventoryProvider`)
+- Remove `archivedItemsExist` derivation from `App`; moved into `NavMenu`
+
+### Fixed
+
+- Fix ShoppingListControl showing stepper on all sections after context migration by using `variant` prop instead of handler truthiness
+- Update tests to pass `variant="shopping"` where stepper behavior is expected
+
+### Deprecated
+
+- Remove unused status field from filters in inventoryReducer
+
+---
+
 ## [0.6.5] - 2026-03-08
 
 ### Added

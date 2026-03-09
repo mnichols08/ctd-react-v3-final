@@ -1,9 +1,11 @@
 import { memo, useEffect, useRef } from "react";
+import { useInventoryContext } from "../../context/InventoryContext";
 import useFormData from "../../hooks/useFormData";
 import { parseLocation, formatLocation } from "../../data/fieldConfig";
 import InventoryFormFields from "./InventoryFormFields.component";
 
-function EditInventoryItemForm({ item, onSave, onCancel }) {
+function EditInventoryItemForm({ item, onClose }) {
+  const { updateItem } = useInventoryContext();
   // Initialize form state with existing item data, converting null/undefined to empty strings for controlled inputs
   const { location: parsedLocation, subLocation: parsedSubLocation } =
     parseLocation(item.Location);
@@ -59,7 +61,8 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
     };
     delete updatedItem.SubLocation;
 
-    onSave(updatedItem);
+    updateItem(updatedItem);
+    onClose();
   };
 
   // Focus the first input when the form opens
@@ -76,7 +79,7 @@ function EditInventoryItemForm({ item, onSave, onCancel }) {
         idSuffix={item.id}
       />
       <button type="submit">Save</button>
-      <button type="button" onClick={onCancel}>
+      <button type="button" onClick={onClose}>
         Cancel
       </button>
     </form>

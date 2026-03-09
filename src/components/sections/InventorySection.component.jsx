@@ -1,22 +1,16 @@
 import { memo, useCallback, useState } from "react";
+import { useInventoryContext } from "../../context/InventoryContext";
+import { SHOPPING_LIST_FIELDS } from "../../data/fieldConfig";
 import useToggle from "../../hooks/useToggle";
 import ItemCard from "../cards/ItemCard.component";
 import EditDialog from "../ui/EditDialog.component";
 import EmptyState from "../ui/EmptyState.component";
 
-function InventorySection({
-  id,
-  title,
-  items,
-  addToShoppingList,
-  removeFromShoppingList,
-  updateTargetQty,
-  updateItem,
-  visibleFields,
-  archiveItem,
-  unarchiveItem,
-  deleteItem,
-}) {
+function InventorySection({ id, title, items, variant = "inventory" }) {
+  const { visibleFields, updateItem } = useInventoryContext();
+  const effectiveFields =
+    variant === "shopping" ? SHOPPING_LIST_FIELDS : visibleFields;
+
   // State to track whether the section is collapsed or expanded
   const isArchivedSection = id === "archived";
   const [isCollapsed, toggleCollapsed] = useToggle(isArchivedSection);
@@ -27,13 +21,6 @@ function InventorySection({
     ? (items?.find((i) => i.id === editingItemId) ?? null)
     : null;
   const closeEditor = useCallback(() => setEditingItemId(null), []);
-  const handleEditSave = useCallback(
-    (updatedItem) => {
-      updateItem(updatedItem);
-      setEditingItemId(null);
-    },
-    [updateItem],
-  );
 
   // Calculate the item count for display
   const itemCount = items ? items.length : 0;
@@ -64,15 +51,8 @@ function InventorySection({
                 <ItemCard
                   key={item.id}
                   item={item}
-                  addToShoppingList={addToShoppingList}
-                  removeFromShoppingList={removeFromShoppingList}
-                  updateTargetQty={updateTargetQty}
-                  handleUpdateItem={updateItem}
-                  visibleFields={visibleFields}
-                  handleArchiveItem={archiveItem}
-                  handleUnarchiveItem={unarchiveItem}
-                  handleDeleteItem={deleteItem}
                   onEdit={setEditingItemId}
+                  variant={variant}
                 />
               ))}
             </ul>
@@ -81,12 +61,8 @@ function InventorySection({
           <EmptyState title={title.toLowerCase()} />
         )}
       </div>
-      {editingItem && (
-        <EditDialog
-          item={editingItem}
-          onSave={handleEditSave}
-          onCancel={closeEditor}
-        />
+      {variant === "inventory" && editingItem && (
+        <EditDialog item={editingItem} onClose={closeEditor} />
       )}
     </section>
   );
