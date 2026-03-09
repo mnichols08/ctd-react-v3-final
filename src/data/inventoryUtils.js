@@ -64,8 +64,9 @@ export function formatRelativeTime(timestamp) {
   if (timestamp == null) {
     return null;
   }
+  const ms = timestamp instanceof Date ? timestamp.getTime() : timestamp;
   const now = Date.now();
-  const diff = now - timestamp;
+  const diff = now - ms;
   if (diff < 60 * 1000) return "Just now";
   if (diff < 60 * 60 * 1000) {
     const mins = Math.round(diff / (60 * 1000));

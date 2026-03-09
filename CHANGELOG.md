@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 --- -->
+
 ## [0.6.7] - 2026-03-09
 
 ### Added
@@ -40,6 +41,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor `MainContainer` to render `LoadingState` and `ErrorState` unconditionally (both self-guard internally)
 - Refactor `LoadingState` to read `isLoading` from context instead of receiving it as a prop, matching `ErrorState` pattern
 - Simplify `MainContainer` rendering: replace nested ternary with flat conditional guard (`!isLoading && !error`)
+
+### Fixed
+
+- Harden `formatRelativeTime` to accept both Date objects and numeric timestamps via `instanceof Date` normalization
+- Remove unreachable sort-direction toggle branch in `FilterBarForm.handleSortChange` (a `<select>` never fires `onChange` for the already-selected value); update misleading comment
 
 ---
 
