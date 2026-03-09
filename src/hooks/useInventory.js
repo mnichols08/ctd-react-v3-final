@@ -123,11 +123,8 @@ export default function useInventory() {
   const { addItem, deleteItem, updateItem, archiveItem, unarchiveItem } =
     useInventoryActions({ items, dispatch });
 
-  const {
-    addToShoppingList,
-    removeFromShoppingList,
-    updateTargetQty,
-  } = useShoppingList({ items, dispatch });
+  const { addToShoppingList, removeFromShoppingList, updateTargetQty } =
+    useShoppingList({ items, dispatch });
 
   return {
     items,

@@ -56,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ItemCard` now uses `useToggle` for delete confirmation state, consistent with the editing toggle
 - Split Location field into a select dropdown (from LOCATIONS) and a free-text sub-location input across all forms
 - Moved new Date().toISOString() calls out of the reducer into action dispatchers for deterministic, testable state updates
+- Renamed shadowed `id` variable to `intervalId` in useAutoRefresh for clarity
 
 ### Fixed
 
