@@ -826,6 +826,8 @@ describe("Airtable API functions", () => {
 
       const setInventoryItems = vi.fn();
 
+      const setPartialLoadWarning = vi.fn();
+
       await fetchInventoryItems({
         setInventoryItems,
         setIsLoading: vi.fn(),
@@ -833,6 +835,7 @@ describe("Airtable API functions", () => {
         sortConfig: null,
         filterConfig: null,
         searchTerm: "",
+        setPartialLoadWarning,
       });
 
       // Should have called fetch exactly 50 times (MAX_PAGES)
@@ -841,6 +844,11 @@ describe("Airtable API functions", () => {
       // Should still set items with accumulated data
       expect(setInventoryItems).toHaveBeenCalledTimes(1);
       expect(setInventoryItems.mock.calls[0][0]).toHaveLength(50);
+
+      // Should warn user about truncation
+      expect(setPartialLoadWarning).toHaveBeenCalledWith(
+        expect.stringContaining("50 items"),
+      );
     }, 30000);
 
     it("single-page response (no offset) works unchanged", async () => {

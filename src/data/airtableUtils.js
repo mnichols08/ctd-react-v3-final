@@ -304,6 +304,9 @@ export const fetchInventoryItems = async ({
       console.warn(
         `Pagination stopped at ${MAX_PAGES} pages (${allRecords.length} records).`,
       );
+      setPartialLoadWarning(
+        `Loaded ${allRecords.length} items but more may exist. Display is capped for performance.`,
+      );
     }
 
     setInventoryItems(

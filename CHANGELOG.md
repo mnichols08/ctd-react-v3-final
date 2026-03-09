@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Propagate success/failure from `usePersistUpdate` (`return true`/`false`) through `useInventoryActions.updateItem` so callers can react to save outcomes
 - Fix out-of-order async writes: add per-item version counter in `usePersistUpdate` so a stale PATCH response (success or error) is silently dropped when a newer request for the same item is already in flight
 - Fix stale `saveError` persisting after subsequent successful mutations: `usePersistUpdate` now clears `saveError` before each PATCH so the error banner is dismissed when the user retries
+- Fix MAX_PAGES pagination cap not surfacing a warning to UI: `fetchInventoryItems` now calls `setPartialLoadWarning` when the 50-page limit truncates results
 
 ### Tests
 
