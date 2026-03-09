@@ -155,74 +155,63 @@ describe("App – archive behavior", () => {
 // ---------------------------------------------------------------------------
 describe("App – delete behavior", () => {
   it("clicking Delete + confirming removes item from section", () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
-    try {
-      render(<App />);
-      act(() => vi.runAllTimers());
-      const fridgeSection = screen
-        .getByRole("heading", { name: /Fridge/i, level: 2 })
-        .closest("section");
-      expect(within(fridgeSection).getByText("Apple Sauce")).toBeTruthy();
-      const article = within(fridgeSection)
-        .getByRole("heading", { name: "Apple Sauce", level: 2 })
-        .closest("article");
-      fireEvent.click(within(article).getByRole("button", { name: "Delete" }));
-      expect(window.confirm).toHaveBeenCalled();
-      expect(within(fridgeSection).queryByText("Apple Sauce")).toBeNull();
-    } finally {
-      confirmSpy.mockRestore();
-    }
+    render(<App />);
+    act(() => vi.runAllTimers());
+    const fridgeSection = screen
+      .getByRole("heading", { name: /Fridge/i, level: 2 })
+      .closest("section");
+    expect(within(fridgeSection).getByText("Apple Sauce")).toBeTruthy();
+    const article = within(fridgeSection)
+      .getByRole("heading", { name: "Apple Sauce", level: 2 })
+      .closest("article");
+    fireEvent.click(within(article).getByRole("button", { name: "Delete" }));
+    // Confirm dialog should appear
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    expect(within(fridgeSection).queryByText("Apple Sauce")).toBeNull();
   });
   it("clicking Delete + cancelling keeps item in section", () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
-    try {
-      render(<App />);
-      act(() => vi.runAllTimers());
-      const fridgeSection = screen
-        .getByRole("heading", { name: /Fridge/i, level: 2 })
-        .closest("section");
-      const article = within(fridgeSection)
-        .getByRole("heading", { name: "Apple Sauce", level: 2 })
-        .closest("article");
-      fireEvent.click(within(article).getByRole("button", { name: "Delete" }));
-      expect(window.confirm).toHaveBeenCalled();
-      // Item should still be there
-      expect(within(fridgeSection).getByText("Apple Sauce")).toBeTruthy();
-    } finally {
-      confirmSpy.mockRestore();
-    }
+    render(<App />);
+    act(() => vi.runAllTimers());
+    const fridgeSection = screen
+      .getByRole("heading", { name: /Fridge/i, level: 2 })
+      .closest("section");
+    const article = within(fridgeSection)
+      .getByRole("heading", { name: "Apple Sauce", level: 2 })
+      .closest("article");
+    fireEvent.click(within(article).getByRole("button", { name: "Delete" }));
+    // Cancel dialog
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    // Item should still be there
+    expect(within(fridgeSection).getByText("Apple Sauce")).toBeTruthy();
   });
   it("deleting all items in a section shows EmptyState", () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
-    try {
-      render(<App />);
-      act(() => vi.runAllTimers());
-      const fridgeSection = screen
-        .getByRole("heading", { name: /Fridge/i, level: 2 })
-        .closest("section");
-      // Fridge has 2 items: Low Fat Vanilla Yogurt and Apple Sauce
-      // Delete both
-      const yogurtArticle = within(fridgeSection)
-        .getByRole("heading", { name: "Low Fat Vanilla Yogurt", level: 2 })
-        .closest("article");
-      fireEvent.click(
-        within(yogurtArticle).getByRole("button", { name: "Delete" }),
-      );
-      const appleArticle = within(fridgeSection)
-        .getByRole("heading", { name: "Apple Sauce", level: 2 })
-        .closest("article");
-      fireEvent.click(
-        within(appleArticle).getByRole("button", { name: "Delete" }),
-      );
-      // EmptyState should now render for fridge
-      expect(
-        within(fridgeSection).getByText(
-          "Items in the fridge will be listed here.",
-        ),
-      ).toBeTruthy();
-    } finally {
-      confirmSpy.mockRestore();
-    }
+    render(<App />);
+    act(() => vi.runAllTimers());
+    const fridgeSection = screen
+      .getByRole("heading", { name: /Fridge/i, level: 2 })
+      .closest("section");
+    // Fridge has 2 items: Low Fat Vanilla Yogurt and Apple Sauce
+    // Delete both
+    const yogurtArticle = within(fridgeSection)
+      .getByRole("heading", { name: "Low Fat Vanilla Yogurt", level: 2 })
+      .closest("article");
+    fireEvent.click(
+      within(yogurtArticle).getByRole("button", { name: "Delete" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    const appleArticle = within(fridgeSection)
+      .getByRole("heading", { name: "Apple Sauce", level: 2 })
+      .closest("article");
+    fireEvent.click(
+      within(appleArticle).getByRole("button", { name: "Delete" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+    // EmptyState should now render for fridge
+    expect(
+      within(fridgeSection).getByText(
+        "Items in the fridge will be listed here.",
+      ),
+    ).toBeTruthy();
   });
 });
 
@@ -246,7 +235,7 @@ describe("App – field visibility", () => {
 
     // Open FieldSelector via nav (aria-label is "Select visible fields")
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
 
     // Uncheck "Brand"
@@ -271,7 +260,7 @@ describe("App – field visibility", () => {
 
     // Open FieldSelector
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
 
     // Check "Notes" on
@@ -285,7 +274,7 @@ describe("App – field visibility", () => {
     // Sample items all have Notes: null, so nothing to show — that's correct behavior.
     // Instead verify a field that has data: toggle on "Sub-Category"
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
     const subCatCb = screen.getByRole("checkbox", { name: "Sub-Category" });
     fireEvent.click(subCatCb);
@@ -301,7 +290,7 @@ describe("App – field visibility", () => {
 
     // Open FieldSelector
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
 
     // ItemName checkbox should be disabled
@@ -326,7 +315,7 @@ describe("App – field visibility", () => {
 
     // First, toggle Brand off
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
     fireEvent.click(screen.getByRole("checkbox", { name: "Brand" }));
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
@@ -335,7 +324,7 @@ describe("App – field visibility", () => {
 
     // Now reset
     fireEvent.click(
-      screen.getByRole("link", { name: "Select visible fields" }),
+      screen.getByRole("button", { name: "Select visible fields" }),
     );
     fireEvent.click(screen.getByRole("button", { name: "Reset to Defaults" }));
     fireEvent.click(screen.getByRole("button", { name: "Done" }));

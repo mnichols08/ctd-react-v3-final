@@ -149,4 +149,36 @@ describe("FieldSelector – field visibility", () => {
     expect(dialog).toBeTruthy();
     expect(screen.getByText("Select Visible Fields")).toBeTruthy();
   });
+
+  it("pressing Escape (cancel event) calls onClose", () => {
+    const closeFn = vi.fn();
+    render(
+      <FieldSelector
+        visibleFields={defaultSet()}
+        onToggleField={() => {}}
+        onResetFields={() => {}}
+        onClose={closeFn}
+      />,
+    );
+
+    const dialog = screen.getByRole("dialog");
+    fireEvent(dialog, new Event("cancel"));
+    expect(closeFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("focuses close button on mount", () => {
+    render(
+      <FieldSelector
+        visibleFields={defaultSet()}
+        onToggleField={() => {}}
+        onResetFields={() => {}}
+        onClose={() => {}}
+      />,
+    );
+
+    const closeBtn = screen.getByRole("button", {
+      name: "Close field selector",
+    });
+    expect(document.activeElement).toBe(closeBtn);
+  });
 });

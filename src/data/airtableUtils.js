@@ -1,10 +1,21 @@
 import sampleData from "./inventorySample.json";
 import { EXPIRING_SOON_MS, LOW_STOCK_THRESHOLD } from "./inventoryUtils";
+import { SEARCHABLE_FIELDS } from "./fieldConfig";
 
-const BASE_URL = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${encodeURIComponent(import.meta.env.VITE_AIRTABLE_TABLE_NAME)}`;
-const AUTH_TOKEN = `Bearer ${import.meta.env.VITE_AIRTABLE_PAT}`;
+// ---------------------------------------------------------------------------
+// When VITE_AIRTABLE_PAT is set, call Airtable directly (local dev).
+// Otherwise, route through the Netlify serverless proxy so the PAT stays
+// server-side (production).
+// ---------------------------------------------------------------------------
+const USE_PROXY = !import.meta.env.VITE_AIRTABLE_PAT;
+const PROXY_URL = "/.netlify/functions/airtable";
 
-const SEARCHABLE_FIELDS = ["ItemName", "Brand", "Category", "Tags", "Notes"];
+const BASE_URL = USE_PROXY
+  ? null // not used when proxying
+  : `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${encodeURIComponent(import.meta.env.VITE_AIRTABLE_TABLE_NAME)}`;
+const AUTH_TOKEN = USE_PROXY
+  ? null
+  : `Bearer ${import.meta.env.VITE_AIRTABLE_PAT}`;
 const EXPIRING_SOON_DAYS = EXPIRING_SOON_MS / (24 * 60 * 60 * 1000);
 
 function escapeFormulaString(value) {
@@ -44,11 +55,6 @@ export function buildAirtableParams(sortConfig, filterConfig, searchTerm) {
     formulaParts.push(
       catClauses.length === 1 ? catClauses[0] : `OR(${catClauses.join(", ")})`,
     );
-  }
-
-  // NeedRestock filter
-  if (filterConfig?.needRestock) {
-    formulaParts.push(`{NeedRestock}=TRUE()`);
   }
 
   // Status filter — "archived" shows only archived, otherwise exclude archived
@@ -103,6 +109,43 @@ const throttledFetch = async (url, options) => {
   return fetch(url, options);
 };
 
+// ---------------------------------------------------------------------------
+// airtableFetch — unified transport that works in both modes:
+//   Direct: builds the Airtable URL and attaches the PAT header
+//   Proxy:  POSTs to /.netlify/functions/airtable with the intended method
+//
+// Accepts { method, recordId?, params?, body?, signal? }
+// Returns the raw Response.
+// ---------------------------------------------------------------------------
+const airtableFetch = async ({ method, recordId, params, body, signal }) => {
+  if (USE_PROXY) {
+    const proxyBody = { method };
+    if (recordId) proxyBody.recordId = recordId;
+    if (params) proxyBody.params = params;
+    if (body) proxyBody.body = body;
+    return throttledFetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(proxyBody),
+      ...(signal && { signal }),
+    });
+  }
+
+  // Direct mode — same as before
+  let url = recordId
+    ? `${BASE_URL}/${encodeURIComponent(recordId)}`
+    : BASE_URL;
+  if (params) url += `?${params}`;
+  const headers = { Authorization: AUTH_TOKEN };
+  if (body) headers["Content-Type"] = "application/json";
+  return throttledFetch(url, {
+    method,
+    headers,
+    ...(body ? { body: JSON.stringify(body) } : {}),
+    ...(signal && { signal }),
+  });
+};
+
 export const fetchInventoryItems = async ({
   setInventoryItems,
   setIsLoading,
@@ -120,19 +163,16 @@ export const fetchInventoryItems = async ({
   const params = useServerFilter
     ? buildAirtableParams(sortConfig, filterConfig, searchTerm)
     : new URLSearchParams();
-  const url = params.toString() ? `${BASE_URL}?${params.toString()}` : BASE_URL;
+  const paramString = params.toString();
 
-  const options = {
-    method: "GET",
-    headers: {
-      Authorization: AUTH_TOKEN,
-    },
-    ...(signal && { signal }),
-  };
   try {
     let resp;
     try {
-      resp = await throttledFetch(url, options);
+      resp = await airtableFetch({
+        method: "GET",
+        params: paramString || undefined,
+        signal,
+      });
     } catch {
       throw new Error(
         "Network error: Unable to reach the server. Check your internet connection.",
@@ -141,13 +181,13 @@ export const fetchInventoryItems = async ({
     if (!resp.ok) {
       // On 422 with server-side params, fall back to fetching all records
       // and let client-side filtering handle it
-      if (resp.status === 422 && useServerFilter && params.toString()) {
+      if (resp.status === 422 && useServerFilter && paramString) {
         console.warn(
           "Airtable returned 422 for query params — falling back to unfiltered fetch.",
         );
         let fallbackResp;
         try {
-          fallbackResp = await throttledFetch(BASE_URL, options);
+          fallbackResp = await airtableFetch({ method: "GET", signal });
         } catch {
           throw new Error(
             "Network error: Unable to reach the server. Check your internet connection.",
@@ -187,9 +227,6 @@ export const fetchInventoryItems = async ({
           id: record.id,
           ...record.fields,
         };
-        if (!record.fields.isCompleted) {
-          item.isCompleted = false;
-        }
         return item;
       }),
     );
@@ -212,14 +249,14 @@ export const loadSampleData = ({
 }) => {
   setIsLoading(true);
   setError(null);
-  const randomFailure = Math.random() < 0.33; // 33% chance of failure
-  if (randomFailure) {
+  const simulateErrors = import.meta.env.VITE_SIMULATE_ERRORS === "true";
+  if (simulateErrors && Math.random() < 0.33) {
     setError("Failed to load sample data. Please try again.");
     setIsLoading(false);
-    return;
+    return () => {};
   }
-  setInventoryItems(sampleData.records.map((item) => ({ ...item })));
   const simulateLoad = setTimeout(() => {
+    setInventoryItems(sampleData.records.map((item) => ({ ...item })));
     setIsLoading(false);
   }, 500);
   return () => {
@@ -245,21 +282,13 @@ export const createInventoryItem = async ({
       },
     ],
   };
-  const options = {
-    method: "POST",
-    headers: {
-      Authorization: AUTH_TOKEN,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  };
 
   try {
     setError(null);
     setIsSaving(true);
     let resp;
     try {
-      resp = await throttledFetch(BASE_URL, options);
+      resp = await airtableFetch({ method: "POST", body: payload });
     } catch {
       throw new Error(
         "Network error: Unable to reach the server. Check your internet connection.",
@@ -281,9 +310,6 @@ export const createInventoryItem = async ({
       id: records[0].id,
       ...records[0].fields,
     };
-    if (!records[0].fields.isCompleted) {
-      savedItem.isCompleted = false;
-    }
     addInventoryItem(savedItem);
     return true;
   } catch (error) {
@@ -295,24 +321,24 @@ export const createInventoryItem = async ({
 };
 
 export const patchInventoryItem = async (id, fields) => {
+  const { isDeleting: _isDeleting, ...airtableFields } = fields;
+  // Coerce empty date strings to null (Airtable rejects "")
+  ["ExpiresOn", "DatePurchased", "DateFrozen"].forEach((field) => {
+    if (field in airtableFields && !airtableFields[field]) {
+      airtableFields[field] = null;
+    }
+  });
   const patchFields = {
-    ...fields,
+    ...airtableFields,
     LastUpdated: new Date().toISOString(),
-  };
-  const options = {
-    method: "PATCH",
-    headers: {
-      Authorization: AUTH_TOKEN,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ fields: patchFields }),
   };
   let resp;
   try {
-    resp = await throttledFetch(
-      `${BASE_URL}/${encodeURIComponent(id)}`,
-      options,
-    );
+    resp = await airtableFetch({
+      method: "PATCH",
+      recordId: id,
+      body: { fields: patchFields },
+    });
   } catch {
     throw new Error(
       "Network error: Unable to reach the server. Check your internet connection.",
@@ -337,18 +363,9 @@ export const patchInventoryItem = async (id, fields) => {
 };
 
 export const deleteInventoryItem = async (id) => {
-  const options = {
-    method: "DELETE",
-    headers: {
-      Authorization: AUTH_TOKEN,
-    },
-  };
   let resp;
   try {
-    resp = await throttledFetch(
-      `${BASE_URL}/${encodeURIComponent(id)}`,
-      options,
-    );
+    resp = await airtableFetch({ method: "DELETE", recordId: id });
   } catch {
     throw new Error(
       "Network error: Unable to reach the server. Check your internet connection.",

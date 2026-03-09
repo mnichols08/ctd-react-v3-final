@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import useInventory from "./useInventory";
+import { loadSampleData, fetchInventoryItems } from "../data/airtableUtils";
 
 // Mock airtableUtils — sample-data mode is active in tests (VITE_SAMPLE_DATA=true)
 // so most API functions won't be called, but loadSampleData will.
@@ -8,14 +9,13 @@ vi.mock("../data/airtableUtils", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
+    loadSampleData: vi.fn(actual.loadSampleData),
+    fetchInventoryItems: vi.fn(actual.fetchInventoryItems),
     patchInventoryItem: vi.fn(),
     createInventoryItem: vi.fn(),
     deleteInventoryItem: vi.fn(),
   };
 });
-
-const { patchInventoryItem, createInventoryItem, deleteInventoryItem } =
-  await vi.importMock("../data/airtableUtils");
 
 describe("useInventory", () => {
   beforeEach(() => {
@@ -85,7 +85,7 @@ describe("useInventory", () => {
     const firstItem = result.current.items[0];
 
     await act(async () => {
-      await result.current.updateItem(firstItem.id, { ItemName: "Updated" });
+      await result.current.updateItem({ ...firstItem, ItemName: "Updated" });
     });
 
     const updated = result.current.items.find((i) => i.id === firstItem.id);
@@ -121,8 +121,115 @@ describe("useInventory", () => {
     expect(restored.Status).toBeNull();
   });
 
-  it("exposes dispatch function", async () => {
+  it("exposes toggleQuickAdd, toggleShowArchived, and dismissSaveError functions", async () => {
     const result = await renderAndLoad();
-    expect(typeof result.current.dispatch).toBe("function");
+    expect(typeof result.current.toggleQuickAdd).toBe("function");
+    expect(typeof result.current.toggleShowArchived).toBe("function");
+    expect(typeof result.current.dismissSaveError).toBe("function");
+  });
+
+  describe("loadSampleData error path", () => {
+    it("sets error when Math.random triggers simulated failure", async () => {
+      // Override the global mock so randomFailure = (0 < 0.33) → true
+      import.meta.env.VITE_SIMULATE_ERRORS = "true";
+      vi.spyOn(Math, "random").mockReturnValue(0);
+
+      const { result } = renderHook(() => useInventory());
+      await act(() => vi.runAllTimers());
+
+      expect(result.current.error).toBe(
+        "Failed to load sample data. Please try again.",
+      );
+      expect(result.current.isLoading).toBe(false);
+      expect(result.current.items).toHaveLength(0);
+    });
+
+    it("recovers after refetch when failure clears", async () => {
+      import.meta.env.VITE_SIMULATE_ERRORS = "true";
+      vi.spyOn(Math, "random").mockReturnValue(0);
+
+      const { result } = renderHook(() => useInventory());
+      await act(() => vi.runAllTimers());
+      expect(result.current.error).toBeTruthy();
+
+      // Next call succeeds
+      vi.mocked(Math.random).mockReturnValue(1);
+      act(() => result.current.refetch());
+      await act(() => vi.runAllTimers());
+
+      expect(result.current.error).toBeNull();
+      expect(result.current.items.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("refetch", () => {
+    it("calls loadSampleData again in sample-data mode", async () => {
+      const result = await renderAndLoad();
+      const callsBefore = loadSampleData.mock.calls.length;
+
+      act(() => {
+        result.current.refetch();
+      });
+      await act(() => vi.runAllTimers());
+
+      expect(loadSampleData.mock.calls.length).toBe(callsBefore + 1);
+    });
+
+    it("calls fetchInventoryItems with current state when VITE_SAMPLE_DATA is false", async () => {
+      // Temporarily override VITE_SAMPLE_DATA
+      const original = import.meta.env.VITE_SAMPLE_DATA;
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+
+      fetchInventoryItems.mockImplementation(() => {});
+
+      try {
+        const { result } = renderHook(() => useInventory());
+        // The initial fetch fires on mount
+        await act(() => vi.runAllTimers());
+        fetchInventoryItems.mockClear();
+
+        act(() => {
+          result.current.refetch();
+        });
+
+        expect(fetchInventoryItems).toHaveBeenCalledTimes(1);
+        const callArgs = fetchInventoryItems.mock.calls[0][0];
+        expect(callArgs).toMatchObject({
+          sortConfig: { field: "ItemName", direction: "asc" },
+          searchTerm: "",
+        });
+        expect(callArgs).toHaveProperty("filterConfig");
+        expect(callArgs).toHaveProperty("signal");
+      } finally {
+        import.meta.env.VITE_SAMPLE_DATA = original;
+      }
+    });
+
+    it("forwards explicit options to fetchInventoryItems", async () => {
+      const original = import.meta.env.VITE_SAMPLE_DATA;
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+
+      fetchInventoryItems.mockImplementation(() => {});
+
+      try {
+        const { result } = renderHook(() => useInventory());
+        await act(() => vi.runAllTimers());
+        fetchInventoryItems.mockClear();
+
+        const customSort = { field: "Category", direction: "desc" };
+        act(() => {
+          result.current.refetch({
+            sortConfig: customSort,
+            searchTerm: "milk",
+          });
+        });
+
+        const callArgs = fetchInventoryItems.mock.calls[0][0];
+        expect(callArgs.sortConfig).toEqual(customSort);
+        expect(callArgs.searchTerm).toBe("milk");
+      } finally {
+        import.meta.env.VITE_SAMPLE_DATA = original;
+      }
+    });
   });
 });

@@ -4,7 +4,6 @@ const DEFAULT_FILTERS = {
   categories: [],
   expiringSoon: false,
   lowStock: false,
-  needRestock: false,
   status: "",
 };
 
@@ -12,14 +11,25 @@ function FilterBarForm({
   onSearch = () => {},
   onSort = () => {},
   onFilter = () => {},
+  onClearFilters = () => {},
   sortField,
   sortDirection,
+  searchTerm = "",
   filters = DEFAULT_FILTERS,
   inventoryItems = [],
   handleRefresh = () => {},
 }) {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [localSearch, setLocalSearch] = useState(searchTerm);
   const debounceTimer = useRef(null);
+
+  useEffect(() => {
+    return () => clearTimeout(debounceTimer.current);
+  }, []);
+
+  // Sync local input when external searchTerm changes (e.g. reset)
+  useEffect(() => {
+    setLocalSearch(searchTerm);
+  }, [searchTerm]);
 
   // Derive available categories from inventory items
   const availableCategories = useMemo(
@@ -41,7 +51,12 @@ function FilterBarForm({
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+    const value = e.target.value;
+    setLocalSearch(value);
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      onSearch(value);
+    }, 300);
   };
 
   const handleCategoryToggle = (category) => {
@@ -52,29 +67,20 @@ function FilterBarForm({
   };
 
   const handleClearFilters = () => {
-    onFilter(DEFAULT_FILTERS);
+    onClearFilters();
   };
 
   const handleReset = () => {
-    setSearchTerm("");
+    clearTimeout(debounceTimer.current);
     onSort("", "asc");
-    onSearch("");
-    onFilter(DEFAULT_FILTERS);
+    onClearFilters();
   };
-  // Debounce the onSearch callback by 300ms
-  useEffect(() => {
-    debounceTimer.current = setTimeout(() => {
-      onSearch(searchTerm);
-    }, 300);
-
-    return () => clearTimeout(debounceTimer.current);
-  }, [searchTerm, onSearch]);
 
   return (
     <form onSubmit={(e) => e.preventDefault()}>
       <label htmlFor="search">Search:</label>
       <input
-        value={searchTerm}
+        value={localSearch}
         onChange={handleSearchChange}
         type="text"
         id="search"

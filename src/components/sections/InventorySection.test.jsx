@@ -35,8 +35,8 @@ describe("InventorySection – collapsible behavior", () => {
       <InventorySection id="pantry" title="Pantry" items={makeItems(2)} />,
     );
 
-    // Toggle anchor should say "Collapse" and aria-expanded should be true
-    const toggle = container.querySelector("a[aria-expanded]");
+    // Toggle button should say "Collapse" and aria-expanded should be true
+    const toggle = container.querySelector("button[aria-expanded]");
     expect(toggle).toBeTruthy();
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(toggle.textContent).toBe("Collapse");
@@ -55,7 +55,7 @@ describe("InventorySection – collapsible behavior", () => {
       />,
     );
 
-    const toggle = container.querySelector("a[aria-expanded]");
+    const toggle = container.querySelector("button[aria-expanded]");
     expect(toggle).toBeTruthy();
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
     expect(screen.getByText("Collapsed")).toBeTruthy();
@@ -70,7 +70,7 @@ describe("InventorySection – collapsible behavior", () => {
       <InventorySection id="fridge" title="Fridge" items={makeItems(2)} />,
     );
 
-    const toggle = container.querySelector("a[aria-expanded]");
+    const toggle = container.querySelector("button[aria-expanded]");
 
     // Verify expanded
     expect(screen.getByText("Item 1")).toBeTruthy();
@@ -91,7 +91,7 @@ describe("InventorySection – collapsible behavior", () => {
       <InventorySection id="fridge" title="Fridge" items={makeItems(2)} />,
     );
 
-    const toggle = container.querySelector("a[aria-expanded]");
+    const toggle = container.querySelector("button[aria-expanded]");
 
     // Collapse
     fireEvent.click(toggle);
@@ -110,7 +110,7 @@ describe("InventorySection – collapsible behavior", () => {
     );
 
     // Collapse
-    fireEvent.click(container.querySelector("a[aria-expanded]"));
+    fireEvent.click(container.querySelector("button[aria-expanded]"));
 
     // Heading still shows count
     const heading = screen.getByRole("heading", { name: /Pantry/, level: 2 });
@@ -130,24 +130,27 @@ describe("InventorySection – collapsible behavior", () => {
     const pantrySection = sections[1];
 
     // Collapse fridge
-    const fridgeToggle = fridgeSection.querySelector("a[aria-expanded]");
+    const fridgeToggle = fridgeSection.querySelector("button[aria-expanded]");
     fireEvent.click(fridgeToggle);
 
     expect(fridgeToggle.getAttribute("aria-expanded")).toBe("false");
 
     // Pantry should still be expanded
-    const pantryToggle = pantrySection.querySelector("a[aria-expanded]");
+    const pantryToggle = pantrySection.querySelector("button[aria-expanded]");
     expect(pantryToggle.getAttribute("aria-expanded")).toBe("true");
     expect(within(pantrySection).getByText("Item 1")).toBeTruthy();
   });
 
   it("shows EmptyState when items array is empty", () => {
-    render(<InventorySection id="freezer" title="Freezer" items={[]} />);
+    const { container } = render(
+      <InventorySection id="freezer" title="Freezer" items={[]} />,
+    );
 
     expect(
       screen.getByText("Items in the freezer will be listed here."),
     ).toBeTruthy();
-    // Toggle link should not show collapse text when empty
+    // Toggle button should not render at all when empty
+    expect(container.querySelector("button[aria-expanded]")).toBeNull();
     expect(screen.queryByText("Collapse")).toBeNull();
     expect(screen.queryByText("Show Collapsed")).toBeNull();
   });

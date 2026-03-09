@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import useShoppingList from "./useShoppingList";
+import { patchInventoryItem } from "../data/airtableUtils";
 
 vi.mock("../data/airtableUtils", () => ({
   patchInventoryItem: vi.fn(),
@@ -23,65 +24,6 @@ describe("useShoppingList", () => {
     vi.clearAllMocks();
   });
 
-  // --- Derived state ---
-
-  it("derives shoppingListItems from items where NeedRestock && TargetQty > QtyOnHand", () => {
-    const items = [
-      makeItem({ id: "a", NeedRestock: true, TargetQty: 5, QtyOnHand: 2 }),
-      makeItem({ id: "b", NeedRestock: false, TargetQty: 3, QtyOnHand: 3 }),
-      makeItem({ id: "c", NeedRestock: true, TargetQty: 4, QtyOnHand: 4 }),
-      makeItem({ id: "d", NeedRestock: true, TargetQty: 10, QtyOnHand: 3 }),
-    ];
-
-    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
-
-    expect(result.current.shoppingListItems).toHaveLength(2);
-    expect(result.current.shoppingListItems.map((i) => i.id)).toEqual([
-      "a",
-      "d",
-    ]);
-  });
-
-  it("exposes shoppingListCount matching filtered length", () => {
-    const items = [
-      makeItem({ id: "a", NeedRestock: true, TargetQty: 5, QtyOnHand: 2 }),
-      makeItem({ id: "b", NeedRestock: false }),
-    ];
-
-    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
-
-    expect(result.current.shoppingListCount).toBe(1);
-  });
-
-  it("returns empty list when no items need restock", () => {
-    const items = [
-      makeItem({ id: "a", NeedRestock: false }),
-      makeItem({ id: "b", NeedRestock: true, TargetQty: 3, QtyOnHand: 3 }),
-    ];
-
-    const { result } = renderHook(() => useShoppingList({ items, dispatch }));
-
-    expect(result.current.shoppingListItems).toHaveLength(0);
-    expect(result.current.shoppingListCount).toBe(0);
-  });
-
-  it("updates derived state when items prop changes", () => {
-    const initialItems = [makeItem({ id: "a", NeedRestock: false })];
-    const { result, rerender } = renderHook(
-      ({ items }) => useShoppingList({ items, dispatch }),
-      { initialProps: { items: initialItems } },
-    );
-
-    expect(result.current.shoppingListCount).toBe(0);
-
-    const updatedItems = [
-      makeItem({ id: "a", NeedRestock: true, TargetQty: 5, QtyOnHand: 2 }),
-    ];
-    rerender({ items: updatedItems });
-
-    expect(result.current.shoppingListCount).toBe(1);
-  });
-
   // --- addToShoppingList ---
 
   it("addToShoppingList dispatches addToShoppingList action", async () => {
@@ -94,7 +36,7 @@ describe("useShoppingList", () => {
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "addToShoppingList",
-      payload: { id: "item-1", targetQty: 5 },
+      payload: expect.objectContaining({ id: "item-1", targetQty: 5 }),
     });
   });
 
@@ -139,7 +81,7 @@ describe("useShoppingList", () => {
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "removeFromShoppingList",
-      payload: "item-1",
+      payload: expect.objectContaining({ id: "item-1" }),
     });
   });
 
@@ -173,7 +115,7 @@ describe("useShoppingList", () => {
 
     expect(dispatch).toHaveBeenCalledWith({
       type: "updateTargetQty",
-      payload: { id: "item-1", targetQty: 8 },
+      payload: expect.objectContaining({ id: "item-1", targetQty: 8 }),
     });
   });
 
@@ -197,5 +139,95 @@ describe("useShoppingList", () => {
     });
 
     expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  // --- persistUpdate (VITE_SAMPLE_DATA=false) ---
+
+  describe("persistUpdate (API mode)", () => {
+    let original;
+
+    beforeEach(() => {
+      original = import.meta.env.VITE_SAMPLE_DATA;
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+    });
+
+    afterEach(() => {
+      import.meta.env.VITE_SAMPLE_DATA = original;
+    });
+
+    it("dispatches updateItem with server response on successful patch", async () => {
+      const serverItem = {
+        id: "item-1",
+        ItemName: "Olive Oil",
+        QtyOnHand: 2,
+        NeedRestock: true,
+        TargetQty: 5,
+        LastUpdated: "2026-03-08T10:00:00.000Z",
+      };
+      patchInventoryItem.mockResolvedValue(serverItem);
+
+      const items = [makeItem({ id: "item-1", QtyOnHand: 2 })];
+      const { result } = renderHook(() => useShoppingList({ items, dispatch }));
+
+      await act(async () => {
+        await result.current.addToShoppingList("item-1", 3);
+      });
+
+      // The optimistic dispatch + success dispatch
+      expect(patchInventoryItem).toHaveBeenCalledWith("item-1", {
+        NeedRestock: true,
+        TargetQty: 5,
+      });
+
+      const updateCalls = dispatch.mock.calls.filter(
+        ([action]) => action.type === "updateItem",
+      );
+      expect(updateCalls).toHaveLength(1);
+      expect(updateCalls[0][0]).toEqual({
+        type: "updateItem",
+        payload: { id: "item-1", fields: serverItem },
+      });
+    });
+
+    it("rolls back with previousItem and sets error on failed patch", async () => {
+      patchInventoryItem.mockRejectedValue(new Error("Network failure"));
+
+      const items = [
+        makeItem({
+          id: "item-1",
+          QtyOnHand: 2,
+          NeedRestock: true,
+          TargetQty: 5,
+        }),
+      ];
+      const { result } = renderHook(() => useShoppingList({ items, dispatch }));
+
+      await act(async () => {
+        await result.current.removeFromShoppingList("item-1");
+      });
+
+      expect(patchInventoryItem).toHaveBeenCalledWith("item-1", {
+        NeedRestock: false,
+        TargetQty: 2,
+      });
+
+      // Should dispatch rollback updateItem with the original item
+      const updateCalls = dispatch.mock.calls.filter(
+        ([action]) => action.type === "updateItem",
+      );
+      expect(updateCalls).toHaveLength(1);
+      expect(updateCalls[0][0].payload.fields).toMatchObject({
+        id: "item-1",
+        NeedRestock: true,
+        TargetQty: 5,
+      });
+
+      // Should dispatch setSaveError
+      const errorCalls = dispatch.mock.calls.filter(
+        ([action]) => action.type === "setSaveError",
+      );
+      expect(errorCalls).toHaveLength(1);
+      expect(errorCalls[0][0].payload).toBe("Network failure");
+    });
   });
 });

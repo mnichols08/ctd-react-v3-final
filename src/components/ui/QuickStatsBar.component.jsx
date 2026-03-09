@@ -1,8 +1,6 @@
-import { memo, useEffect, useState } from "react";
-import {
-  countExpiringSoon,
-  formatRelativeTime,
-} from "../../data/inventoryUtils";
+import { memo } from "react";
+import { countExpiringSoon } from "../../data/inventoryUtils";
+import useStaleFetchDisplay from "../../hooks/useStaleFetchDisplay";
 
 function QuickStatsBar({
   inventoryItems = [],
@@ -22,23 +20,10 @@ function QuickStatsBar({
   const shoppingList = activeItems.filter(
     (item) => item.NeedRestock === true && item.TargetQty > item.QtyOnHand,
   ).length;
-  const [lastFetchedAtDisplay, setLastFetchedAtDisplay] = useState("");
-  const [isStale, setIsStale] = useState(false);
-  useEffect(() => {
-    if (lastFetchedAt) {
-      const updateDisplay = () => {
-        setLastFetchedAtDisplay(formatRelativeTime(lastFetchedAt));
-        if (staleTimeMs) {
-          setIsStale(Date.now() - lastFetchedAt.getTime() >= staleTimeMs);
-        }
-      };
-      updateDisplay();
-      const interval = setInterval(() => {
-        updateDisplay();
-      }, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [lastFetchedAt, staleTimeMs]);
+  const { lastFetchedAtDisplay, isStale } = useStaleFetchDisplay(
+    lastFetchedAt,
+    staleTimeMs,
+  );
   return (
     <>
       {isFiltered && <p>Showing stats for filtered items</p>}

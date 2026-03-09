@@ -79,8 +79,6 @@ describe("QuickStatsBar", () => {
   });
 
   it("stats update after adding/removing/archiving items", () => {
-    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(true);
-
     render(<App />);
     act(() => vi.runAllTimers());
 
@@ -102,6 +100,7 @@ describe("QuickStatsBar", () => {
     fireEvent.click(
       within(milkArticle).getByRole("button", { name: "Delete" }),
     );
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
     expect(getStatValue("Total Items")).toBe("4");
 
     // Archive an item → total decreases further
@@ -111,8 +110,6 @@ describe("QuickStatsBar", () => {
     fireEvent.click(within(article).getByRole("button", { name: "Archive" }));
 
     expect(getStatValue("Total Items")).toBe("3");
-
-    confirmSpy.mockRestore();
   });
 
   it("expiring soon calculation is accurate", () => {

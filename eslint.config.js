@@ -66,4 +66,20 @@ export default [
       'no-implicit-coercion': 'warn',
     },
   },
+  // Netlify serverless functions run in Node.js 18+ (native fetch/Response)
+  {
+    files: ['netlify/**/*.{js,mjs}'],
+    languageOptions: {
+      globals: {
+        ...globals.nodeBuiltin,
+        fetch: 'readonly',
+        Response: 'readonly',
+      },
+    },
+    plugins: {},
+    rules: {
+      'react/jsx-no-target-blank': 'off',
+      'react/jsx-key': 'off',
+    },
+  },
 ];
