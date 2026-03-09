@@ -45,11 +45,9 @@ function MainContainer() {
 
   return (
     <main>
-      {isLoading ? (
-        <LoadingState isLoading={isLoading} />
-      ) : error ? (
-        <ErrorState />
-      ) : (
+      <LoadingState />
+      <ErrorState />
+      {!isLoading && !error && (
         <>
           <ToolSection id="stats" title="Quick Stats">
             <QuickStatsBar />

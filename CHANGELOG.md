@@ -20,7 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 --- -->
-
 ## [0.6.7] - 2026-03-09
 
 ### Added
@@ -38,6 +37,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Action-only consumers (forms) no longer re-render on data or UI state changes
 - Data-only consumers (QuickStatsBar, NavMenu) no longer re-render on UI toggle changes
 - Remove backward-compatible useInventoryContext hook; all consumers now use specific hooks
+- Refactor `MainContainer` to render `LoadingState` and `ErrorState` unconditionally (both self-guard internally)
+- Refactor `LoadingState` to read `isLoading` from context instead of receiving it as a prop, matching `ErrorState` pattern
+- Simplify `MainContainer` rendering: replace nested ternary with flat conditional guard (`!isLoading && !error`)
 
 ---
 
