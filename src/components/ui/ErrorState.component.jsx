@@ -5,7 +5,7 @@ function ErrorState({ error, onRetry }) {
 
   return (
     <div role="alert">
-      <p>Error: {error}</p>
+      <p>{error}</p>
       {onRetry && (
         <button type="button" onClick={onRetry}>
           Retry

@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add InventoryContext and provider for managing inventory state
+- Add user-friendly error messages for common HTTP status codes in airtableUtils
 
 ### Changed
 

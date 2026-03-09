@@ -419,7 +419,9 @@ describe("Airtable API functions", () => {
       });
 
       expect(setInventoryItems).not.toHaveBeenCalled();
-      expect(setError).toHaveBeenCalledWith("500 Internal Server Error");
+      expect(setError).toHaveBeenCalledWith(
+        "Something went wrong on the server. Please try again in a moment.",
+      );
       expect(setIsLoading).toHaveBeenLastCalledWith(false);
     });
 
@@ -512,7 +514,7 @@ describe("Airtable API functions", () => {
       });
 
       expect(setError).toHaveBeenCalledWith(
-        "Bad request: The request was invalid. Check your query parameters and field names.",
+        "The data sent was invalid. Please check your input and try again.",
       );
     });
 
@@ -720,10 +722,13 @@ describe("Airtable API functions", () => {
     });
 
     it('429 error shows "Rate limit exceeded" message', async () => {
-      globalThis.fetch = createMockFetch(mockErrorResponse, {
-        status: 429,
-        statusText: "Too Many Requests",
-      });
+      globalThis.fetch = createMockFetch(
+        {},
+        {
+          status: 429,
+          statusText: "Too Many Requests",
+        },
+      );
 
       const addInventoryItem = vi.fn();
       const setIsSaving = vi.fn();
@@ -806,10 +811,13 @@ describe("Airtable API functions", () => {
     });
 
     it('429 error shows "Rate limit exceeded" message', async () => {
-      globalThis.fetch = createMockFetch(mockErrorResponse, {
-        status: 429,
-        statusText: "Too Many Requests",
-      });
+      globalThis.fetch = createMockFetch(
+        {},
+        {
+          status: 429,
+          statusText: "Too Many Requests",
+        },
+      );
 
       await expect(
         patchInventoryItem("rec123abc", { QtyOnHand: 5 }),
@@ -864,10 +872,13 @@ describe("Airtable API functions", () => {
     });
 
     it('429 error shows "Rate limit exceeded" message', async () => {
-      globalThis.fetch = createMockFetch(mockErrorResponse, {
-        status: 429,
-        statusText: "Too Many Requests",
-      });
+      globalThis.fetch = createMockFetch(
+        {},
+        {
+          status: 429,
+          statusText: "Too Many Requests",
+        },
+      );
 
       await expect(deleteInventoryItem("rec123abc")).rejects.toThrow(
         "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
