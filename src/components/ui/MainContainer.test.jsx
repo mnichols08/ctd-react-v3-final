@@ -10,7 +10,7 @@ import {
 import { memo, useCallback, useEffect, useState } from "react";
 
 import MainContainer from "./MainContainer.component";
-import useInventory from "../../hooks/useInventory";
+import { InventoryProvider } from "../../context/InventoryProvider";
 import inventorySampleData from "../../data/inventorySample.json";
 import { fetchInventoryItems } from "../../data/airtableUtils";
 
@@ -117,10 +117,13 @@ afterEach(() => {
   sectionRenderLog.length = 0;
 });
 
-// Wrapper that provides the inventory hook result as a prop, mirroring what App does
+// Wrapper that provides context via InventoryProvider, mirroring what App does
 function TestMainContainer(props) {
-  const inventory = useInventory();
-  return <MainContainer inventory={inventory} {...props} />;
+  return (
+    <InventoryProvider>
+      <MainContainer {...props} />
+    </InventoryProvider>
+  );
 }
 
 describe("MainContainer", () => {

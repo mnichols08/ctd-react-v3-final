@@ -1,3 +1,4 @@
+import { useInventoryContext } from "../../context/InventoryContext";
 import { STALE_TIME_MS } from "../../data/inventoryUtils";
 import { SHOPPING_LIST_FIELDS } from "../../data/fieldConfig";
 import useFilteredInventory from "../../hooks/useFilteredInventory";
@@ -11,7 +12,8 @@ import QuickAddForm from "../forms/QuickAddForm.component";
 import InventorySection from "../sections/InventorySection.component";
 import FilterBarForm from "../forms/FilterBarForm.component";
 
-function MainContainer({ inventory }) {
+function MainContainer() {
+  const inventory = useInventoryContext();
   const {
     items: inventoryItems,
     isLoading,
