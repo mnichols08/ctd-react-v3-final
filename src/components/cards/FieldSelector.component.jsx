@@ -32,7 +32,7 @@ function FieldSelector({
       <div id="field-selector">
         <h3 id="field-selector-title">Select Visible Fields</h3>
         <button autoFocus onClick={onClose} aria-label="Close field selector">
-          x
+          ×
         </button>
       </div>
 

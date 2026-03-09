@@ -62,6 +62,14 @@ export const CATEGORIES = [
 
 export const LOCATIONS = ["Fridge", "Freezer", "Pantry"];
 
+export const SHOPPING_LIST_FIELDS = new Set([
+  "ItemName",
+  "QtyOnHand",
+  "QtyUnit",
+  "TargetQty",
+  "Location",
+]);
+
 const LOCATION_SEPARATOR = " - ";
 
 export function parseLocation(locationString) {
