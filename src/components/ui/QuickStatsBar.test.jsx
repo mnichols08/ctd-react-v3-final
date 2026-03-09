@@ -8,6 +8,7 @@ import {
   within,
 } from "@testing-library/react";
 import App from "../../App";
+import { InventoryProvider } from "../../context/InventoryContext";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -69,7 +70,11 @@ describe("QuickStatsBar", () => {
   });
 
   it("stats reflect current inventory state", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     expect(getStatValue("Total Items")).toBe("4");
@@ -79,7 +84,11 @@ describe("QuickStatsBar", () => {
   });
 
   it("stats update after adding/removing/archiving items", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     expect(getStatValue("Total Items")).toBe("4");
@@ -116,7 +125,11 @@ describe("QuickStatsBar", () => {
     // Yogurt expires 2026-03-21 → 11 days from Mar 10 → within 14-day threshold
     vi.setSystemTime(new Date("2026-03-10T00:00:00Z"));
 
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     expect(getStatValue("Expiring Soon")).toBe("1");

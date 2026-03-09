@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Refactor App component to use InventoryContext and wrap with InventoryProvider
+- Wrap App component in InventoryProvider for context access in tests
 
 ---
 

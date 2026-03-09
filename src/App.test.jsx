@@ -9,6 +9,7 @@ import {
 } from "@testing-library/react";
 
 import App from "./App";
+import { InventoryProvider } from "./context/InventoryContext";
 
 afterEach(() => {
   cleanup();
@@ -16,7 +17,11 @@ afterEach(() => {
 
 describe("App", () => {
   it("renders header, inventory, and footer sections", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     expect(
@@ -27,7 +32,11 @@ describe("App", () => {
   });
 
   it("renders navigation and inventory content", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     expect(screen.getByRole("link", { name: "Fridge" })).toBeTruthy();
@@ -55,7 +64,11 @@ describe("App", () => {
       .mockImplementation(() => {});
 
     try {
-      render(<App />);
+      render(
+        <InventoryProvider>
+          <App />
+        </InventoryProvider>,
+      );
       act(() => vi.runAllTimers());
       expect(consoleErrorSpy).not.toHaveBeenCalled();
     } finally {
@@ -69,7 +82,11 @@ describe("App", () => {
 // ---------------------------------------------------------------------------
 describe("App – archive behavior", () => {
   it("clicking Archive removes item from its location section", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Pearl Couscous is in Pantry
@@ -89,7 +106,11 @@ describe("App – archive behavior", () => {
   });
 
   it("archived item appears in Archived Items section", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Archive Apple Sauce from Fridge
@@ -119,7 +140,11 @@ describe("App – archive behavior", () => {
   });
 
   it("archiving a shopping list item removes it from Shopping List section", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Sesame Oil is already on shopping list (NeedRestock=true, TargetQty=1 > QtyOnHand=0.1)
@@ -142,7 +167,11 @@ describe("App – archive behavior", () => {
   });
 
   it("Archived Items nav link is visible when archived items exist", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Sample data includes an archived item so the link should already be there
@@ -155,7 +184,11 @@ describe("App – archive behavior", () => {
 // ---------------------------------------------------------------------------
 describe("App – delete behavior", () => {
   it("clicking Delete + confirming removes item from section", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
     const fridgeSection = screen
       .getByRole("heading", { name: /Fridge/i, level: 2 })
@@ -170,7 +203,11 @@ describe("App – delete behavior", () => {
     expect(within(fridgeSection).queryByText("Apple Sauce")).toBeNull();
   });
   it("clicking Delete + cancelling keeps item in section", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
     const fridgeSection = screen
       .getByRole("heading", { name: /Fridge/i, level: 2 })
@@ -185,7 +222,11 @@ describe("App – delete behavior", () => {
     expect(within(fridgeSection).getByText("Apple Sauce")).toBeTruthy();
   });
   it("deleting all items in a section shows EmptyState", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
     const fridgeSection = screen
       .getByRole("heading", { name: /Fridge/i, level: 2 })
@@ -220,7 +261,11 @@ describe("App – delete behavior", () => {
 // ---------------------------------------------------------------------------
 describe("App – field visibility", () => {
   it("default fields are visible on item cards on initial render", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Pearl Couscous has Brand="Rice Select" — Brand is a default visible field
@@ -230,7 +275,11 @@ describe("App – field visibility", () => {
   });
 
   it("toggling a field off via FieldSelector hides it from the card", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Open FieldSelector via nav (aria-label is "Select visible fields")
@@ -252,7 +301,11 @@ describe("App – field visibility", () => {
   });
 
   it("toggling a field on shows it on the card", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // "Notes" is not in default visible fields — should not appear
@@ -285,7 +338,11 @@ describe("App – field visibility", () => {
   });
 
   it("ItemName always remains visible regardless of field selector state", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Open FieldSelector
@@ -310,7 +367,11 @@ describe("App – field visibility", () => {
   });
 
   it("Reset to Defaults restores original visible field set", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // First, toggle Brand off
