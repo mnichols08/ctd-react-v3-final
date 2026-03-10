@@ -24,7 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add link to item name in ItemCard component for navigation
+- Add link to ItemDetailPage in ItemCard component for navigation to the item's page
+- Add ItemDetailPage component for displaying item details and actions
 
 ### Fixed
 
