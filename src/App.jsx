@@ -1,7 +1,10 @@
 import { Routes, Route } from "react-router-dom";
 import "./App.css";
 import Header from "./components/shared/Header/Header.component";
-import MainContainer from "./components/ui/MainContainer.component";
+import SettingsPage from "./pages/SettingsPage.component";
+import IndexPage from "./pages/IndexPage.component";
+import ComingSoonPage from "./pages/ComingSoonPage";
+import NotFoundPage from "./pages/NotFoundPage";
 import Footer from "./components/shared/Footer.component";
 
 function App() {
@@ -9,10 +12,18 @@ function App() {
     <>
       <Header />
       <Routes>
-        <Route path="/" element={<MainContainer />} />
-        <Route path="/item/:id" element={<h2>Item Details</h2>} />
-        <Route path="/about" element={<h2>About Page</h2>} />
-        <Route path="*" element={<h2>404 Not Found</h2>} />
+        <Route path="/" element={<IndexPage />} />
+        <Route path="/item/:id" element={<ComingSoonPage />} />
+        <Route path="/about" element={<ComingSoonPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/add-item" element={<ComingSoonPage />} />
+        <Route path="/fridge" element={<ComingSoonPage />} />
+        <Route path="/freezer" element={<ComingSoonPage />} />
+        <Route path="/pantry" element={<ComingSoonPage />} />
+        <Route path="/shopping-list" element={<ComingSoonPage />} />
+        <Route path="/archive" element={<ComingSoonPage />} />
+        <Route path="/reports" element={<ComingSoonPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
       <Footer />
     </>

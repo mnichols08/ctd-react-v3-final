@@ -1,19 +1,20 @@
+import { memo } from "react";
 import {
-  useInventoryData,
-  useInventoryUI,
-  useInventoryActions,
-} from "../../context/InventoryContext";
-import useAutoRefresh from "../../hooks/useAutoRefresh";
-import LoadingState from "./LoadingState.component";
-import ErrorState from "./ErrorState.component";
-import ToolSection from "../sections/ToolSection.component";
-import QuickStatsBar from "./QuickStatsBar.component";
-import AddInventoryItemForm from "../forms/AddInventoryItemForm.component";
-import QuickAddForm from "../forms/QuickAddForm.component";
-import InventorySection from "../sections/InventorySection.component";
-import FilterBarForm from "../forms/FilterBarForm.component";
+    useInventoryData,
+    useInventoryUI,
+    useInventoryActions,
+} from "../context/InventoryContext";
+import useAutoRefresh from "../hooks/useAutoRefresh";
+import LoadingState from "../components/ui/LoadingState.component";
+import ErrorState from "../components/ui/ErrorState.component";
+import ToolSection from "../components/sections/ToolSection.component";
+import QuickStatsBar from "../components/ui/QuickStatsBar.component";
+import AddInventoryItemForm from "../components/forms/AddInventoryItemForm.component";
+import QuickAddForm from "../components/forms/QuickAddForm.component";
+import InventorySection from "../components/sections/InventorySection.component";
+import FilterBarForm from "../components/forms/FilterBarForm.component";
 
-function MainContainer() {
+function IndexPage() {
   const {
     items,
     isLoading,
@@ -116,4 +117,4 @@ function MainContainer() {
   );
 }
 
-export default MainContainer;
+export default memo(IndexPage);

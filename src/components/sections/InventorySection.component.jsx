@@ -9,8 +9,7 @@ function InventorySection({ id, title, items, variant = "inventory" }) {
   const itemsList = items ?? [];
 
   // State to track whether the section is collapsed or expanded
-  const isArchivedSection = id === "archived";
-  const [isCollapsed, toggleCollapsed] = useToggle(isArchivedSection);
+  const [isCollapsed, toggleCollapsed] = useToggle();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
