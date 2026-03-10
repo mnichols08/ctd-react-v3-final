@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { Link } from "react-router-dom";
 import {
   useInventoryUI,
   useInventoryActions,
@@ -35,7 +36,9 @@ function ItemCard({ item, onEdit, variant }) {
   return (
     <li id={item.id}>
       <article>
-        <h2>{item.ItemName}</h2>
+        <h2>
+          <Link to={`/item/${item.id}`}>{item.ItemName}</Link>
+        </h2>
         {variant === "archived" && (
           <button onClick={() => unarchiveItem(item.id)}>Unarchive</button>
         )}

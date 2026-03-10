@@ -3,8 +3,9 @@ import "./App.css";
 import Header from "./components/shared/Header/Header.component";
 import SettingsPage from "./pages/SettingsPage.component";
 import IndexPage from "./pages/IndexPage.component";
-import ComingSoonPage from "./pages/ComingSoonPage";
-import NotFoundPage from "./pages/NotFoundPage";
+import ItemDetailPage from "./pages/ItemDetailPage.component";
+import ComingSoonPage from "./pages/ComingSoonPage.component";
+import NotFoundPage from "./pages/NotFoundPage.component";
 import Footer from "./components/shared/Footer.component";
 
 function App() {
@@ -13,7 +14,7 @@ function App() {
       <Header />
       <Routes>
         <Route path="/" element={<IndexPage />} />
-        <Route path="/item/:id" element={<ComingSoonPage />} />
+        <Route path="/item/:id" element={<ItemDetailPage />} />
         <Route path="/about" element={<ComingSoonPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/add-item" element={<ComingSoonPage />} />
