@@ -20,6 +20,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 --- -->
+
+## [0.8.3] - 2026-03-10
+
+### Added
+
+- Add generatePageTitle utility for dynamic page title generation
+
+---
+
 ## [0.8.2] - 2026-03-10
 
 ### Added
