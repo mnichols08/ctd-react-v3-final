@@ -1,7 +1,6 @@
 import { memo, useMemo } from "react";
+import { NavLink } from "react-router-dom";
 import { useInventoryData } from "../../../context/InventoryContext";
-import useToggle from "../../../hooks/useToggle";
-import FieldSelector from "../../cards/FieldSelector.component";
 
 function NavMenu() {
   const { items } = useInventoryData();
@@ -9,44 +8,50 @@ function NavMenu() {
     () => items.some((item) => item.Status === "archived"),
     [items],
   );
-  const [showFieldSelector, toggleFieldSelector, , closeFieldSelector] =
-    useToggle(false);
+
+
+  const navClass = ({ isActive }) =>
+    isActive ? "nav-link active" : "nav-link";
 
   return (
-    <nav>
+    <nav aria-label="Primary">
       <menu>
         <li>
-          <a href="#add-item">Add Item</a>
+          <NavLink to="/" end className={navClass}>
+            Home
+          </NavLink>
         </li>
         <li>
-          <a href="#fridge">Fridge</a>
+          <NavLink to="/about" className={navClass}>
+            About
+          </NavLink>
         </li>
         <li>
-          <a href="#freezer">Freezer</a>
+          <NavLink to="/settings" className={navClass}>
+            Settings
+          </NavLink>
         </li>
         <li>
-          <a href="#pantry">Pantry</a>
+          <NavLink to="/fridge">Fridge</NavLink>
         </li>
         <li>
-          <a href="#shopping-list">Shopping List</a>
+          <NavLink to="/freezer">Freezer</NavLink>
         </li>
         <li>
-          <button
-            onClick={toggleFieldSelector}
-            aria-label="Select visible fields"
-            title="Select visible fields"
-          >
-            Edit Visible Fields
-          </button>
+          <NavLink to="/pantry">Pantry</NavLink>
         </li>
+        <li>
+          <NavLink to="/shopping-list">Shopping List</NavLink>
+        </li>
+
         {archivedItemsExist && (
           <li>
-            <a href="#archived">Archived Items</a>
+            <NavLink to="/archive" className={navClass}>
+              Archived Items
+            </NavLink>
           </li>
         )}
       </menu>
-
-      {showFieldSelector && <FieldSelector onClose={closeFieldSelector} />}
     </nav>
   );
 }

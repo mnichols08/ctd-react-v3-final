@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Move contents of MainContainer component into a new file IndexPage
+- Refactor NavMenu component to use React Router Links for navigation
 
 ---
 
