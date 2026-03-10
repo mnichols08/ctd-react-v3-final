@@ -21,6 +21,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.8.1] - 2026-03-10
+
+### Added
+
+- Add ComingSoonPage component with dynamic title generation
+- Add NotFoundPage component with random error messages and navigation link
+- Add routing in App component to use IndexPage and ComingSoonPage for various paths
+- Add SettingsPage component with field selector functionality
+
+### Changed
+
+- Move contents of MainContainer component into a new file IndexPage
+- Refactor NavMenu component to use React Router Links for navigation
+- Refactor InventorySection to remove archived state handling
+
+---
+
 ## [0.8.0] - 2026-03-10
 
 ### Added
