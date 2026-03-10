@@ -92,9 +92,11 @@ describe("useInventory", () => {
     expect(updated.ItemName).toBe("Updated");
   });
 
-  it("archiveItem sets Status to archived", async () => {
+  it("archiveItem preserves shopping-list state while setting Status to archived", async () => {
     const result = await renderAndLoad();
-    const item = result.current.items.find((i) => i.Status !== "archived");
+    const item = result.current.items.find(
+      (i) => i.Status !== "archived" && i.NeedRestock === true,
+    );
 
     await act(async () => {
       await result.current.archiveItem(item.id);
@@ -102,13 +104,15 @@ describe("useInventory", () => {
 
     const archived = result.current.items.find((i) => i.id === item.id);
     expect(archived.Status).toBe("archived");
-    expect(archived.NeedRestock).toBe(false);
+    expect(archived.NeedRestock).toBe(true);
   });
 
-  it("unarchiveItem clears archived Status", async () => {
+  it("unarchiveItem restores visibility without clearing shopping-list state", async () => {
     const result = await renderAndLoad();
     // First archive an item
-    const item = result.current.items.find((i) => i.Status !== "archived");
+    const item = result.current.items.find(
+      (i) => i.Status !== "archived" && i.NeedRestock === true,
+    );
     await act(async () => {
       await result.current.archiveItem(item.id);
     });
@@ -119,6 +123,7 @@ describe("useInventory", () => {
 
     const restored = result.current.items.find((i) => i.id === item.id);
     expect(restored.Status).toBeNull();
+    expect(restored.NeedRestock).toBe(true);
   });
 
   it("exposes toggleQuickAdd, toggleShowArchived, and dismissSaveError functions", async () => {
@@ -173,6 +178,34 @@ describe("useInventory", () => {
       await act(() => vi.runAllTimers());
 
       expect(loadSampleData.mock.calls.length).toBe(callsBefore + 1);
+    });
+
+    it("cleans up the previous sample-data timer on refetch and unmount", () => {
+      const firstCleanup = vi.fn();
+      const secondCleanup = vi.fn();
+      const thirdCleanup = vi.fn();
+
+      vi.mocked(loadSampleData)
+        .mockImplementationOnce(() => firstCleanup)
+        .mockImplementationOnce(() => secondCleanup)
+        .mockImplementationOnce(() => thirdCleanup);
+
+      const { result, unmount } = renderHook(() => useInventory());
+
+      act(() => {
+        result.current.refetch();
+      });
+      expect(firstCleanup).toHaveBeenCalledTimes(1);
+      expect(secondCleanup).not.toHaveBeenCalled();
+
+      act(() => {
+        result.current.refetch();
+      });
+      expect(secondCleanup).toHaveBeenCalledTimes(1);
+      expect(thirdCleanup).not.toHaveBeenCalled();
+
+      unmount();
+      expect(thirdCleanup).toHaveBeenCalledTimes(1);
     });
 
     it("calls fetchInventoryItems with current state when VITE_SAMPLE_DATA is false", async () => {

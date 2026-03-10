@@ -52,6 +52,8 @@ function FilterBarForm() {
 
   const handleReset = () => {
     clearTimeout(debounceTimer.current);
+    setLocalSearch("");
+    setSearch("");
     setSort("", "asc");
     clearFilters();
   };

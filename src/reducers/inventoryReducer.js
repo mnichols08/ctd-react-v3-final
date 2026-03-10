@@ -68,7 +68,6 @@ export default function inventoryReducer(state, action) {
             ? {
                 ...item,
                 Status: "archived",
-                NeedRestock: false,
                 LastUpdated: action.payload.timestamp,
               }
             : item,

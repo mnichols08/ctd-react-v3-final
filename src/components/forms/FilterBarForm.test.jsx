@@ -454,6 +454,36 @@ describe("Filter", () => {
       within(getSection("Fridge")).getByText(/will be listed here/),
     ).toBeTruthy();
   });
+
+  it("Reset clears search, sort, and structured filters", () => {
+    vi.useFakeTimers();
+
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
+    act(() => vi.runAllTimers());
+
+    typeSearch("couscous");
+    fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
+    fireEvent.change(screen.getByLabelText("Sort by:"), {
+      target: { value: "QtyOnHand" },
+    });
+    fireEvent.change(screen.getByLabelText("Sort Direction:"), {
+      target: { value: "desc" },
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Reset" }));
+
+    expect(screen.getByLabelText("Search:").value).toBe("");
+    expect(screen.getByLabelText("Sort by:").value).toBe("");
+    expect(screen.getByLabelText("Sort Direction:").value).toBe("asc");
+    expect(screen.getByRole("checkbox", { name: /Dry/ }).checked).toBe(false);
+    expect(screen.queryByText(/Showing/)).toBeNull();
+
+    vi.useRealTimers();
+  });
 });
 
 // ===========================================================================
@@ -500,6 +530,9 @@ describe("Archived view", () => {
     const archivedSection = screen
       .getByRole("heading", { name: /Archived Items/i, level: 2 })
       .closest("section");
+    fireEvent.click(
+      within(archivedSection).getByRole("button", { name: /Show Collapsed/i }),
+    );
     const article = within(archivedSection)
       .getByRole("heading", {
         name: "Bacon & Velveeta Scrambler",

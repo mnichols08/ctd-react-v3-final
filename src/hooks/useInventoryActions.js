@@ -101,7 +101,7 @@ export default function useInventoryActions({ items, dispatch }) {
         payload: { id, timestamp: new Date().toISOString() },
       });
 
-      const changedFields = { Status: "archived", NeedRestock: false };
+      const changedFields = { Status: "archived" };
       await persistUpdate(id, changedFields, item);
     },
     [dispatch, persistUpdate],

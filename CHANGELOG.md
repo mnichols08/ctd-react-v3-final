@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix shopping-list NaN from unnormalized Airtable records: add `normalizeRecord` helper in `inventoryUtils` that coerces `QtyOnHand`, `TargetQty`, `PurchasePrice`, and `UnitCost` to proper numbers (defaulting null/undefined to 0); applied at all three record-mapping points in `airtableUtils` (`fetchInventoryItems`, `createInventoryItem`, `patchInventoryItem`)
 - Fix "Clear All Filters" unexpectedly also clearing the search term: the `clearFilters` reducer case no longer resets `searchTerm`, matching the UI label; the separate "Reset" button still clears everything
 - Fix filtered-results summary counting hidden archived items: `useFilteredInventory` now excludes archived records from the returned `filterAppliedItems`, so the "Showing X of Y" text in `MainContainer` only counts items visible in active sections
+- Fix archiving items incorrectly clearing NeedRestock: archive/unarchive now only toggles Status, preserving shopping-list state while archived items remain excluded from shopping-list views
 
 ### Tests
 
