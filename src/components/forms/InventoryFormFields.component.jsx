@@ -24,6 +24,14 @@ export default function InventoryFormFields({
           id={id("ItemName", idSuffix)}
           name="ItemName"
           required
+          aria-required="true"
+          aria-describedby={id("ItemName-error", idSuffix)}
+        />
+        {/* Error message region for ItemName */}
+        <span
+          id={id("ItemName-error", idSuffix)}
+          className="visually-hidden"
+          aria-live="assertive"
         />
 
         <label htmlFor={id("ItemDescription", idSuffix)}>
@@ -91,7 +99,15 @@ export default function InventoryFormFields({
           id={id("Location", idSuffix)}
           name="Location"
           required
+          aria-required="true"
+          aria-describedby={id("Location-error", idSuffix)}
         >
+          {/* Error message region for Location */}
+          <span
+            id={id("Location-error", idSuffix)}
+            className="visually-hidden"
+            aria-live="assertive"
+          />
           <option value="">Select location</option>
           {LOCATIONS.map((loc) => (
             <option key={loc} value={loc}>
@@ -141,6 +157,14 @@ export default function InventoryFormFields({
           min="0"
           step="any"
           required
+          aria-required="true"
+          aria-describedby={id("QtyOnHand-error", idSuffix)}
+        />
+        {/* Error message region for QtyOnHand */}
+        <span
+          id={id("QtyOnHand-error", idSuffix)}
+          className="visually-hidden"
+          aria-live="assertive"
         />
 
         <label htmlFor={id("QtyUnit", idSuffix)}>Unit:</label>
@@ -172,6 +196,14 @@ export default function InventoryFormFields({
               type="checkbox"
               id={id("NeedRestock", idSuffix)}
               name="NeedRestock"
+              aria-required="true"
+              aria-describedby={id("NeedRestock-error", idSuffix)}
+            />
+            {/* Error message region for NeedRestock */}
+            <span
+              id={id("NeedRestock-error", idSuffix)}
+              className="visually-hidden"
+              aria-live="assertive"
             />
           </>
         )}
