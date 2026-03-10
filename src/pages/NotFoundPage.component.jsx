@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { useLocation, Link } from "react-router-dom";
 
 function NotFoundPage() {
@@ -16,6 +16,10 @@ function NotFoundPage() {
         Math.floor(Math.random() * friendlyErrorMessages.length)
       ],
   );
+
+  useEffect(() => {
+    document.title = "404 Not Found - Kitchen Inventory";
+  }, [])
 
   return (
     <main>

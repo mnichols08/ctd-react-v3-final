@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add generatePageTitle utility for dynamic page title generation
+- Add dynamic document title updates for ComingSoonPage
+- Add static document title for IndexPage and SettingsPage
 
 ---
 
