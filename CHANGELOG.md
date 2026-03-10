@@ -20,6 +20,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 --- -->
+## [0.8.2] - 2026-03-10
+
+### Added
+
+- Add link to ItemDetailPage in ItemCard component for navigation to the item's page
+- Add ItemDetailPage component for displaying item details and actions
+
+### Fixed
+
+- Fix toggle behavior in InventorySection to respect archived state
+
+---
+
+## [0.8.2] - 2026-03-10
+
+### Added
+
+- Add ItemDetailPage component for displaying item details and actions
+
+---
 
 ## [0.8.1] - 2026-03-10
 
@@ -44,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add react-router-dom dependency for routing functionality
 - Implement routing with react-router-dom in App component
+- Add initial test for App component to check for console errors
 
 ---
 
