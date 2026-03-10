@@ -32,10 +32,14 @@ describe("useAutoRefresh", () => {
     // default to non-sample, no server filter
     import.meta.env.VITE_SAMPLE_DATA = "false";
     import.meta.env.VITE_SERVER_FILTER = "false";
+    import.meta.env.VITE_AIRTABLE_BASE_ID = "test-base";
+    import.meta.env.VITE_AIRTABLE_TABLE_NAME = "Pantry";
   });
 
   afterEach(() => {
     delete import.meta.env.VITE_SERVER_FILTER;
+    delete import.meta.env.VITE_AIRTABLE_BASE_ID;
+    delete import.meta.env.VITE_AIRTABLE_TABLE_NAME;
   });
 
   // --- Server-filter re-fetch effect -----------------------------------

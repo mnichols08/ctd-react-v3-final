@@ -4,6 +4,8 @@ import usePersistUpdate from "./usePersistUpdate";
 import { patchInventoryItem } from "../data/airtableUtils";
 
 vi.mock("../data/airtableUtils", () => ({
+  isLocalStorageFallbackMode: vi.fn(() => false),
+  isSampleDataMode: vi.fn(() => import.meta.env.VITE_SAMPLE_DATA === "true"),
   patchInventoryItem: vi.fn(),
 }));
 

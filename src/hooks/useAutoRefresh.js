@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef } from "react";
 import {
+  isLocalStorageFallbackMode,
+  isSampleDataMode,
+} from "../data/airtableUtils";
+import {
   isDataStale,
   fetchParamsEqual,
   STALE_CHECK_INTERVAL_MS,
@@ -38,7 +42,8 @@ export default function useAutoRefresh({
   // When server-side filtering is enabled, re-fetch on sort/filter/search changes
   useEffect(() => {
     if (
-      import.meta.env.VITE_SAMPLE_DATA === "true" ||
+      isSampleDataMode() ||
+      isLocalStorageFallbackMode() ||
       import.meta.env.VITE_SERVER_FILTER !== "true"
     ) {
       return;
@@ -62,7 +67,7 @@ export default function useAutoRefresh({
 
   // Auto-refresh when the tab regains focus and data is stale
   useEffect(() => {
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
+    if (isSampleDataMode() || isLocalStorageFallbackMode()) return;
 
     const handleVisibilityChange = () => {
       if (
@@ -81,7 +86,7 @@ export default function useAutoRefresh({
 
   // Periodic stale-check while the tab stays visible
   useEffect(() => {
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") return;
+    if (isSampleDataMode() || isLocalStorageFallbackMode()) return;
 
     const intervalId = setInterval(() => {
       if (

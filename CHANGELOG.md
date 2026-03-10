@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added checks for Airtable environment variable configuration and warnings in airtableUtils.js.
 - Implemented new tests for environment fallback behavior in useInventory, ensuring sample data loads when Airtable vars are missing and errors are surfaced correctly when they are present.
 - Implement pagination in InventorySection and enhance PaginationControls with unique IDs
+- Implement local storage fallback for inventory management and enhance sample data handling
 
 ### Changed
 
