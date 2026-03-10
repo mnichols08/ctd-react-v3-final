@@ -9,15 +9,13 @@ function NavMenu() {
     [items],
   );
 
-
-  const navClass = ({ isActive }) =>
-    isActive ? "nav-link active" : "nav-link";
+  const navClass = ({ isActive }) => (isActive ? "active" : null);
 
   return (
     <nav aria-label="Primary">
       <menu>
         <li>
-          <NavLink to="/" end className={navClass}>
+          <NavLink to="/" className={navClass}>
             Home
           </NavLink>
         </li>
@@ -32,16 +30,24 @@ function NavMenu() {
           </NavLink>
         </li>
         <li>
-          <NavLink to="/fridge">Fridge</NavLink>
+          <NavLink to="/fridge" className={navClass}>
+            Fridge
+          </NavLink>
         </li>
         <li>
-          <NavLink to="/freezer">Freezer</NavLink>
+          <NavLink to="/freezer" className={navClass}>
+            Freezer
+          </NavLink>
         </li>
         <li>
-          <NavLink to="/pantry">Pantry</NavLink>
+          <NavLink to="/pantry" className={navClass}>
+            Pantry
+          </NavLink>
         </li>
         <li>
-          <NavLink to="/shopping-list">Shopping List</NavLink>
+          <NavLink to="/shopping-list" className={navClass}>
+            Shopping List
+          </NavLink>
         </li>
 
         {archivedItemsExist && (
