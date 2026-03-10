@@ -44,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add react-router-dom dependency for routing functionality
 - Implement routing with react-router-dom in App component
+- Add initial test for App component to check for console errors
 
 ---
 
