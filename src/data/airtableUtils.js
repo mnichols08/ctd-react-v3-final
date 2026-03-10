@@ -1,4 +1,4 @@
-import sampleData from "./inventorySample.json";
+import sampleData from "./inventoryData.json";
 import {
   EXPIRING_SOON_MS,
   LOW_STOCK_THRESHOLD,

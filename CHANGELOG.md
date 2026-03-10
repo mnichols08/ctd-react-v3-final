@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.7.2] - 2026-03-10
+
+### Changed
+
+- Pull in more data from larger sample file already in repo
+
+---
+
 ## [0.7.1] - 2026-03-10
 
 ### Added
