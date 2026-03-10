@@ -19,12 +19,20 @@ function NotFoundPage() {
 
   useEffect(() => {
     document.title = "404 Not Found - Kitchen Inventory";
-  }, [])
+  }, []);
 
   return (
     <main>
       <h2>404 Not Found</h2>
-      <p>{randomMessage} <code>{location.pathname}</code> does not exist just yet. Check back later or click <Link to="/">here</Link> to go home</p>
+      <p>
+        {randomMessage} <code>{location.pathname}</code> does not exist just
+        yet. 
+      </p>
+      <h3>
+        <Link to="/" aria-label="Go to home page">
+          Go Home
+        </Link>
+      </h3>
     </main>
   );
 }
