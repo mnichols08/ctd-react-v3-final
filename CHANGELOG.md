@@ -21,6 +21,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.7.2] - 2026-03-10
+
+### Added
+
+- Added checks for Airtable environment variable configuration and warnings in airtableUtils.js.
+- Implemented new tests for environment fallback behavior in useInventory, ensuring sample data loads when Airtable vars are missing and errors are surfaced correctly when they are present.
+- Implement pagination in InventorySection and enhance PaginationControls with unique IDs
+- Implement local storage fallback for inventory management and enhance sample data handling
+
+### Changed
+
+- Pull in more data from larger sample file already in repo
+- Refactored useInventory hook to determine when to use sample data based on Airtable config.
+- Updated ErrorState component to display a message when Airtable config is missing and provide a button to load sample data if applicable.
+- Enhanced MainContainer tests to verify the loading of sample data and error handling.
+- Updated QuickStatsBar tests to reflect changes in data handling and ensure accurate statistics display.
+
+---
+
 ## [0.7.1] - 2026-03-10
 
 ### Added

@@ -1,7 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import useInventory from "./useInventory";
 import { loadSampleData, fetchInventoryItems } from "../data/airtableUtils";
+import {
+  clearLocalInventoryItems,
+  LOCAL_INVENTORY_STORAGE_KEY,
+} from "../data/localInventoryStorage";
 
 // Mock airtableUtils — sample-data mode is active in tests (VITE_SAMPLE_DATA=true)
 // so most API functions won't be called, but loadSampleData will.
@@ -20,6 +24,13 @@ vi.mock("../data/airtableUtils", async (importOriginal) => {
 describe("useInventory", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    clearLocalInventoryItems();
+    import.meta.env.VITE_AIRTABLE_BASE_ID = "test-base";
+    import.meta.env.VITE_AIRTABLE_TABLE_NAME = "Pantry";
+  });
+
+  afterEach(() => {
+    clearLocalInventoryItems();
   });
 
   // Helper: render and wait for sample data to load
@@ -263,6 +274,104 @@ describe("useInventory", () => {
       } finally {
         import.meta.env.VITE_SAMPLE_DATA = original;
       }
+    });
+  });
+
+  describe("environment fallback behavior", () => {
+    let originalSampleData;
+    let originalBaseId;
+    let originalTableName;
+
+    beforeEach(() => {
+      originalSampleData = import.meta.env.VITE_SAMPLE_DATA;
+      originalBaseId = import.meta.env.VITE_AIRTABLE_BASE_ID;
+      originalTableName = import.meta.env.VITE_AIRTABLE_TABLE_NAME;
+    });
+
+    afterEach(() => {
+      import.meta.env.VITE_SAMPLE_DATA = originalSampleData;
+      import.meta.env.VITE_AIRTABLE_BASE_ID = originalBaseId;
+      import.meta.env.VITE_AIRTABLE_TABLE_NAME = originalTableName;
+    });
+
+    it("loads inventory from localStorage when Airtable env vars are missing", async () => {
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+      import.meta.env.VITE_AIRTABLE_BASE_ID = "";
+      import.meta.env.VITE_AIRTABLE_TABLE_NAME = "";
+
+      const storedItems = [
+        {
+          id: "local-only-1",
+          ItemName: "Local Granola",
+          QtyOnHand: 2,
+          QtyUnit: "box",
+          TargetQty: 3,
+          NeedRestock: true,
+          Category: "Snacks",
+          Location: "Pantry - Shelf 1",
+          Status: null,
+        },
+      ];
+      window.localStorage.setItem(
+        LOCAL_INVENTORY_STORAGE_KEY,
+        JSON.stringify(storedItems),
+      );
+
+      const { result } = renderHook(() => useInventory());
+      await act(async () => {});
+
+      expect(result.current.items).toEqual(storedItems);
+      expect(loadSampleData).not.toHaveBeenCalled();
+      expect(fetchInventoryItems).not.toHaveBeenCalled();
+    });
+
+    it("persists local changes back to localStorage when Airtable env vars are missing", async () => {
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+      import.meta.env.VITE_AIRTABLE_BASE_ID = "";
+      import.meta.env.VITE_AIRTABLE_TABLE_NAME = "";
+
+      const { result } = renderHook(() => useInventory());
+      await act(async () => {});
+
+      await act(async () => {
+        await result.current.addItem({
+          id: "local-added-1",
+          ItemName: "Local Pasta",
+          QtyOnHand: 1,
+          QtyUnit: "box",
+          TargetQty: 1,
+          NeedRestock: false,
+          Category: "Dry",
+          Location: "Pantry - Shelf 2",
+          Status: null,
+        });
+      });
+
+      const savedItems = JSON.parse(
+        window.localStorage.getItem(LOCAL_INVENTORY_STORAGE_KEY),
+      );
+      expect(savedItems.some((item) => item.id === "local-added-1")).toBe(true);
+    });
+
+    it("surfaces fetch errors without auto-loading sample data when Airtable env vars are present", async () => {
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+      import.meta.env.VITE_AIRTABLE_BASE_ID = "test-base";
+      import.meta.env.VITE_AIRTABLE_TABLE_NAME = "Pantry";
+
+      vi.mocked(fetchInventoryItems).mockImplementation(
+        ({ setError, setIsLoading }) => {
+          setError("Server fetch failed");
+          setIsLoading(false);
+          return Promise.resolve();
+        },
+      );
+
+      const { result } = renderHook(() => useInventory());
+      await act(async () => {});
+
+      expect(result.current.error).toBe("Server fetch failed");
+      expect(result.current.items).toEqual([]);
+      expect(loadSampleData).not.toHaveBeenCalled();
     });
   });
 });

@@ -15,16 +15,19 @@ afterEach(() => {
 });
 
 // Minimal items for section tests
-const makeItems = (count) =>
+const makeItems = (
+  count,
+  { prefix = "Item", location = "Pantry", startId = 1 } = {},
+) =>
   Array.from({ length: count }, (_, i) => ({
-    id: i + 1,
-    ItemName: `Item ${i + 1}`,
+    id: startId + i,
+    ItemName: `${prefix} ${i + 1}`,
     QtyOnHand: 1,
     QtyUnit: "ea",
     TargetQty: 1,
     NeedRestock: false,
     Category: "Test",
-    Location: "Pantry",
+    Location: location,
   }));
 
 // ---------------------------------------------------------------------------
@@ -32,25 +35,28 @@ const makeItems = (count) =>
 // ---------------------------------------------------------------------------
 describe("InventorySection – collapsible behavior", () => {
   it("non-archived sections render expanded by default", () => {
-    const { container } = render(
+    render(
       <InventoryProvider>
         <InventorySection id="pantry" title="Pantry" items={makeItems(2)} />
       </InventoryProvider>,
     );
 
+    const section = screen
+      .getByRole("heading", { name: /Pantry/, level: 2 })
+      .closest("section");
     // Toggle button should say "Collapse" and aria-expanded should be true
-    const toggle = container.querySelector("button[aria-expanded]");
+    const toggle = within(section).getByRole("button", { name: "Collapse" });
     expect(toggle).toBeTruthy();
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
     expect(toggle.textContent).toBe("Collapse");
 
     // Items should be visible
-    expect(screen.getByText("Item 1")).toBeTruthy();
-    expect(screen.getByText("Item 2")).toBeTruthy();
+    expect(within(section).getByText("Item 1")).toBeTruthy();
+    expect(within(section).getByText("Item 2")).toBeTruthy();
   });
 
   it("archived section renders collapsed by default", () => {
-    const { container } = render(
+    render(
       <InventoryProvider>
         <InventorySection
           id="archived"
@@ -60,47 +66,54 @@ describe("InventorySection – collapsible behavior", () => {
       </InventoryProvider>,
     );
 
-    const toggle = container.querySelector("button[aria-expanded]");
+    const section = screen
+      .getByRole("heading", { name: /Archived Items/, level: 2 })
+      .closest("section");
+    const toggle = within(section).getByRole("button", {
+      name: "Show Collapsed",
+    });
     expect(toggle).toBeTruthy();
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.getByText("Collapsed")).toBeTruthy();
+    expect(within(section).getByText("Collapsed")).toBeTruthy();
     // Item heading should NOT be visible when collapsed
-    expect(
-      screen.queryByRole("heading", { name: "Item 1", level: 2 }),
-    ).toBeNull();
+    expect(within(section).queryByText("Item 1")).toBeNull();
   });
 
   it("clicking toggle hides the item list", () => {
-    const { container } = render(
+    render(
       <InventoryProvider>
         <InventorySection id="fridge" title="Fridge" items={makeItems(2)} />
       </InventoryProvider>,
     );
 
-    const toggle = container.querySelector("button[aria-expanded]");
+    const section = screen
+      .getByRole("heading", { name: /Fridge/, level: 2 })
+      .closest("section");
+    const toggle = within(section).getByRole("button", { name: "Collapse" });
 
     // Verify expanded
-    expect(screen.getByText("Item 1")).toBeTruthy();
+    expect(within(section).getByText("Item 1")).toBeTruthy();
 
     // Click the toggle
     fireEvent.click(toggle);
 
     // Now collapsed
     expect(toggle.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.getByText("Collapsed")).toBeTruthy();
-    expect(
-      screen.queryByRole("heading", { name: "Item 1", level: 2 }),
-    ).toBeNull();
+    expect(within(section).getByText("Collapsed")).toBeTruthy();
+    expect(within(section).queryByText("Item 1")).toBeNull();
   });
 
   it("clicking toggle again shows the item list", () => {
-    const { container } = render(
+    render(
       <InventoryProvider>
         <InventorySection id="fridge" title="Fridge" items={makeItems(2)} />
       </InventoryProvider>,
     );
 
-    const toggle = container.querySelector("button[aria-expanded]");
+    const section = screen
+      .getByRole("heading", { name: /Fridge/, level: 2 })
+      .closest("section");
+    const toggle = within(section).getByRole("button", { name: "Collapse" });
 
     // Collapse
     fireEvent.click(toggle);
@@ -109,23 +122,26 @@ describe("InventorySection – collapsible behavior", () => {
     // Expand again
     fireEvent.click(toggle);
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    expect(screen.getByText("Item 1")).toBeTruthy();
-    expect(screen.getByText("Item 2")).toBeTruthy();
+    expect(within(section).getByText("Item 1")).toBeTruthy();
+    expect(within(section).getByText("Item 2")).toBeTruthy();
   });
 
   it("item count remains visible in heading when collapsed", () => {
-    const { container } = render(
+    render(
       <InventoryProvider>
         <InventorySection id="pantry" title="Pantry" items={makeItems(3)} />
       </InventoryProvider>,
     );
 
+    const section = screen
+      .getByRole("heading", { name: /Pantry/, level: 2 })
+      .closest("section");
     // Collapse
-    fireEvent.click(container.querySelector("button[aria-expanded]"));
+    fireEvent.click(within(section).getByRole("button", { name: "Collapse" }));
 
     // Heading still shows count
     const heading = screen.getByRole("heading", { name: /Pantry/, level: 2 });
-    expect(heading.textContent).toContain("(3)");
+    expect(heading.textContent).toContain("(3 items, page 1 of 1)");
   });
 
   it("collapsing one section does not affect another", () => {
@@ -168,5 +184,190 @@ describe("InventorySection – collapsible behavior", () => {
     expect(container.querySelector("button[aria-expanded]")).toBeNull();
     expect(screen.queryByText("Collapse")).toBeNull();
     expect(screen.queryByText("Show Collapsed")).toBeNull();
+  });
+});
+
+describe("InventorySection – pagination behavior", () => {
+  it("renders the first page of items and a page summary in the heading", () => {
+    render(
+      <InventoryProvider>
+        <InventorySection id="pantry" title="Pantry" items={makeItems(12)} />
+      </InventoryProvider>,
+    );
+
+    const section = screen
+      .getByRole("heading", { name: /Pantry/, level: 2 })
+      .closest("section");
+
+    expect(within(section).getByText("Item 1")).toBeTruthy();
+    expect(within(section).getByText("Item 10")).toBeTruthy();
+    expect(within(section).queryByText("Item 11")).toBeNull();
+    expect(within(section).getByText("Page 1 of 2")).toBeTruthy();
+    expect(
+      screen.getByRole("heading", {
+        name: "Pantry (12 items, page 1 of 2)",
+        level: 2,
+      }),
+    ).toBeTruthy();
+  });
+
+  it("navigates to the next page without affecting visible items from the first page", () => {
+    render(
+      <InventoryProvider>
+        <InventorySection id="pantry" title="Pantry" items={makeItems(12)} />
+      </InventoryProvider>,
+    );
+
+    const section = screen
+      .getByRole("heading", { name: /Pantry/, level: 2 })
+      .closest("section");
+
+    fireEvent.click(within(section).getByRole("button", { name: "Next page" }));
+
+    expect(within(section).queryByText("Item 1")).toBeNull();
+    expect(within(section).getByText("Item 11")).toBeTruthy();
+    expect(within(section).getByText("Item 12")).toBeTruthy();
+    expect(within(section).getByText("Page 2 of 2")).toBeTruthy();
+  });
+
+  it("changes page size per section and resets that section to page 1", () => {
+    render(
+      <InventoryProvider>
+        <InventorySection id="pantry" title="Pantry" items={makeItems(12)} />
+      </InventoryProvider>,
+    );
+
+    const section = screen
+      .getByRole("heading", { name: /Pantry/, level: 2 })
+      .closest("section");
+
+    fireEvent.click(within(section).getByRole("button", { name: "Next page" }));
+    fireEvent.change(within(section).getByLabelText("Items per page:"), {
+      target: { value: "5" },
+    });
+
+    expect(within(section).getByText("Page 1 of 3")).toBeTruthy();
+    expect(within(section).getByText("Item 1")).toBeTruthy();
+    expect(within(section).getByText("Item 5")).toBeTruthy();
+    expect(within(section).queryByText("Item 6")).toBeNull();
+  });
+
+  it("hides pagination controls when all items fit on one page", () => {
+    render(
+      <InventoryProvider>
+        <InventorySection id="pantry" title="Pantry" items={makeItems(10)} />
+      </InventoryProvider>,
+    );
+
+    const section = screen
+      .getByRole("heading", { name: /Pantry/, level: 2 })
+      .closest("section");
+
+    expect(
+      within(section).queryByRole("button", { name: "Next page" }),
+    ).toBeNull();
+    expect(within(section).queryByLabelText("Items per page:")).toBeNull();
+  });
+
+  it("keeps pagination state independent between sections", () => {
+    render(
+      <InventoryProvider>
+        <div>
+          <InventorySection
+            id="fridge"
+            title="Fridge"
+            items={makeItems(12, { prefix: "Fridge Item", location: "Fridge" })}
+          />
+          <InventorySection
+            id="pantry"
+            title="Pantry"
+            items={makeItems(12, { prefix: "Pantry Item" })}
+          />
+        </div>
+      </InventoryProvider>,
+    );
+
+    const fridgeSection = screen
+      .getByRole("heading", { name: /^Fridge \(/, level: 2 })
+      .closest("section");
+    const pantrySection = screen
+      .getByRole("heading", { name: /^Pantry \(/, level: 2 })
+      .closest("section");
+
+    fireEvent.click(
+      within(fridgeSection).getByRole("button", { name: "Next page" }),
+    );
+
+    expect(within(fridgeSection).queryByText("Fridge Item 1")).toBeNull();
+    expect(within(fridgeSection).getByText("Fridge Item 11")).toBeTruthy();
+    expect(within(pantrySection).getByText("Pantry Item 1")).toBeTruthy();
+    expect(within(pantrySection).queryByText("Pantry Item 11")).toBeNull();
+  });
+
+  it("clamps to the last valid page when the item count shrinks after rerender", () => {
+    const { rerender } = render(
+      <InventoryProvider>
+        <InventorySection id="pantry" title="Pantry" items={makeItems(11)} />
+      </InventoryProvider>,
+    );
+
+    let section = screen
+      .getByRole("heading", { name: /Pantry/, level: 2 })
+      .closest("section");
+
+    fireEvent.click(within(section).getByRole("button", { name: "Next page" }));
+    expect(within(section).getByText("Item 11")).toBeTruthy();
+
+    rerender(
+      <InventoryProvider>
+        <InventorySection id="pantry" title="Pantry" items={makeItems(10)} />
+      </InventoryProvider>,
+    );
+
+    section = screen
+      .getByRole("heading", { name: /Pantry/, level: 2 })
+      .closest("section");
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Pantry (10 items, page 1 of 1)",
+        level: 2,
+      }),
+    ).toBeTruthy();
+    expect(within(section).getByText("Item 1")).toBeTruthy();
+    expect(within(section).queryByText("Item 11")).toBeNull();
+  });
+
+  it("moves to the previous valid page when the last item on a page is removed", () => {
+    const { rerender } = render(
+      <InventoryProvider>
+        <InventorySection id="pantry" title="Pantry" items={makeItems(11)} />
+      </InventoryProvider>,
+    );
+
+    let section = screen
+      .getByRole("heading", { name: /Pantry/, level: 2 })
+      .closest("section");
+
+    fireEvent.change(within(section).getByLabelText("Items per page:"), {
+      target: { value: "5" },
+    });
+    fireEvent.click(within(section).getByRole("button", { name: "Next page" }));
+    fireEvent.click(within(section).getByRole("button", { name: "Next page" }));
+    expect(within(section).getByText("Item 11")).toBeTruthy();
+
+    rerender(
+      <InventoryProvider>
+        <InventorySection id="pantry" title="Pantry" items={makeItems(10)} />
+      </InventoryProvider>,
+    );
+
+    section = screen
+      .getByRole("heading", { name: /Pantry/, level: 2 })
+      .closest("section");
+
+    expect(within(section).getByText("Page 2 of 2")).toBeTruthy();
+    expect(within(section).getByText("Item 6")).toBeTruthy();
+    expect(within(section).queryByText("Item 11")).toBeNull();
   });
 });
