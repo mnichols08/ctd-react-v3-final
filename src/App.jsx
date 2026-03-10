@@ -3,6 +3,7 @@ import "./App.css";
 import Header from "./components/shared/Header/Header.component";
 import SettingsPage from "./pages/SettingsPage.component";
 import IndexPage from "./pages/IndexPage.component";
+import AboutPage from "./pages/AboutPage.component";
 import ItemDetailPage from "./pages/ItemDetailPage.component";
 import ComingSoonPage from "./pages/ComingSoonPage.component";
 import NotFoundPage from "./pages/NotFoundPage.component";
@@ -15,7 +16,7 @@ function App() {
       <Routes>
         <Route path="/" element={<IndexPage />} />
         <Route path="/item/:id" element={<ItemDetailPage />} />
-        <Route path="/about" element={<ComingSoonPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/add-item" element={<ComingSoonPage />} />
         <Route path="/fridge" element={<ComingSoonPage />} />
