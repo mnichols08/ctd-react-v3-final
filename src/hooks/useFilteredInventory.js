@@ -92,8 +92,15 @@ export default function useFilteredInventory(
     [inventoryItems, sortConfig.field, sortConfig.direction],
   );
 
+  // Exclude archived from the filtered count so the summary text
+  // only reflects items that are actually visible in active sections.
+  const activeFilteredItems = useMemo(
+    () => sortedItems.filter((item) => item.Status !== "archived"),
+    [sortedItems],
+  );
+
   return {
-    filterAppliedItems: sortedItems,
+    filterAppliedItems: activeFilteredItems,
     activeFilterCount,
     fridgeItems,
     freezerItems,

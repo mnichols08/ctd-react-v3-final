@@ -39,7 +39,7 @@ function EditInventoryItemForm({ item, onClose }) {
   // Ref for the first input field to focus when the form opens
   const firstFieldRef = useRef(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     const updatedItem = {
@@ -47,8 +47,10 @@ function EditInventoryItemForm({ item, onClose }) {
       ...prepareItemForSave(formData),
     };
 
-    updateItem(updatedItem);
-    onClose();
+    const success = await updateItem(updatedItem);
+    if (success !== false) {
+      onClose();
+    }
   };
 
   // Focus the first input when the form opens

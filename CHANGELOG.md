@@ -21,6 +21,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.7.0] - 2026-03-09
+
+### Added
+
+- Add Airtable pagination support via `offset` handling in `fetchInventoryItems`, accumulating records across multiple pages (up to 50-page safety cap)
+- Add `loadingProgress` state to show cumulative item count during multi-page fetches ("Loading… 200 items")
+- Add `partialLoadWarning` state to alert users when later pages fail but page 1 data is still usable
+- Add 6 pagination tests covering multi-page accumulation, progress callbacks, partial-load degradation, network errors on later pages, MAX_PAGES safety cap, and single-page backward compatibility
+
+### Fixed
+
+- Fix edit dialog closing before save completes: `handleSubmit` in `EditInventoryItemForm` now awaits `updateItem` and only calls `onClose()` on success; if the PATCH fails, the dialog stays open so the user sees the error
+- Propagate success/failure from `usePersistUpdate` (`return true`/`false`) through `useInventoryActions.updateItem` so callers can react to save outcomes
+- Fix out-of-order async writes: add per-item version counter in `usePersistUpdate` so a stale PATCH response (success or error) is silently dropped when a newer request for the same item is already in flight
+- Fix stale `saveError` persisting after subsequent successful mutations: `usePersistUpdate` now clears `saveError` before each PATCH so the error banner is dismissed when the user retries
+- Fix MAX_PAGES pagination cap not surfacing a warning to UI: `fetchInventoryItems` now calls `setPartialLoadWarning` when the 50-page limit truncates results
+- Fix overlapping auto-refresh triggers permanently disabling refresh after a failed silent fetch: replace boolean `refreshingRef` guard with a timestamp-based dedup window (5 s) in `useAutoRefresh` that naturally expires, preventing a failed background fetch from blocking all future auto-refreshes
+- Fix 422 fallback leaving stale filter params for subsequent pages: after a successful unfiltered fallback on page 1, `baseParams` is now cleared so page 2+ fetches also use unfiltered params instead of re-triggering the 422
+- Fix shopping-list NaN from unnormalized Airtable records: add `normalizeRecord` helper in `inventoryUtils` that coerces `QtyOnHand`, `TargetQty`, `PurchasePrice`, and `UnitCost` to proper numbers (defaulting null/undefined to 0); applied at all three record-mapping points in `airtableUtils` (`fetchInventoryItems`, `createInventoryItem`, `patchInventoryItem`)
+- Fix "Clear All Filters" unexpectedly also clearing the search term: the `clearFilters` reducer case no longer resets `searchTerm`, matching the UI label; the separate "Reset" button still clears everything
+- Fix filtered-results summary counting hidden archived items: `useFilteredInventory` now excludes archived records from the returned `filterAppliedItems`, so the "Showing X of Y" text in `MainContainer` only counts items visible in active sections
+- Fix archiving items incorrectly clearing NeedRestock: archive/unarchive now only toggles Status, preserving shopping-list state while archived items remain excluded from shopping-list views
+
+### Tests
+
+- Add test: edit dialog stays open when `updateItem` rejects (mocked `InventoryActionsContext`)
+- Update 4 existing edit-form tests to use `await act(async …)` for the now-async submit handler
+- Add 3 race-condition tests: stale success is dropped, stale error skips rollback, concurrent patches on different items remain independent
+- Add error-lifecycle test: verify `saveError` is cleared on retry after a failed PATCH
+- Add 3 overlapping-trigger tests: dedup within window, guard auto-expires after dedup window, and refresh still works after a failed silent fetch (lastFetchedAt unchanged)
+- Add 422-fallback pagination test: verify `baseParams` are cleared after fallback so page 2 fetches without the problematic filter params
+- Add 6 `normalizeRecord` unit tests: null/undefined → 0, valid numbers preserved, string coercion, NaN/Infinity → 0, absent fields untouched, no mutation
+- Add test: "Clear All Filters" preserves the active search term while clearing category/expiring/low-stock filters
+- Update 5 filter-count assertions to reflect archived items excluded from `filterAppliedItems`
+
+---
+
 ## [0.6.7] - 2026-03-09
 
 ### Added

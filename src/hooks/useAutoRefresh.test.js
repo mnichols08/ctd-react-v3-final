@@ -269,4 +269,92 @@ describe("useAutoRefresh", () => {
       expect(props.refetch).not.toHaveBeenCalled();
     });
   });
+
+  // --- Overlapping trigger deduplication --------------------------------
+  describe("overlapping trigger deduplication", () => {
+    it("fires refetch only once when visibility and interval trigger simultaneously", () => {
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
+        writable: true,
+        configurable: true,
+      });
+
+      const props = {
+        ...defaultProps(),
+        lastFetchedAt: staleTimestamp(),
+      };
+
+      renderHook((p) => useAutoRefresh(p), { initialProps: props });
+
+      // Fire visibility trigger first
+      act(() => fireVisibilityChange("visible"));
+      expect(props.refetch).toHaveBeenCalledTimes(1);
+
+      // Interval fires within the dedup window — should be suppressed
+      act(() => vi.advanceTimersByTime(1_000));
+
+      // Still only one call
+      expect(props.refetch).toHaveBeenCalledTimes(1);
+      expect(props.refetch).toHaveBeenCalledTimes(1);
+      expect(props.refetch).toHaveBeenCalledWith({ silent: true });
+    });
+
+    it("allows a new refetch after the dedup window expires", () => {
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
+        writable: true,
+        configurable: true,
+      });
+
+      const props = {
+        ...defaultProps(),
+        lastFetchedAt: staleTimestamp(),
+      };
+
+      renderHook((p) => useAutoRefresh(p), {
+        initialProps: props,
+      });
+
+      // First trigger
+      act(() => fireVisibilityChange("visible"));
+      expect(props.refetch).toHaveBeenCalledTimes(1);
+
+      // Advance past the 5-second dedup window
+      act(() => vi.advanceTimersByTime(5_000));
+
+      // Second trigger should now be allowed
+      act(() => vi.advanceTimersByTime(STALE_CHECK_INTERVAL_MS - 5_000));
+      expect(props.refetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("still allows refresh after a failed silent fetch (lastFetchedAt unchanged)", () => {
+      Object.defineProperty(document, "visibilityState", {
+        value: "visible",
+        writable: true,
+        configurable: true,
+      });
+
+      const props = {
+        ...defaultProps(),
+        lastFetchedAt: staleTimestamp(),
+      };
+
+      const { rerender } = renderHook((p) => useAutoRefresh(p), {
+        initialProps: props,
+      });
+
+      // First trigger (simulates a silent refresh that will fail)
+      act(() => fireVisibilityChange("visible"));
+      expect(props.refetch).toHaveBeenCalledTimes(1);
+
+      // Simulate failed fetch: lastFetchedAt stays the same, re-render with same props
+      rerender({ ...props });
+
+      // Advance past the dedup window
+      act(() => vi.advanceTimersByTime(STALE_CHECK_INTERVAL_MS));
+
+      // Should be able to refetch again despite lastFetchedAt never changing
+      expect(props.refetch).toHaveBeenCalledTimes(2);
+    });
+  });
 });

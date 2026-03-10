@@ -9,6 +9,7 @@ import {
   isDataStale,
   arraysEqual,
   fetchParamsEqual,
+  normalizeRecord,
   LOW_STOCK_THRESHOLD,
   STALE_TIME_MS,
 } from "./inventoryUtils";
@@ -373,5 +374,51 @@ describe("fetchParamsEqual", () => {
   it("returns false when one param is null", () => {
     expect(fetchParamsEqual(baseParams, null)).toBe(false);
     expect(fetchParamsEqual(null, baseParams)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// normalizeRecord
+// ---------------------------------------------------------------------------
+describe("normalizeRecord", () => {
+  it("coerces null/undefined numeric fields to 0", () => {
+    const record = { id: "r1", QtyOnHand: null, TargetQty: undefined };
+    const result = normalizeRecord(record);
+    expect(result.QtyOnHand).toBe(0);
+    expect(result.TargetQty).toBe(0);
+  });
+
+  it("preserves valid numeric values", () => {
+    const record = { id: "r1", QtyOnHand: 3, TargetQty: 5.5 };
+    const result = normalizeRecord(record);
+    expect(result.QtyOnHand).toBe(3);
+    expect(result.TargetQty).toBe(5.5);
+  });
+
+  it("coerces string numbers to actual numbers", () => {
+    const record = { id: "r1", QtyOnHand: "2", TargetQty: "0" };
+    const result = normalizeRecord(record);
+    expect(result.QtyOnHand).toBe(2);
+    expect(result.TargetQty).toBe(0);
+  });
+
+  it("coerces non-finite values (NaN, Infinity) to 0", () => {
+    const record = { id: "r1", QtyOnHand: "not-a-number", TargetQty: Infinity };
+    const result = normalizeRecord(record);
+    expect(result.QtyOnHand).toBe(0);
+    expect(result.TargetQty).toBe(0);
+  });
+
+  it("does not add numeric fields that are absent", () => {
+    const record = { id: "r1", ItemName: "Milk" };
+    const result = normalizeRecord(record);
+    expect("QtyOnHand" in result).toBe(false);
+    expect("TargetQty" in result).toBe(false);
+  });
+
+  it("does not mutate the original record", () => {
+    const record = { id: "r1", QtyOnHand: null };
+    normalizeRecord(record);
+    expect(record.QtyOnHand).toBeNull();
   });
 });

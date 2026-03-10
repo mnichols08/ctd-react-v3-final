@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   isDataStale,
   fetchParamsEqual,
@@ -20,6 +20,20 @@ export default function useAutoRefresh({
     filters,
     searchTerm,
   });
+
+  // Guard against overlapping silent refreshes: visibility and interval
+  // triggers share this timestamp so only one fetch fires within a short
+  // window.  Unlike a boolean flag, a timestamp naturally expires — a
+  // failed fetch (which never updates lastFetchedAt) can't permanently
+  // block future refreshes.
+  const DEDUP_WINDOW_MS = 5_000;
+  const lastRefreshAttemptRef = useRef(0);
+
+  const silentRefresh = useCallback(() => {
+    if (Date.now() - lastRefreshAttemptRef.current < DEDUP_WINDOW_MS) return;
+    lastRefreshAttemptRef.current = Date.now();
+    refetch({ silent: true });
+  }, [refetch]);
 
   // When server-side filtering is enabled, re-fetch on sort/filter/search changes
   useEffect(() => {
@@ -56,14 +70,14 @@ export default function useAutoRefresh({
         isDataStale(lastFetchedAt) &&
         !isLoading
       ) {
-        refetch({ silent: true });
+        silentRefresh();
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [lastFetchedAt, isLoading, refetch]);
+  }, [lastFetchedAt, isLoading, silentRefresh]);
 
   // Periodic stale-check while the tab stays visible
   useEffect(() => {
@@ -75,10 +89,10 @@ export default function useAutoRefresh({
         isDataStale(lastFetchedAt) &&
         !isLoading
       ) {
-        refetch({ silent: true });
+        silentRefresh();
       }
     }, STALE_CHECK_INTERVAL_MS);
 
     return () => clearInterval(intervalId);
-  }, [lastFetchedAt, isLoading, refetch]);
+  }, [lastFetchedAt, isLoading, silentRefresh]);
 }

@@ -384,14 +384,14 @@ describe("MainContainer", () => {
     // Before timers resolve, the loading indicator should be visible
     const loadingStatus = screen.getByRole("status");
     expect(loadingStatus).toBeTruthy();
-    expect(loadingStatus.textContent).toContain("Loading...");
+    expect(loadingStatus.textContent).toContain("Loading");
 
     // Inventory sections should NOT be rendered yet
     expect(screen.queryByRole("heading", { name: "Fridge" })).toBeNull();
 
     // After loading completes, the spinner disappears
     act(() => vi.runAllTimers());
-    expect(screen.queryByText("Loading...")).toBeNull();
+    expect(screen.queryByText("Loading")).toBeNull();
     expect(screen.getByRole("heading", { name: "Fridge" })).toBeTruthy();
   });
 
@@ -469,6 +469,24 @@ describe("MainContainer", () => {
       screen.getByRole("heading", { name: "Pantry" }).closest("section")
         ?.textContent,
     ).toContain(`count:${initialPantryCount}`);
+  });
+
+  it("passes the archived section id when archived items are shown", () => {
+    render(<TestMainContainer />);
+    act(() => vi.runAllTimers());
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /Show Archived Items/i }),
+    );
+
+    const archivedSection = sectionRenderLog
+      .filter((renderedSection) => renderedSection.title === "Archived Items")
+      .pop();
+
+    expect(archivedSection).toMatchObject({
+      id: "archived",
+      variant: "archived",
+    });
   });
 
   // -- useMemo / useCallback behavior --------------------------------------
