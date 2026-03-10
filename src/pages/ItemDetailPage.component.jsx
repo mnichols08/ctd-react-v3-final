@@ -26,9 +26,9 @@ function ItemDetailPage() {
     if (isEditing && item?.ItemName) {
       document.title = `Editing: ${item.ItemName} - Kitchen Inventory`;
     } else if (item?.ItemName) {
-      document.title = `Kitchen Inventory - ${item.ItemName}`;
+      document.title = `${item.ItemName} - Kitchen Inventory`;
     } else {
-      document.title = "Kitchen Inventory - Item Details";
+      document.title = "Item Details - Kitchen Inventory";
     }
   }, [item, isEditing]);
 

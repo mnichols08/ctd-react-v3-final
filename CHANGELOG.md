@@ -20,6 +20,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 --- -->
+
+## [0.8.3] - 2026-03-10
+
+### Added
+
+- Add generatePageTitle utility for dynamic page title generation
+- Add dynamic document title updates for ComingSoonPage
+- Add static document title for IndexPage and SettingsPage
+
+### Changed
+
+- Update NavMenu to rename 'Home' link to 'Dashboard'
+
+---
+
 ## [0.8.2] - 2026-03-10
 
 ### Added
@@ -30,14 +45,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix toggle behavior in InventorySection to respect archived state
-
----
-
-## [0.8.2] - 2026-03-10
-
-### Added
-
-- Add ItemDetailPage component for displaying item details and actions
 
 ---
 
