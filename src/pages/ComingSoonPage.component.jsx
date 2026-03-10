@@ -1,18 +1,15 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 // This is a simple placeholder page for routes that haven't been implemented yet
 // It dynamically generates a title based on the current pathname
-const generatePageTitle = (pathname) =>
-  pathname
-    .split("/") // Remove empty segments and replace dashes with spaces
-    .filter(Boolean) // Remove empty segments
-    .map((word) => word.replace(/-/g, " ")) // Replace dashes with spaces
-    .join(" ") // Join words with spaces
-    .replace(/\b\w/g, (char) => char.toUpperCase()) + " Page"; // Capitalize the first letter of each word
+import generatePageTitle from "../utils/generatePageTitle";
 
 function ComingSoonPage() {
   const { pathname } = useLocation();
+  useEffect(() => {
+    document.title = `${generatePageTitle(pathname)} - Kitchen Inventory`;
+  }, [pathname]);
   return (
     <main>
       <h2>{generatePageTitle(pathname)}</h2>

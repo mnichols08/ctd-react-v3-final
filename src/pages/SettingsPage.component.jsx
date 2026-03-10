@@ -1,10 +1,13 @@
-import { memo } from "react";
+import { memo, useEffect } from "react";
 import useToggle from "../hooks/useToggle";
 import FieldSelector from "../components/cards/FieldSelector.component";
 
 function SettingsPage() {
   const [showFieldSelector, toggleFieldSelector, , closeFieldSelector] =
     useToggle(false);
+  useEffect(() => {
+    document.title = "Settings Page - Kitchen Inventory";
+  }, [])
   return (
     <main>
       <h2>Settings</h2>

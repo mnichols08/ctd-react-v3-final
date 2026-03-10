@@ -1,8 +1,8 @@
-import { memo } from "react";
+import { useEffect, memo } from "react";
 import {
-    useInventoryData,
-    useInventoryUI,
-    useInventoryActions,
+  useInventoryData,
+  useInventoryUI,
+  useInventoryActions,
 } from "../context/InventoryContext";
 import useAutoRefresh from "../hooks/useAutoRefresh";
 import LoadingState from "../components/ui/LoadingState.component";
@@ -44,7 +44,9 @@ function IndexPage() {
     lastFetchedAt,
     isLoading,
   });
-
+  useEffect(() => {
+    document.title = "Dashboard - Kitchen Inventory";
+  }, []);
   return (
     <main>
       <LoadingState />

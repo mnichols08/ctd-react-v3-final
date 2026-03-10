@@ -16,7 +16,7 @@ function NavMenu() {
       <menu>
         <li>
           <NavLink to="/" className={navClass}>
-            Home
+            Dashboard
           </NavLink>
         </li>
         <li>
