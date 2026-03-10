@@ -21,6 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.8.4] - 2026-03-10
+
+### Added
+
+- Add AboutPage component with project overview and features
+
+### Changed
+
+- Refactor NotFoundPage layout for improved readability
+
+---
+
 ## [0.8.3] - 2026-03-10
 
 ### Added

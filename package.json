@@ -2,7 +2,7 @@
   "name": "ctd-react-v3-final",
   "description": "React application designed for the Code The Dream - Lark Cohort - Final Exam. The application should be written using the fundamentals that were taught throughout the curriculum. It will be an inventory tracking application that allows users to take an inventory of their kitchen (pantry, fridge, freezer, etc.) and meal plan / shop to reduce waste",
   "private": true,
-  "version": "0.8.2",
+  "version": "0.8.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
