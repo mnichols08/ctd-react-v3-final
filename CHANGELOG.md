@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add dynamic document title updates for ComingSoonPage
 - Add static document title for IndexPage and SettingsPage
 
+### Changed
+
+- Update NavMenu to rename 'Home' link to 'Dashboard'
+
 ---
 
 ## [0.8.2] - 2026-03-10
