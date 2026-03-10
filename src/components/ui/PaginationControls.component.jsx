@@ -1,10 +1,14 @@
+import { useId } from "react";
+
 function PaginationControls({
   currentPage,
   totalItems,
   pageSize = 10,
   onPageChange = () => {},
   onPageSizeChange = () => {},
+  idPrefix,
 }) {
+  const generatedId = useId();
   const pageSizeOptions = [5, 10, 15, 20, 25];
   const defaultPageSize = 10;
   const validPageSize = pageSize > 0 ? pageSize : defaultPageSize;
@@ -13,6 +17,7 @@ function PaginationControls({
   const canGoBack = validCurrentPage > 1;
   const canGoForward = validCurrentPage < totalPages;
   const hasItems = totalItems > 0;
+  const selectId = `${idPrefix ?? generatedId}-page-size-select`;
 
   if (!hasItems) {
     return null; // Don't render pagination controls if there are no items
@@ -46,9 +51,9 @@ function PaginationControls({
       >
         Next
       </button>
-      <label htmlFor="page-size-select">Items per page:</label>
+      <label htmlFor={selectId}>Items per page:</label>
       <select
-        id="page-size-select"
+        id={selectId}
         value={validPageSize}
         onChange={handlePageSizeChange}
       >

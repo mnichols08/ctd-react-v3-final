@@ -9,6 +9,8 @@ import {
 } from "@testing-library/react";
 import App from "../../App";
 import { InventoryProvider } from "../../context/InventoryProvider";
+import inventoryData from "../../data/inventoryData.json";
+import { countExpiringSoon } from "../../data/inventoryUtils";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -53,6 +55,20 @@ function getStatValue(label) {
   return h.nextElementSibling?.textContent;
 }
 
+function getExpectedStats() {
+  const activeItems = inventoryData.records.filter(
+    (item) => item.Status !== "archived",
+  );
+  return {
+    totalItems: activeItems.length,
+    needRestock: activeItems.filter((item) => item.NeedRestock === true).length,
+    expiringSoon: countExpiringSoon(activeItems),
+    shoppingList: activeItems.filter(
+      (item) => item.NeedRestock === true && item.TargetQty > item.QtyOnHand,
+    ).length,
+  };
+}
+
 afterEach(() => {
   cleanup();
 });
@@ -77,10 +93,18 @@ describe("QuickStatsBar", () => {
     );
     act(() => vi.runAllTimers());
 
-    expect(getStatValue("Total Items")).toBe("4");
-    expect(getStatValue("Need Restock")).toBe("1");
-    expect(getStatValue("Expiring Soon")).toBe("0");
-    expect(getStatValue("Shopping List")).toBe("1");
+    const expectedStats = getExpectedStats();
+
+    expect(getStatValue("Total Items")).toBe(String(expectedStats.totalItems));
+    expect(getStatValue("Need Restock")).toBe(
+      String(expectedStats.needRestock),
+    );
+    expect(getStatValue("Expiring Soon")).toBe(
+      String(expectedStats.expiringSoon),
+    );
+    expect(getStatValue("Shopping List")).toBe(
+      String(expectedStats.shoppingList),
+    );
   });
 
   it("stats update after adding/removing/archiving items", () => {
@@ -91,26 +115,30 @@ describe("QuickStatsBar", () => {
     );
     act(() => vi.runAllTimers());
 
-    expect(getStatValue("Total Items")).toBe("4");
+    const expectedStats = getExpectedStats();
+
+    expect(getStatValue("Total Items")).toBe(String(expectedStats.totalItems));
 
     // Add an item → total increases
     quickAddItem({
       name: "Test Milk",
       category: "Dairy",
-      location: "Fridge",
+      location: "Freezer",
       qty: "3",
     });
-    expect(getStatValue("Total Items")).toBe("5");
+    expect(getStatValue("Total Items")).toBe(
+      String(expectedStats.totalItems + 1),
+    );
 
     // Delete (remove) an item → total decreases
-    const milkArticle = within(getSection("Fridge"))
+    const milkArticle = within(getSection("Freezer"))
       .getByRole("heading", { name: "Test Milk", level: 2 })
       .closest("article");
     fireEvent.click(
       within(milkArticle).getByRole("button", { name: "Delete" }),
     );
     fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
-    expect(getStatValue("Total Items")).toBe("4");
+    expect(getStatValue("Total Items")).toBe(String(expectedStats.totalItems));
 
     // Archive an item → total decreases further
     const article = within(getSection("Fridge"))
@@ -118,7 +146,9 @@ describe("QuickStatsBar", () => {
       .closest("article");
     fireEvent.click(within(article).getByRole("button", { name: "Archive" }));
 
-    expect(getStatValue("Total Items")).toBe("3");
+    expect(getStatValue("Total Items")).toBe(
+      String(expectedStats.totalItems - 1),
+    );
   });
 
   it("expiring soon calculation is accurate", () => {
@@ -132,6 +162,8 @@ describe("QuickStatsBar", () => {
     );
     act(() => vi.runAllTimers());
 
-    expect(getStatValue("Expiring Soon")).toBe("1");
+    expect(getStatValue("Expiring Soon")).toBe(
+      String(getExpectedStats().expiringSoon),
+    );
   });
 });

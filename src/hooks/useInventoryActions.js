@@ -3,7 +3,13 @@ import { actions } from "../reducers/inventoryReducer";
 import {
   createInventoryItem,
   deleteInventoryItem,
+  isLocalStorageFallbackMode,
+  isSampleDataMode,
 } from "../data/airtableUtils";
+import {
+  LOCAL_INVENTORY_SAVE_ERROR,
+  saveLocalInventoryItems,
+} from "../data/localInventoryStorage";
 import usePersistUpdate from "./usePersistUpdate";
 
 export default function useInventoryActions({ items, dispatch }) {
@@ -14,11 +20,32 @@ export default function useInventoryActions({ items, dispatch }) {
 
   const persistUpdate = usePersistUpdate(dispatch);
 
+  const persistLocalItems = useCallback(
+    (nextItems) => {
+      if (!isLocalStorageFallbackMode()) return true;
+      const didSave = saveLocalInventoryItems(nextItems);
+      if (!didSave) {
+        dispatch({
+          type: actions.setSaveError,
+          payload: LOCAL_INVENTORY_SAVE_ERROR,
+        });
+      }
+      return didSave;
+    },
+    [dispatch],
+  );
+
   const addItem = useCallback(
     async (item) => {
       dispatch({ type: actions.setSaveError, payload: null });
-      if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      if (isSampleDataMode()) {
         dispatch({ type: actions.addItem, payload: item });
+        return true;
+      }
+      if (isLocalStorageFallbackMode()) {
+        const nextItems = [...itemsRef.current, item];
+        dispatch({ type: actions.addItem, payload: item });
+        persistLocalItems(nextItems);
         return true;
       }
       try {
@@ -37,7 +64,7 @@ export default function useInventoryActions({ items, dispatch }) {
         return false;
       }
     },
-    [dispatch],
+    [dispatch, persistLocalItems],
   );
 
   const deleteItem = useCallback(
@@ -48,8 +75,17 @@ export default function useInventoryActions({ items, dispatch }) {
       dispatch({ type: actions.setSaveError, payload: null });
       dispatch({ type: actions.setDeleting, payload: { id, value: true } });
 
-      if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      if (isSampleDataMode()) {
         dispatch({ type: actions.deleteItem, payload: id });
+        return;
+      }
+
+      if (isLocalStorageFallbackMode()) {
+        const nextItems = itemsRef.current.filter(
+          (currentItem) => currentItem.id !== id,
+        );
+        dispatch({ type: actions.deleteItem, payload: id });
+        persistLocalItems(nextItems);
         return;
       }
 
@@ -61,7 +97,7 @@ export default function useInventoryActions({ items, dispatch }) {
         dispatch({ type: actions.setSaveError, payload: err.message });
       }
     },
-    [dispatch],
+    [dispatch, persistLocalItems],
   );
 
   const updateItem = useCallback(
@@ -86,9 +122,23 @@ export default function useInventoryActions({ items, dispatch }) {
       }
       if (Object.keys(changedFields).length === 0) return true;
 
+      if (isLocalStorageFallbackMode()) {
+        const nextItems = itemsRef.current.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                ...fields,
+                LastUpdated: fields.LastUpdated ?? new Date().toISOString(),
+              }
+            : item,
+        );
+        persistLocalItems(nextItems);
+        return true;
+      }
+
       return await persistUpdate(id, changedFields, previousItem);
     },
-    [dispatch, persistUpdate],
+    [dispatch, persistLocalItems, persistUpdate],
   );
 
   const archiveItem = useCallback(
@@ -101,10 +151,24 @@ export default function useInventoryActions({ items, dispatch }) {
         payload: { id, timestamp: new Date().toISOString() },
       });
 
+      if (isLocalStorageFallbackMode()) {
+        const nextItems = itemsRef.current.map((currentItem) =>
+          currentItem.id === id
+            ? {
+                ...currentItem,
+                Status: "archived",
+                LastUpdated: new Date().toISOString(),
+              }
+            : currentItem,
+        );
+        persistLocalItems(nextItems);
+        return true;
+      }
+
       const changedFields = { Status: "archived" };
       await persistUpdate(id, changedFields, item);
     },
-    [dispatch, persistUpdate],
+    [dispatch, persistLocalItems, persistUpdate],
   );
 
   const unarchiveItem = useCallback(
@@ -117,10 +181,24 @@ export default function useInventoryActions({ items, dispatch }) {
         payload: { id, timestamp: new Date().toISOString() },
       });
 
+      if (isLocalStorageFallbackMode()) {
+        const nextItems = itemsRef.current.map((currentItem) =>
+          currentItem.id === id
+            ? {
+                ...currentItem,
+                Status: null,
+                LastUpdated: new Date().toISOString(),
+              }
+            : currentItem,
+        );
+        persistLocalItems(nextItems);
+        return true;
+      }
+
       const changedFields = { Status: null };
       await persistUpdate(id, changedFields, item);
     },
-    [dispatch, persistUpdate],
+    [dispatch, persistLocalItems, persistUpdate],
   );
 
   return { addItem, deleteItem, updateItem, archiveItem, unarchiveItem };

@@ -129,4 +129,33 @@ describe("PaginationControls", () => {
     expect(screen.getByLabelText("Items per page:")).toHaveValue("10");
     expect(screen.getByText("Page 1 of 3")).toBeTruthy();
   });
+
+  it("supports multiple instances with unique page size ids", () => {
+    render(
+      <>
+        <PaginationControls
+          currentPage={1}
+          totalItems={25}
+          pageSize={10}
+          onPageChange={vi.fn()}
+          onPageSizeChange={vi.fn()}
+          idPrefix="fridge"
+        />
+        <PaginationControls
+          currentPage={1}
+          totalItems={25}
+          pageSize={10}
+          onPageChange={vi.fn()}
+          onPageSizeChange={vi.fn()}
+          idPrefix="pantry"
+        />
+      </>,
+    );
+
+    const selects = screen.getAllByLabelText("Items per page:");
+
+    expect(selects).toHaveLength(2);
+    expect(selects[0].id).toBe("fridge-page-size-select");
+    expect(selects[1].id).toBe("pantry-page-size-select");
+  });
 });

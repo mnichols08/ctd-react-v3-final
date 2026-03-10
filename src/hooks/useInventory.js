@@ -3,7 +3,14 @@ import inventoryReducer, {
   actions,
   initialState,
 } from "../reducers/inventoryReducer";
-import { fetchInventoryItems, loadSampleData } from "../data/airtableUtils";
+import {
+  fetchInventoryItems,
+  hasAirtableConfig,
+  isLocalStorageFallbackMode,
+  isSampleDataMode,
+  loadSampleData,
+} from "../data/airtableUtils";
+import { loadLocalInventory } from "../data/localInventoryStorage";
 import useFilters from "./useFilters";
 import useFieldVisibility from "./useFieldVisibility";
 import useUIToggles from "./useUIToggles";
@@ -54,14 +61,44 @@ export default function useInventory() {
     });
   }, []);
 
+  const startLocalInventoryLoad = useCallback(() => {
+    loadLocalInventory({
+      setInventoryItems: (data) =>
+        dispatch({ type: actions.setItems, payload: data }),
+      setIsLoading: (val) =>
+        dispatch({ type: actions.setLoading, payload: val }),
+      setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
+      setLastFetchedAt: (date) =>
+        dispatch({ type: actions.setLastFetchedAt, payload: date }),
+    });
+  }, []);
+
+  const shouldUseSampleData = useCallback(() => isSampleDataMode(), []);
+
+  const shouldUseLocalStorageFallback = useCallback(
+    () => isLocalStorageFallbackMode(),
+    [],
+  );
+
+  const loadSampleDataFallback = useCallback(() => {
+    startSampleDataLoad();
+  }, [startSampleDataLoad]);
+
+  const canLoadSampleDataFallback = !isSampleDataMode() && hasAirtableConfig();
+
   // --- Initial data fetch ---
   useEffect(() => {
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+    if (shouldUseSampleData()) {
       startSampleDataLoad();
       return () => {
         sampleDataCleanupRef.current?.();
         sampleDataCleanupRef.current = null;
       };
+    }
+
+    if (shouldUseLocalStorageFallback()) {
+      startLocalInventoryLoad();
+      return;
     }
 
     const controller = new AbortController();
@@ -86,15 +123,25 @@ export default function useInventory() {
     });
 
     return () => controller.abort();
-    // Run once on mount
+    // Run once on mount - dependencies are internal functions that won't change identity
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startSampleDataLoad]);
+  }, [
+    shouldUseLocalStorageFallback,
+    shouldUseSampleData,
+    startLocalInventoryLoad,
+    startSampleDataLoad,
+  ]);
 
   // Re-run the fetch/load logic (for retry, refresh, or re-fetch with new params)
   const refetch = useCallback(
     (options = {}) => {
-      if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      if (shouldUseSampleData()) {
         startSampleDataLoad();
+        return;
+      }
+
+      if (shouldUseLocalStorageFallback()) {
+        startLocalInventoryLoad();
         return;
       }
 
@@ -121,7 +168,12 @@ export default function useInventory() {
         signal: controller.signal,
       });
     },
-    [startSampleDataLoad],
+    [
+      shouldUseLocalStorageFallback,
+      shouldUseSampleData,
+      startLocalInventoryLoad,
+      startSampleDataLoad,
+    ],
   );
 
   // --- Composed hooks ---
@@ -150,12 +202,14 @@ export default function useInventory() {
     showArchived,
     isSaving,
     saveError,
+    canLoadSampleDataFallback,
     addItem,
     deleteItem,
     updateItem,
     archiveItem,
     unarchiveItem,
     refetch,
+    loadSampleDataFallback,
     lastFetchedAt,
     loadingProgress,
     partialLoadWarning,

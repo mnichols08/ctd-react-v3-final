@@ -1,6 +1,10 @@
 import { useCallback, useRef } from "react";
 import { actions } from "../reducers/inventoryReducer";
-import { patchInventoryItem } from "../data/airtableUtils";
+import {
+  isLocalStorageFallbackMode,
+  isSampleDataMode,
+  patchInventoryItem,
+} from "../data/airtableUtils";
 
 export default function usePersistUpdate(dispatch) {
   // Per-item version counter: prevents a stale response from overwriting
@@ -9,7 +13,7 @@ export default function usePersistUpdate(dispatch) {
 
   return useCallback(
     async (itemId, changedFields, previousItem) => {
-      if (import.meta.env.VITE_SAMPLE_DATA === "true") return true;
+      if (isSampleDataMode() || isLocalStorageFallbackMode()) return true;
 
       dispatch({ type: actions.setSaveError, payload: null });
 
