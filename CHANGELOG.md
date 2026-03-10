@@ -33,14 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [0.8.2] - 2026-03-10
-
-### Added
-
-- Add ItemDetailPage component for displaying item details and actions
-
----
-
 ## [0.8.1] - 2026-03-10
 
 ### Added
