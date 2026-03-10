@@ -21,6 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.8.0] - 2026-03-10
+
+### Added
+
+- Add react-router-dom dependency for routing functionality
+- Implement routing with react-router-dom in App component
+
+---
+
 ## [0.7.2] - 2026-03-10
 
 ### Added
