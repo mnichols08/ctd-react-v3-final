@@ -21,7 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
-## [0.6.8] - 2026-03-09
+## [0.7.1] - 2026-03-10
+
+### Added
+
+- Add PaginationControls component and corresponding tests
+
+---
+
+## [0.7.0] - 2026-03-09
 
 ### Added
 
