@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add ComingSoonPage component with dynamic title generation
 - Add NotFoundPage component with random error messages and navigation link
+- Add routing in App component to use IndexPage and ComingSoonPage for various paths
 
 ### Changed
 
