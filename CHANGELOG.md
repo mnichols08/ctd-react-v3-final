@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add ComingSoonPage component with dynamic title generation
 
+### Changed
+
+- Move contents of MainContainer component into a new file IndexPage
+
 ---
 
 ## [0.8.0] - 2026-03-10
