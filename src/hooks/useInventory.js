@@ -3,7 +3,11 @@ import inventoryReducer, {
   actions,
   initialState,
 } from "../reducers/inventoryReducer";
-import { fetchInventoryItems, loadSampleData } from "../data/airtableUtils";
+import {
+  fetchInventoryItems,
+  hasAirtableConfig,
+  loadSampleData,
+} from "../data/airtableUtils";
 import useFilters from "./useFilters";
 import useFieldVisibility from "./useFieldVisibility";
 import useUIToggles from "./useUIToggles";
@@ -54,9 +58,21 @@ export default function useInventory() {
     });
   }, []);
 
+  const shouldUseSampleData = useCallback(
+    () => import.meta.env.VITE_SAMPLE_DATA === "true" || !hasAirtableConfig(),
+    [],
+  );
+
+  const loadSampleDataFallback = useCallback(() => {
+    startSampleDataLoad();
+  }, [startSampleDataLoad]);
+
+  const canLoadSampleDataFallback =
+    import.meta.env.VITE_SAMPLE_DATA !== "true" && hasAirtableConfig();
+
   // --- Initial data fetch ---
   useEffect(() => {
-    if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+    if (shouldUseSampleData()) {
       startSampleDataLoad();
       return () => {
         sampleDataCleanupRef.current?.();
@@ -88,12 +104,12 @@ export default function useInventory() {
     return () => controller.abort();
     // Run once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [startSampleDataLoad]);
+  }, [shouldUseSampleData, startSampleDataLoad]);
 
   // Re-run the fetch/load logic (for retry, refresh, or re-fetch with new params)
   const refetch = useCallback(
     (options = {}) => {
-      if (import.meta.env.VITE_SAMPLE_DATA === "true") {
+      if (shouldUseSampleData()) {
         startSampleDataLoad();
         return;
       }
@@ -121,7 +137,7 @@ export default function useInventory() {
         signal: controller.signal,
       });
     },
-    [startSampleDataLoad],
+    [shouldUseSampleData, startSampleDataLoad],
   );
 
   // --- Composed hooks ---
@@ -150,12 +166,14 @@ export default function useInventory() {
     showArchived,
     isSaving,
     saveError,
+    canLoadSampleDataFallback,
     addItem,
     deleteItem,
     updateItem,
     archiveItem,
     unarchiveItem,
     refetch,
+    loadSampleDataFallback,
     lastFetchedAt,
     loadingProgress,
     partialLoadWarning,

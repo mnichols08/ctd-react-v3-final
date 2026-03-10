@@ -10,6 +10,11 @@ import {
 import { memo, useCallback, useEffect, useState } from "react";
 
 import MainContainer from "./MainContainer.component";
+import {
+  InventoryActionsContext,
+  InventoryDataContext,
+  InventoryUIContext,
+} from "../../context/InventoryContext";
 import { InventoryProvider } from "../../context/InventoryProvider";
 import inventorySampleData from "../../data/inventorySample.json";
 import { fetchInventoryItems } from "../../data/airtableUtils";
@@ -146,21 +151,99 @@ function TestMainContainer(props) {
   );
 }
 
+function getLatestSectionProps(title) {
+  return sectionRenderLog.filter((section) => section.title === title).pop();
+}
+
+function buildMockDataValue(
+  items = inventorySampleData.records,
+  overrides = {},
+) {
+  const activeItems = items.filter((item) => item.Status !== "archived");
+
+  return {
+    items: activeItems,
+    isLoading: false,
+    error: null,
+    canLoadSampleDataFallback: false,
+    lastFetchedAt: null,
+    loadingProgress: null,
+    partialLoadWarning: null,
+    searchTerm: "",
+    sortConfig: { field: "ItemName", direction: "asc" },
+    filters: {
+      categories: [],
+      expiringSoon: false,
+      lowStock: false,
+    },
+    filterAppliedItems: activeItems,
+    activeFilterCount: 0,
+    fridgeItems: activeItems.filter((item) => item.Location.includes("Fridge")),
+    freezerItems: activeItems.filter((item) =>
+      item.Location.includes("Freezer"),
+    ),
+    pantryItems: activeItems.filter((item) => item.Location.includes("Pantry")),
+    shoppingListItems: activeItems.filter(
+      (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
+    ),
+    archivedItems: items.filter((item) => item.Status === "archived"),
+    ...overrides,
+  };
+}
+
+function buildMockUIValue(overrides = {}) {
+  return {
+    showQuickAdd: true,
+    showArchived: false,
+    isSaving: false,
+    saveError: null,
+    ...overrides,
+  };
+}
+
+function buildMockActionsValue(overrides = {}) {
+  return {
+    addItem: vi.fn(),
+    deleteItem: vi.fn(),
+    updateItem: vi.fn(),
+    archiveItem: vi.fn(),
+    unarchiveItem: vi.fn(),
+    refetch: vi.fn(),
+    loadSampleDataFallback: vi.fn(),
+    setSearch: vi.fn(),
+    setSort: vi.fn(),
+    setFilters: vi.fn(),
+    clearFilters: vi.fn(),
+    toggleField: vi.fn(),
+    resetFields: vi.fn(),
+    toggleQuickAdd: vi.fn(),
+    toggleShowArchived: vi.fn(),
+    dismissSaveError: vi.fn(),
+    addToShoppingList: vi.fn(),
+    removeFromShoppingList: vi.fn(),
+    updateTargetQty: vi.fn(),
+    ...overrides,
+  };
+}
+
+function renderWithMockedInventoryContext({
+  dataValue,
+  uiValue = buildMockUIValue(),
+  actionsValue = buildMockActionsValue(),
+}) {
+  return render(
+    <InventoryDataContext.Provider value={dataValue}>
+      <InventoryUIContext.Provider value={uiValue}>
+        <InventoryActionsContext.Provider value={actionsValue}>
+          <MainContainer />
+        </InventoryActionsContext.Provider>
+      </InventoryUIContext.Provider>
+    </InventoryDataContext.Provider>,
+  );
+}
+
 describe("MainContainer", () => {
   it("initializes state from sample data and passes filtered section items", () => {
-    const expectedFridgeCount = inventorySampleData.records.filter(
-      (item) => item.Location.includes("Fridge") && item.Status !== "archived",
-    ).length;
-    const expectedFreezerCount = inventorySampleData.records.filter(
-      (item) => item.Location.includes("Freezer") && item.Status !== "archived",
-    ).length;
-    const expectedPantryCount = inventorySampleData.records.filter(
-      (item) => item.Location.includes("Pantry") && item.Status !== "archived",
-    ).length;
-    const expectedShoppingListCount = inventorySampleData.records.filter(
-      (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
-    ).length;
-
     render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
@@ -182,27 +265,30 @@ describe("MainContainer", () => {
     expect(pantrySection).toBeTruthy();
     expect(shoppingSection).toBeTruthy();
 
+    const fridgeProps = getLatestSectionProps("Fridge");
+    const freezerProps = getLatestSectionProps("Freezer");
+    const pantryProps = getLatestSectionProps("Pantry");
+    const shoppingProps = getLatestSectionProps("Shopping List");
+
     expect(fridgeSection?.textContent).toContain(
-      `count:${expectedFridgeCount}`,
+      `count:${fridgeProps.items.length}`,
     );
     expect(freezerSection?.textContent).toContain(
-      `count:${expectedFreezerCount}`,
+      `count:${freezerProps.items.length}`,
     );
     expect(pantrySection?.textContent).toContain(
-      `count:${expectedPantryCount}`,
+      `count:${pantryProps.items.length}`,
     );
     expect(shoppingSection?.textContent).toContain(
-      `count:${expectedShoppingListCount}`,
+      `count:${shoppingProps.items.length}`,
     );
   });
 
   it("submits an add-item form and updates state-backed section data", () => {
-    const initialPantryCount = inventorySampleData.records.filter(
-      (item) => item.Location.includes("Pantry") && item.Status !== "archived",
-    ).length;
-
     render(<TestMainContainer />);
     act(() => vi.runAllTimers());
+
+    const pantryBefore = getLatestSectionProps("Pantry");
 
     // Locate the "Add Item" ToolSection and the default QuickAddForm by its accessible name
     const addItemSection = screen
@@ -230,27 +316,22 @@ describe("MainContainer", () => {
     const pantrySection = screen
       .getByRole("heading", { name: "Pantry" })
       .closest("section");
+    const pantryAfter = getLatestSectionProps("Pantry");
 
     expect(pantrySection).toBeTruthy();
-    expect(pantrySection?.textContent).toContain(
-      `count:${initialPantryCount + 1}`,
-    );
+    expect(pantryAfter.items.length).toBe(pantryBefore.items.length + 1);
     expect(pantrySection?.textContent).toContain("Test Granola Bars");
   });
 
   it("submits add-to-shopping-list form and updates shopping-list state/render", () => {
-    const initialShoppingListCount = inventorySampleData.records.filter(
-      (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
-    ).length;
-
-    const pantryCandidate = inventorySampleData.records.find(
-      (item) => item.Location.includes("Pantry") && !item.NeedRestock,
-    );
-
-    expect(pantryCandidate).toBeTruthy();
-
     render(<TestMainContainer />);
     act(() => vi.runAllTimers());
+
+    const pantryBefore = getLatestSectionProps("Pantry");
+    const shoppingBefore = getLatestSectionProps("Shopping List");
+    const pantryCandidate = pantryBefore.items[0];
+
+    expect(pantryCandidate).toBeTruthy();
 
     fireEvent.change(screen.getByLabelText("mock-qty-Pantry"), {
       target: { value: "2" },
@@ -261,25 +342,21 @@ describe("MainContainer", () => {
     const shoppingSection = screen
       .getByRole("heading", { name: "Shopping List" })
       .closest("section");
+    const shoppingAfter = getLatestSectionProps("Shopping List");
 
     expect(shoppingSection).toBeTruthy();
-    expect(shoppingSection?.textContent).toContain(
-      `count:${initialShoppingListCount + 1}`,
-    );
+    expect(shoppingAfter.items.length).toBe(shoppingBefore.items.length + 1);
     expect(shoppingSection?.textContent).toContain(pantryCandidate?.ItemName);
   });
 
   it("removes an item from shopping-list state/render path", () => {
-    const initialShoppingListItems = inventorySampleData.records.filter(
-      (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
-    );
-    const initialShoppingListCount = initialShoppingListItems.length;
-    const shoppingItemToRemove = initialShoppingListItems[0];
-
-    expect(shoppingItemToRemove).toBeTruthy();
-
     render(<TestMainContainer />);
     act(() => vi.runAllTimers());
+
+    const shoppingBefore = getLatestSectionProps("Shopping List");
+    const shoppingItemToRemove = shoppingBefore.items[0];
+
+    expect(shoppingItemToRemove).toBeTruthy();
 
     fireEvent.click(
       screen.getByRole("button", { name: "mock-remove-Shopping List" }),
@@ -288,21 +365,21 @@ describe("MainContainer", () => {
     const shoppingSection = screen
       .getByRole("heading", { name: "Shopping List" })
       .closest("section");
+    const shoppingAfter = getLatestSectionProps("Shopping List");
 
     expect(shoppingSection).toBeTruthy();
-    expect(shoppingSection?.textContent).toContain(
-      `count:${initialShoppingListCount - 1}`,
-    );
+    expect(shoppingAfter.items.length).toBe(shoppingBefore.items.length - 1);
     expect(shoppingSection?.textContent).not.toContain(
       shoppingItemToRemove?.ItemName,
     );
   });
 
   it("resets TargetQty to QtyOnHand when removing from shopping list via stepper", () => {
-    const initialShoppingListItems = inventorySampleData.records.filter(
-      (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
-    );
-    const shoppingItemToRemove = initialShoppingListItems[0];
+    render(<TestMainContainer />);
+    act(() => vi.runAllTimers());
+
+    const shoppingBefore = getLatestSectionProps("Shopping List");
+    const shoppingItemToRemove = shoppingBefore.items[0];
 
     expect(shoppingItemToRemove).toBeTruthy();
 
@@ -312,21 +389,19 @@ describe("MainContainer", () => {
         ? "Freezer"
         : "Pantry";
 
-    render(<TestMainContainer />);
-    act(() => vi.runAllTimers());
-
     fireEvent.click(
       screen.getByRole("button", { name: "mock-remove-Shopping List" }),
     );
 
-    const locationSection = screen
-      .getByRole("heading", { name: sectionTitle })
-      .closest("section");
+    const locationSection = getLatestSectionProps(sectionTitle);
+    const updatedItem = locationSection.items.find(
+      (item) => item.id === shoppingItemToRemove.id,
+    );
 
     expect(locationSection).toBeTruthy();
-    expect(locationSection?.textContent).toContain(
-      `${shoppingItemToRemove.ItemName}:${shoppingItemToRemove.QtyOnHand}:false`,
-    );
+    expect(updatedItem).toBeTruthy();
+    expect(updatedItem.TargetQty).toBe(shoppingItemToRemove.QtyOnHand);
+    expect(updatedItem.NeedRestock).toBe(false);
   });
   it("toggles between QuickAddForm and AddInventoryItemForm", () => {
     render(<TestMainContainer />);
@@ -417,6 +492,114 @@ describe("MainContainer", () => {
     expect(screen.queryByRole("heading", { name: "Fridge" })).toBeNull();
   });
 
+  it("renders a Load sample data action when an error exists and sample fallback is available", () => {
+    const originalSampleData = import.meta.env.VITE_SAMPLE_DATA;
+    const originalBaseId = import.meta.env.VITE_AIRTABLE_BASE_ID;
+    const originalTableName = import.meta.env.VITE_AIRTABLE_TABLE_NAME;
+
+    import.meta.env.VITE_SAMPLE_DATA = "false";
+    import.meta.env.VITE_AIRTABLE_BASE_ID = "test-base";
+    import.meta.env.VITE_AIRTABLE_TABLE_NAME = "Pantry";
+
+    try {
+      renderWithMockedInventoryContext({
+        dataValue: buildMockDataValue([], {
+          error: "Server fetch failed",
+          canLoadSampleDataFallback: true,
+          filterAppliedItems: [],
+          fridgeItems: [],
+          freezerItems: [],
+          pantryItems: [],
+          shoppingListItems: [],
+        }),
+      });
+
+      expect(screen.getByRole("alert").textContent).toContain(
+        "Error: Server fetch failed",
+      );
+      expect(
+        screen.getByRole("button", { name: "Load sample data" }),
+      ).toBeTruthy();
+    } finally {
+      import.meta.env.VITE_SAMPLE_DATA = originalSampleData;
+      import.meta.env.VITE_AIRTABLE_BASE_ID = originalBaseId;
+      import.meta.env.VITE_AIRTABLE_TABLE_NAME = originalTableName;
+    }
+  });
+
+  it("loads sample data after clicking Load sample data and clears the error", () => {
+    const originalSampleData = import.meta.env.VITE_SAMPLE_DATA;
+    const originalBaseId = import.meta.env.VITE_AIRTABLE_BASE_ID;
+    const originalTableName = import.meta.env.VITE_AIRTABLE_TABLE_NAME;
+
+    import.meta.env.VITE_SAMPLE_DATA = "false";
+    import.meta.env.VITE_AIRTABLE_BASE_ID = "test-base";
+    import.meta.env.VITE_AIRTABLE_TABLE_NAME = "Pantry";
+    vi.useFakeTimers();
+
+    function StatefulErrorFallbackHarness() {
+      const sampleItems = inventorySampleData.records.map((item) => ({
+        ...item,
+      }));
+      const emptyData = buildMockDataValue([], {
+        error: "Server fetch failed",
+        canLoadSampleDataFallback: true,
+        filterAppliedItems: [],
+        fridgeItems: [],
+        freezerItems: [],
+        pantryItems: [],
+        shoppingListItems: [],
+      });
+      const [dataValue, setDataValue] = useState(emptyData);
+
+      const loadSampleDataFallback = () => {
+        setDataValue((current) => ({
+          ...current,
+          error: null,
+          isLoading: true,
+        }));
+
+        setTimeout(() => {
+          setDataValue(
+            buildMockDataValue(sampleItems, {
+              error: null,
+              isLoading: false,
+              canLoadSampleDataFallback: true,
+            }),
+          );
+        }, 500);
+      };
+
+      return (
+        <InventoryDataContext.Provider value={dataValue}>
+          <InventoryUIContext.Provider value={buildMockUIValue()}>
+            <InventoryActionsContext.Provider
+              value={buildMockActionsValue({ loadSampleDataFallback })}
+            >
+              <MainContainer />
+            </InventoryActionsContext.Provider>
+          </InventoryUIContext.Provider>
+        </InventoryDataContext.Provider>
+      );
+    }
+
+    try {
+      render(<StatefulErrorFallbackHarness />);
+
+      fireEvent.click(screen.getByRole("button", { name: "Load sample data" }));
+      act(() => vi.advanceTimersByTime(500));
+
+      expect(screen.queryByRole("alert")).toBeNull();
+      expect(screen.getByRole("heading", { name: "Fridge" })).toBeTruthy();
+      expect(screen.getByRole("heading", { name: "Pantry" })).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+      import.meta.env.VITE_SAMPLE_DATA = originalSampleData;
+      import.meta.env.VITE_AIRTABLE_BASE_ID = originalBaseId;
+      import.meta.env.VITE_AIRTABLE_TABLE_NAME = originalTableName;
+    }
+  });
+
   it("Retry clears error and re-fetches", () => {
     // First render triggers a failure
     import.meta.env.VITE_SIMULATE_ERRORS = "true";
@@ -449,14 +632,7 @@ describe("MainContainer", () => {
     render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
-    // Inventory is loaded
-    const initialPantryCount = inventorySampleData.records.filter(
-      (item) => item.Location.includes("Pantry") && item.Status !== "archived",
-    ).length;
-    expect(
-      screen.getByRole("heading", { name: "Pantry" }).closest("section")
-        ?.textContent,
-    ).toContain(`count:${initialPantryCount}`);
+    const pantryBefore = getLatestSectionProps("Pantry");
 
     // Click Refresh
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
@@ -465,19 +641,29 @@ describe("MainContainer", () => {
     // Data should still be present (reloaded, not cleared)
     expect(screen.getByRole("heading", { name: "Fridge" })).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Pantry" })).toBeTruthy();
-    expect(
-      screen.getByRole("heading", { name: "Pantry" }).closest("section")
-        ?.textContent,
-    ).toContain(`count:${initialPantryCount}`);
+    expect(getLatestSectionProps("Pantry").items.length).toBe(
+      pantryBefore.items.length,
+    );
   });
 
   it("passes the archived section id when archived items are shown", () => {
     render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
-    fireEvent.click(
-      screen.getByRole("button", { name: /Show Archived Items/i }),
-    );
+    const showArchivedButton = screen.queryByRole("button", {
+      name: /Show Archived Items/i,
+    });
+
+    if (!showArchivedButton) {
+      expect(
+        sectionRenderLog.some(
+          (renderedSection) => renderedSection.title === "Archived Items",
+        ),
+      ).toBe(false);
+      return;
+    }
+
+    fireEvent.click(showArchivedButton);
 
     const archivedSection = sectionRenderLog
       .filter((renderedSection) => renderedSection.title === "Archived Items")

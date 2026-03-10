@@ -22,6 +22,20 @@ const AUTH_TOKEN = USE_PROXY
   : `Bearer ${import.meta.env.VITE_AIRTABLE_PAT}`;
 const EXPIRING_SOON_DAYS = EXPIRING_SOON_MS / (24 * 60 * 60 * 1000);
 
+// ---------------------------------------------------------------------------
+// Environment variable checks and warnings
+// ---------------------------------------------------------------------------
+export const hasAirtableConfig = () =>
+  Boolean(
+    import.meta.env.VITE_AIRTABLE_BASE_ID &&
+    import.meta.env.VITE_AIRTABLE_TABLE_NAME,
+  );
+if (!USE_PROXY && !hasAirtableConfig()) {
+  console.warn(
+    "Airtable environment variables are not fully configured. Please set VITE_AIRTABLE_PAT, VITE_AIRTABLE_BASE_ID, and VITE_AIRTABLE_TABLE_NAME for local development. See .env.example for details. Falling back to sample data.",
+  );
+}
+
 /**
  * Returns a user-friendly error message for common HTTP status codes.
  */
@@ -32,9 +46,10 @@ function friendlyErrorMessage(status) {
     case 401:
       return "Authentication failed: Invalid API token. Verify your VITE_AIRTABLE_PAT.";
     case 403:
-      return "Access denied. You don't have permission to perform this action.";
+      return `Access denied. You don't have permission to perform this action. Check your API token and Airtable permissions. This could also be an invalid table name. Received ${import.meta.env.VITE_AIRTABLE_TABLE_NAME} for VITE_AIRTABLE_TABLE_NAME`;
     case 404:
       return "Not found: Invalid base or table name. Verify VITE_AIRTABLE_BASE_ID and VITE_AIRTABLE_TABLE_NAME.";
+
     case 408:
       return "The request timed out. Please check your connection and try again.";
     case 422:
