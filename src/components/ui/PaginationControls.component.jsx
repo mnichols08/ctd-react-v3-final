@@ -1,4 +1,13 @@
 import { useId } from "react";
+import {
+  PaginationContainer,
+  PaginationRow,
+  PageButton,
+  PageInfo,
+  PageSelectLabel,
+  PageSelect,
+  RangeInfo,
+} from "./PaginationControls.styles";
 
 function PaginationControls({
   currentPage,
@@ -33,42 +42,44 @@ function PaginationControls({
   };
 
   return (
-    <article>
-      <button
-        onClick={() => handlePageChange(validCurrentPage - 1)}
-        disabled={!canGoBack}
-        aria-label="Previous page"
-      >
-        Previous
-      </button>
-      <span>
-        Page {validCurrentPage} of {totalPages}
-      </span>
-      <button
-        onClick={() => handlePageChange(validCurrentPage + 1)}
-        disabled={!canGoForward}
-        aria-label="Next page"
-      >
-        Next
-      </button>
-      <label htmlFor={selectId}>Items per page:</label>
-      <select
-        id={selectId}
-        value={validPageSize}
-        onChange={handlePageSizeChange}
-      >
-        {pageSizeOptions.map((size) => (
-          <option key={size} value={size}>
-            {size}
-          </option>
-        ))}
-      </select>
-      <span>
-        Showing {(validCurrentPage - 1) * validPageSize + 1} to{" "}
-        {Math.min(validCurrentPage * validPageSize, totalItems)} of {totalItems}{" "}
-        items
-      </span>
-    </article>
+    <PaginationContainer>
+      <PaginationRow>
+        <PageButton
+          onClick={() => handlePageChange(validCurrentPage - 1)}
+          disabled={!canGoBack}
+          aria-label="Previous page"
+        >
+          Previous
+        </PageButton>
+        <PageInfo>
+          Page {validCurrentPage} of {totalPages}
+        </PageInfo>
+        <PageButton
+          onClick={() => handlePageChange(validCurrentPage + 1)}
+          disabled={!canGoForward}
+          aria-label="Next page"
+        >
+          Next
+        </PageButton>
+      </PaginationRow>
+      <PaginationRow>
+        <PageSelectLabel htmlFor={selectId}>Items per page:</PageSelectLabel>
+        <PageSelect
+          id={selectId}
+          value={validPageSize}
+          onChange={handlePageSizeChange}
+        >
+          {pageSizeOptions.map((size) => (
+            <option key={size} value={size}>
+              {size}
+            </option>
+          ))}
+        </PageSelect>
+        <RangeInfo>
+          Showing {(validCurrentPage - 1) * validPageSize + 1} to {Math.min(validCurrentPage * validPageSize, totalItems)} of {totalItems} items
+        </RangeInfo>
+      </PaginationRow>
+    </PaginationContainer>
   );
 }
 

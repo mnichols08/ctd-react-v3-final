@@ -1,5 +1,16 @@
 import { memo, useCallback } from "react";
 import { useInventoryActions } from "../../context/InventoryContext";
+import {
+  ControlContainer,
+  Heading,
+  StepperGroup,
+  StepperButton,
+  RemoveButton,
+  AddButton,
+  RemoveFromListButton,
+  QtyText,
+  SubText,
+} from "./ShoppingListControl.styles";
 
 // Unified shopping-list control for an inventory item.
 // Shows an "Add to Shopping List" button when the item isn't on the list,
@@ -33,9 +44,9 @@ function ShoppingListControl({ item, variant }) {
   const isShoppingVariant = variant === "shopping";
 
   const componentHeading = isShoppingVariant ? (
-    <p>Qty on Hand: {qtyOnHand}</p>
+    <SubText>Qty on Hand: {qtyOnHand}</SubText>
   ) : (
-    <h3>Shopping List Controls</h3>
+    <Heading>Shopping List Controls</Heading>
   );
 
   // Case 1: Shopping List section — show stepper
@@ -52,51 +63,64 @@ function ShoppingListControl({ item, variant }) {
       }
     };
     return (
-      <div>
+      <ControlContainer>
         {componentHeading}
-        <span>Qty in Cart: </span>
-        <button
-          onClick={handleDecrement}
-          aria-label={`${willRemove ? "Remove from" : "Decrease quantity for"} ${itemName}`}
-          tabIndex={0}
-          onKeyDown={handleStepperKeyDown}
-        >
-          {willRemove ? "Remove" : "-"}
-        </button>{" "}
-        {Math.ceil(targetQty - qtyOnHand)}{" "}
-        <button
-          onClick={handleIncrement}
-          aria-label={`Increase quantity for ${itemName}`}
-          tabIndex={0}
-          onKeyDown={handleStepperKeyDown}
-        >
-          +
-        </button>
-      </div>
+        <StepperGroup>
+          <span className="visually-hidden">Qty in Cart:</span>
+          {willRemove ? (
+            <RemoveButton
+              onClick={handleDecrement}
+              aria-label={`Remove from ${itemName}`}
+              tabIndex={0}
+              onKeyDown={handleStepperKeyDown}
+            >
+              Remove
+            </RemoveButton>
+          ) : (
+            <StepperButton
+              onClick={handleDecrement}
+              aria-label={`Decrease quantity for ${itemName}`}
+              tabIndex={0}
+              onKeyDown={handleStepperKeyDown}
+            >
+              -
+            </StepperButton>
+          )}
+          <QtyText>{Math.ceil(targetQty - qtyOnHand)}</QtyText>
+          <StepperButton
+            onClick={handleIncrement}
+            aria-label={`Increase quantity for ${itemName}`}
+            tabIndex={0}
+            onKeyDown={handleStepperKeyDown}
+          >
+            +
+          </StepperButton>
+        </StepperGroup>
+      </ControlContainer>
     );
   }
 
   // Case 2: Inventory section — item is on shopping list → show "Remove" button
   if (isInShoppingList) {
     return (
-      <div>
+      <ControlContainer>
         {componentHeading}
-        <button
+        <RemoveFromListButton
           onClick={() => removeFromShoppingList(id)}
           aria-label={`Remove ${itemName} from shopping list`}
         >
           Remove from Shopping List
-        </button>
-      </div>
+        </RemoveFromListButton>
+      </ControlContainer>
     );
   }
 
   // Case 3: Not on shopping list → show "Add" button
   return (
-    <div>
+    <ControlContainer>
       {componentHeading}
-      <button onClick={handleAdd}>Add to Shopping List</button>
-    </div>
+      <AddButton onClick={handleAdd}>Add to Shopping List</AddButton>
+    </ControlContainer>
   );
 }
 

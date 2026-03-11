@@ -2,6 +2,16 @@ import { memo, useRef } from "react";
 import { useInventoryActions } from "../../context/InventoryContext";
 import useFormData from "../../hooks/useFormData";
 import { CATEGORIES, LOCATIONS, formatLocation } from "../../data/fieldConfig";
+import {
+  QuickAddFormContainer,
+  QuickFieldset,
+  QuickLegend,
+  QuickFormRow,
+  QuickLabel,
+  QuickInput,
+  QuickSelect,
+  QuickButton,
+} from "./QuickAddForm.styles";
 
 const initialFormState = {
   ItemName: "",
@@ -67,13 +77,16 @@ function QuickAddForm() {
     itemNameRef.current?.focus();
   };
   return (
-    <form onSubmit={handleSubmit} aria-label="Quick add inventory item">
-      <fieldset>
-        <legend>Quick Add Item</legend>
+    <QuickAddFormContainer
+      onSubmit={handleSubmit}
+      aria-label="Quick add inventory item"
+    >
+      <QuickFieldset>
+        <QuickLegend>Quick Add Item</QuickLegend>
 
-        <p>
-          <label htmlFor="quick-ItemName">Item Name: </label>
-          <input
+        <QuickFormRow>
+          <QuickLabel htmlFor="quick-ItemName">Item Name</QuickLabel>
+          <QuickInput
             value={formData.ItemName}
             onChange={handleChange}
             ref={itemNameRef}
@@ -81,12 +94,14 @@ function QuickAddForm() {
             id="quick-ItemName"
             name="ItemName"
             required
+            autoComplete="off"
+            placeholder="e.g. Milk, Apples"
           />
-        </p>
+        </QuickFormRow>
 
-        <p>
-          <label htmlFor="quick-Category">Category: </label>
-          <select
+        <QuickFormRow>
+          <QuickLabel htmlFor="quick-Category">Category</QuickLabel>
+          <QuickSelect
             value={formData.Category}
             onChange={handleChange}
             id="quick-Category"
@@ -99,23 +114,23 @@ function QuickAddForm() {
                 {cat}
               </option>
             ))}
-          </select>
-        </p>
+          </QuickSelect>
+        </QuickFormRow>
 
-        <p>
-          <label htmlFor="quick-ExpiresOn">Expires On: </label>
-          <input
+        <QuickFormRow>
+          <QuickLabel htmlFor="quick-ExpiresOn">Expires On</QuickLabel>
+          <QuickInput
             value={formData.ExpiresOn}
             onChange={handleChange}
             type="date"
             id="quick-ExpiresOn"
             name="ExpiresOn"
           />
-        </p>
+        </QuickFormRow>
 
-        <p>
-          <label htmlFor="quick-Location">Location: </label>
-          <select
+        <QuickFormRow>
+          <QuickLabel htmlFor="quick-Location">Location</QuickLabel>
+          <QuickSelect
             value={formData.Location}
             onChange={handleChange}
             id="quick-Location"
@@ -128,12 +143,12 @@ function QuickAddForm() {
                 {loc}
               </option>
             ))}
-          </select>
-        </p>
+          </QuickSelect>
+        </QuickFormRow>
 
-        <p>
-          <label htmlFor="quick-SubLocation">Sub-Location: </label>
-          <input
+        <QuickFormRow>
+          <QuickLabel htmlFor="quick-SubLocation">Sub-Location</QuickLabel>
+          <QuickInput
             value={formData.SubLocation}
             onChange={handleChange}
             type="text"
@@ -141,11 +156,11 @@ function QuickAddForm() {
             name="SubLocation"
             placeholder="e.g. Shelf 3, Door, Drawer 2"
           />
-        </p>
+        </QuickFormRow>
 
-        <p>
-          <label htmlFor="quick-QtyOnHand">Quantity on Hand: </label>
-          <input
+        <QuickFormRow>
+          <QuickLabel htmlFor="quick-QtyOnHand">Quantity on Hand</QuickLabel>
+          <QuickInput
             value={formData.QtyOnHand}
             onChange={handleChange}
             type="number"
@@ -155,11 +170,11 @@ function QuickAddForm() {
             step="any"
             required
           />
-        </p>
+        </QuickFormRow>
 
-        <p>
-          <label htmlFor="quick-QtyUnit">Unit: </label>
-          <input
+        <QuickFormRow>
+          <QuickLabel htmlFor="quick-QtyUnit">Unit</QuickLabel>
+          <QuickInput
             value={formData.QtyUnit}
             onChange={handleChange}
             type="text"
@@ -167,11 +182,11 @@ function QuickAddForm() {
             name="QtyUnit"
             placeholder="e.g. box, bottle, jar"
           />
-        </p>
-      </fieldset>
+        </QuickFormRow>
+      </QuickFieldset>
 
-      <button type="submit">Add Item</button>
-    </form>
+      <QuickButton type="submit">Add Item</QuickButton>
+    </QuickAddFormContainer>
   );
 }
 

@@ -11,6 +11,13 @@ import ItemCard from "../cards/ItemCard.component";
 import EditDialog from "../ui/EditDialog.component";
 import EmptyState from "../ui/EmptyState.component";
 import PaginationControls from "../ui/PaginationControls.component";
+import {
+  SectionContainer,
+  SectionHeading,
+  CollapseButton,
+  ItemsList,
+  CollapsedText,
+} from "./InventorySection.styles";
 
 function InventorySection({ id, title, items, variant = "inventory" }) {
   const itemsList = items ?? [];
@@ -66,27 +73,27 @@ function InventorySection({ id, title, items, variant = "inventory" }) {
   const contentId = `${id}-content`;
 
   return (
-    <section id={id} aria-labelledby={`${id}-heading`}>
-      <h2 id={`${id}-heading`}>
+    <SectionContainer id={id} aria-labelledby={`${id}-heading`}>
+      <SectionHeading id={`${id}-heading`}>
         {title} ({headingSummary})
-      </h2>{" "}
+      </SectionHeading>
       {itemCount > 0 && (
-        <button
+        <CollapseButton
           ref={toggleButtonRef}
           aria-expanded={!isCollapsed}
           aria-controls={contentId}
           onClick={handleToggle}
         >
           {isCollapsed ? "Show Collapsed" : "Collapse"}
-        </button>
+        </CollapseButton>
       )}
       <div id={contentId} role="region" aria-labelledby={`${id}-heading`}>
         {itemCount > 0 ? (
           isCollapsed ? (
-            <p>Collapsed</p>
+            <CollapsedText>Collapsed</CollapsedText>
           ) : (
             <>
-              <ul aria-label={title}>
+              <ItemsList aria-label={title}>
                 {paginatedItems.map((item, idx) => (
                   <ItemCard
                     key={item.id}
@@ -111,7 +118,7 @@ function InventorySection({ id, title, items, variant = "inventory" }) {
                     }}
                   />
                 ))}
-              </ul>
+              </ItemsList>
               {shouldShowPagination && (
                 <PaginationControls
                   currentPage={validCurrentPage}
@@ -131,7 +138,7 @@ function InventorySection({ id, title, items, variant = "inventory" }) {
       {variant === "inventory" && editingItem && (
         <EditDialog item={editingItem} onClose={closeEditor} />
       )}
-    </section>
+    </SectionContainer>
   );
 }
 
