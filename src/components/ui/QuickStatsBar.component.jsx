@@ -2,6 +2,7 @@ import { memo } from "react";
 import { useInventoryData } from "../../context/InventoryContext";
 import { countExpiringSoon, STALE_TIME_MS } from "../../data/inventoryUtils";
 import useStaleFetchDisplay from "../../hooks/useStaleFetchDisplay";
+import { StatsGrid, StatCard, StatTitle, StatValue, StatsInfo } from "./QuickStatsBar.styles";
 
 function QuickStatsBar() {
   const {
@@ -30,28 +31,30 @@ function QuickStatsBar() {
   );
   return (
     <>
-      {isFiltered && <p>Showing stats for filtered items</p>}
-      <div>
-        <h3>Total Items</h3>
-        <p>{totalItems}</p>
-      </div>
-      <div>
-        <h3>Need Restock</h3>
-        <p>{needRestock}</p>
-      </div>
-      <div>
-        <h3>Expiring Soon</h3>
-        <p>{expiringSoon}</p>
-      </div>
-      <div>
-        <h3>Shopping List</h3>
-        <p>{shoppingList}</p>
-      </div>
+      {isFiltered && <StatsInfo>Showing stats for filtered items</StatsInfo>}
+      <StatsGrid>
+        <StatCard>
+          <StatTitle>Total Items</StatTitle>
+          <StatValue>{totalItems}</StatValue>
+        </StatCard>
+        <StatCard>
+          <StatTitle>Need Restock</StatTitle>
+          <StatValue>{needRestock}</StatValue>
+        </StatCard>
+        <StatCard>
+          <StatTitle>Expiring Soon</StatTitle>
+          <StatValue>{expiringSoon}</StatValue>
+        </StatCard>
+        <StatCard>
+          <StatTitle>Shopping List</StatTitle>
+          <StatValue>{shoppingList}</StatValue>
+        </StatCard>
+      </StatsGrid>
       {lastFetchedAtDisplay && (
-        <p>
+        <StatsInfo>
           Last updated: {lastFetchedAtDisplay}
           {isStale && " (stale)"}
-        </p>
+        </StatsInfo>
       )}
     </>
   );

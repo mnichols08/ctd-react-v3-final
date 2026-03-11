@@ -4,6 +4,12 @@ import {
   useInventoryActions,
 } from "../../context/InventoryContext";
 import { hasAirtableConfig } from "../../data/airtableUtils";
+import {
+  ErrorContainer,
+  ErrorMessage,
+  ErrorDetails,
+  ErrorButton,
+} from "./ErrorState.styles";
 
 function ErrorState() {
   const { error, canLoadSampleDataFallback } = useInventoryData();
@@ -12,26 +18,28 @@ function ErrorState() {
   if (!error) return null;
 
   return (
-    <div role="alert" aria-live="assertive">
-      <p>Error: {error}</p>
+    <ErrorContainer role="alert" aria-live="assertive">
+      <ErrorMessage>Error: {error}</ErrorMessage>
       {!hasAirtableConfig() && (
-        <p>
+        <ErrorDetails>
           Airtable environment variables are not fully configured. Please set
+          <br />
           VITE_AIRTABLE_PAT, VITE_AIRTABLE_BASE_ID, and VITE_AIRTABLE_TABLE_NAME
+          <br />
           for local development. See .env.example for details.
-        </p>
+        </ErrorDetails>
       )}
       {canLoadSampleDataFallback && loadSampleDataFallback && (
-        <button type="button" onClick={loadSampleDataFallback}>
+        <ErrorButton type="button" onClick={loadSampleDataFallback}>
           Load sample data
-        </button>
+        </ErrorButton>
       )}
       {refetch && (
-        <button type="button" onClick={refetch}>
+        <ErrorButton type="button" onClick={refetch}>
           Retry
-        </button>
+        </ErrorButton>
       )}
-    </div>
+    </ErrorContainer>
   );
 }
 
