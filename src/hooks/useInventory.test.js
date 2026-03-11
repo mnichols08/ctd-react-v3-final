@@ -1,7 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import useInventory from "./useInventory";
 import { loadSampleData, fetchInventoryItems } from "../data/airtableUtils";
+import {
+  clearLocalInventoryItems,
+  LOCAL_INVENTORY_STORAGE_KEY,
+} from "../data/localInventoryStorage";
 
 // Mock airtableUtils — sample-data mode is active in tests (VITE_SAMPLE_DATA=true)
 // so most API functions won't be called, but loadSampleData will.
@@ -20,6 +24,13 @@ vi.mock("../data/airtableUtils", async (importOriginal) => {
 describe("useInventory", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    clearLocalInventoryItems();
+    import.meta.env.VITE_AIRTABLE_BASE_ID = "test-base";
+    import.meta.env.VITE_AIRTABLE_TABLE_NAME = "Pantry";
+  });
+
+  afterEach(() => {
+    clearLocalInventoryItems();
   });
 
   // Helper: render and wait for sample data to load
@@ -92,9 +103,11 @@ describe("useInventory", () => {
     expect(updated.ItemName).toBe("Updated");
   });
 
-  it("archiveItem sets Status to archived", async () => {
+  it("archiveItem preserves shopping-list state while setting Status to archived", async () => {
     const result = await renderAndLoad();
-    const item = result.current.items.find((i) => i.Status !== "archived");
+    const item = result.current.items.find(
+      (i) => i.Status !== "archived" && i.NeedRestock === true,
+    );
 
     await act(async () => {
       await result.current.archiveItem(item.id);
@@ -102,13 +115,15 @@ describe("useInventory", () => {
 
     const archived = result.current.items.find((i) => i.id === item.id);
     expect(archived.Status).toBe("archived");
-    expect(archived.NeedRestock).toBe(false);
+    expect(archived.NeedRestock).toBe(true);
   });
 
-  it("unarchiveItem clears archived Status", async () => {
+  it("unarchiveItem restores visibility without clearing shopping-list state", async () => {
     const result = await renderAndLoad();
     // First archive an item
-    const item = result.current.items.find((i) => i.Status !== "archived");
+    const item = result.current.items.find(
+      (i) => i.Status !== "archived" && i.NeedRestock === true,
+    );
     await act(async () => {
       await result.current.archiveItem(item.id);
     });
@@ -119,6 +134,7 @@ describe("useInventory", () => {
 
     const restored = result.current.items.find((i) => i.id === item.id);
     expect(restored.Status).toBeNull();
+    expect(restored.NeedRestock).toBe(true);
   });
 
   it("exposes toggleQuickAdd, toggleShowArchived, and dismissSaveError functions", async () => {
@@ -173,6 +189,34 @@ describe("useInventory", () => {
       await act(() => vi.runAllTimers());
 
       expect(loadSampleData.mock.calls.length).toBe(callsBefore + 1);
+    });
+
+    it("cleans up the previous sample-data timer on refetch and unmount", () => {
+      const firstCleanup = vi.fn();
+      const secondCleanup = vi.fn();
+      const thirdCleanup = vi.fn();
+
+      vi.mocked(loadSampleData)
+        .mockImplementationOnce(() => firstCleanup)
+        .mockImplementationOnce(() => secondCleanup)
+        .mockImplementationOnce(() => thirdCleanup);
+
+      const { result, unmount } = renderHook(() => useInventory());
+
+      act(() => {
+        result.current.refetch();
+      });
+      expect(firstCleanup).toHaveBeenCalledTimes(1);
+      expect(secondCleanup).not.toHaveBeenCalled();
+
+      act(() => {
+        result.current.refetch();
+      });
+      expect(secondCleanup).toHaveBeenCalledTimes(1);
+      expect(thirdCleanup).not.toHaveBeenCalled();
+
+      unmount();
+      expect(thirdCleanup).toHaveBeenCalledTimes(1);
     });
 
     it("calls fetchInventoryItems with current state when VITE_SAMPLE_DATA is false", async () => {
@@ -230,6 +274,104 @@ describe("useInventory", () => {
       } finally {
         import.meta.env.VITE_SAMPLE_DATA = original;
       }
+    });
+  });
+
+  describe("environment fallback behavior", () => {
+    let originalSampleData;
+    let originalBaseId;
+    let originalTableName;
+
+    beforeEach(() => {
+      originalSampleData = import.meta.env.VITE_SAMPLE_DATA;
+      originalBaseId = import.meta.env.VITE_AIRTABLE_BASE_ID;
+      originalTableName = import.meta.env.VITE_AIRTABLE_TABLE_NAME;
+    });
+
+    afterEach(() => {
+      import.meta.env.VITE_SAMPLE_DATA = originalSampleData;
+      import.meta.env.VITE_AIRTABLE_BASE_ID = originalBaseId;
+      import.meta.env.VITE_AIRTABLE_TABLE_NAME = originalTableName;
+    });
+
+    it("loads inventory from localStorage when Airtable env vars are missing", async () => {
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+      import.meta.env.VITE_AIRTABLE_BASE_ID = "";
+      import.meta.env.VITE_AIRTABLE_TABLE_NAME = "";
+
+      const storedItems = [
+        {
+          id: "local-only-1",
+          ItemName: "Local Granola",
+          QtyOnHand: 2,
+          QtyUnit: "box",
+          TargetQty: 3,
+          NeedRestock: true,
+          Category: "Snacks",
+          Location: "Pantry - Shelf 1",
+          Status: null,
+        },
+      ];
+      window.localStorage.setItem(
+        LOCAL_INVENTORY_STORAGE_KEY,
+        JSON.stringify(storedItems),
+      );
+
+      const { result } = renderHook(() => useInventory());
+      await act(async () => {});
+
+      expect(result.current.items).toEqual(storedItems);
+      expect(loadSampleData).not.toHaveBeenCalled();
+      expect(fetchInventoryItems).not.toHaveBeenCalled();
+    });
+
+    it("persists local changes back to localStorage when Airtable env vars are missing", async () => {
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+      import.meta.env.VITE_AIRTABLE_BASE_ID = "";
+      import.meta.env.VITE_AIRTABLE_TABLE_NAME = "";
+
+      const { result } = renderHook(() => useInventory());
+      await act(async () => {});
+
+      await act(async () => {
+        await result.current.addItem({
+          id: "local-added-1",
+          ItemName: "Local Pasta",
+          QtyOnHand: 1,
+          QtyUnit: "box",
+          TargetQty: 1,
+          NeedRestock: false,
+          Category: "Dry",
+          Location: "Pantry - Shelf 2",
+          Status: null,
+        });
+      });
+
+      const savedItems = JSON.parse(
+        window.localStorage.getItem(LOCAL_INVENTORY_STORAGE_KEY),
+      );
+      expect(savedItems.some((item) => item.id === "local-added-1")).toBe(true);
+    });
+
+    it("surfaces fetch errors without auto-loading sample data when Airtable env vars are present", async () => {
+      import.meta.env.VITE_SAMPLE_DATA = "false";
+      import.meta.env.VITE_AIRTABLE_BASE_ID = "test-base";
+      import.meta.env.VITE_AIRTABLE_TABLE_NAME = "Pantry";
+
+      vi.mocked(fetchInventoryItems).mockImplementation(
+        ({ setError, setIsLoading }) => {
+          setError("Server fetch failed");
+          setIsLoading(false);
+          return Promise.resolve();
+        },
+      );
+
+      const { result } = renderHook(() => useInventory());
+      await act(async () => {});
+
+      expect(result.current.error).toBe("Server fetch failed");
+      expect(result.current.items).toEqual([]);
+      expect(loadSampleData).not.toHaveBeenCalled();
     });
   });
 });

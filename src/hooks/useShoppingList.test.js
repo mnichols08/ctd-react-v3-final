@@ -4,6 +4,8 @@ import useShoppingList from "./useShoppingList";
 import { patchInventoryItem } from "../data/airtableUtils";
 
 vi.mock("../data/airtableUtils", () => ({
+  isLocalStorageFallbackMode: vi.fn(() => false),
+  isSampleDataMode: vi.fn(() => import.meta.env.VITE_SAMPLE_DATA === "true"),
   patchInventoryItem: vi.fn(),
 }));
 
@@ -222,12 +224,13 @@ describe("useShoppingList", () => {
         TargetQty: 5,
       });
 
-      // Should dispatch setSaveError
+      // Should dispatch setSaveError (first null to clear, then the error)
       const errorCalls = dispatch.mock.calls.filter(
         ([action]) => action.type === "setSaveError",
       );
-      expect(errorCalls).toHaveLength(1);
-      expect(errorCalls[0][0].payload).toBe("Network failure");
+      expect(errorCalls).toHaveLength(2);
+      expect(errorCalls[0][0].payload).toBeNull();
+      expect(errorCalls[1][0].payload).toBe("Network failure");
     });
   });
 });

@@ -15,6 +15,25 @@ afterEach(() => {
   cleanup();
 });
 
+function addQuickItem(addForm, itemName, location = "Pantry") {
+  fireEvent.change(within(addForm).getByLabelText("Item Name:"), {
+    target: { value: itemName },
+  });
+  fireEvent.change(within(addForm).getByLabelText("Category:"), {
+    target: { value: "Dry" },
+  });
+  fireEvent.change(within(addForm).getByLabelText("Location:"), {
+    target: { value: location },
+  });
+  fireEvent.change(within(addForm).getByLabelText("Quantity on Hand:"), {
+    target: { value: "1" },
+  });
+  fireEvent.change(within(addForm).getByLabelText("Unit:"), {
+    target: { value: "box" },
+  });
+  fireEvent.click(within(addForm).getByRole("button", { name: "Add Item" }));
+}
+
 describe("App", () => {
   it("renders header, inventory, and footer sections", () => {
     render(
@@ -89,6 +108,11 @@ describe("App – archive behavior", () => {
     );
     act(() => vi.runAllTimers());
 
+    fireEvent.change(screen.getByLabelText("Search:"), {
+      target: { value: "Pearl Couscous" },
+    });
+    act(() => vi.runAllTimers());
+
     // Pearl Couscous is in Pantry
     const pantrySection = screen
       .getByRole("heading", { name: /Pantry/i, level: 2 })
@@ -131,8 +155,10 @@ describe("App – archive behavior", () => {
     const archivedSection = screen
       .getByRole("heading", { name: /Archived Items/i, level: 2 })
       .closest("section");
-    const toggle = archivedSection.querySelector("a[aria-expanded]");
-    if (toggle && toggle.getAttribute("aria-expanded") === "false") {
+    const toggle = within(archivedSection).getByRole("button", {
+      name: /Show Collapsed|Collapse/i,
+    });
+    if (toggle.getAttribute("aria-expanded") === "false") {
       fireEvent.click(toggle);
     }
 
@@ -145,6 +171,11 @@ describe("App – archive behavior", () => {
         <App />
       </InventoryProvider>,
     );
+    act(() => vi.runAllTimers());
+
+    fireEvent.change(screen.getByLabelText("Search:"), {
+      target: { value: "Sesame Oil" },
+    });
     act(() => vi.runAllTimers());
 
     // Sesame Oil is already on shopping list (NeedRestock=true, TargetQty=1 > QtyOnHand=0.1)
@@ -166,7 +197,7 @@ describe("App – archive behavior", () => {
     expect(within(shoppingSection).queryByText("Sesame Oil")).toBeNull();
   });
 
-  it("Archived Items nav link is visible when archived items exist", () => {
+  it("Archived Items toggle is visible when archived items exist", () => {
     render(
       <InventoryProvider>
         <App />
@@ -174,8 +205,17 @@ describe("App – archive behavior", () => {
     );
     act(() => vi.runAllTimers());
 
-    // Sample data includes an archived item so the link should already be there
-    expect(screen.getByRole("link", { name: "Archived Items" })).toBeTruthy();
+    const fridgeSection = screen
+      .getByRole("heading", { name: /Fridge/i, level: 2 })
+      .closest("section");
+    const article = within(fridgeSection)
+      .getByRole("heading", { name: "Apple Sauce", level: 2 })
+      .closest("article");
+    fireEvent.click(within(article).getByRole("button", { name: "Archive" }));
+
+    expect(
+      screen.getByRole("button", { name: /Show Archived Items/i }),
+    ).toBeTruthy();
   });
 });
 
@@ -221,7 +261,7 @@ describe("App – delete behavior", () => {
     // Item should still be there
     expect(within(fridgeSection).getByText("Apple Sauce")).toBeTruthy();
   });
-  it("deleting all items in a section shows EmptyState", () => {
+  it("deleting visible fridge items removes them while keeping the section valid", () => {
     render(
       <InventoryProvider>
         <App />
@@ -247,12 +287,126 @@ describe("App – delete behavior", () => {
       within(appleArticle).getByRole("button", { name: "Delete" }),
     );
     fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
-    // EmptyState should now render for fridge
+
     expect(
-      within(fridgeSection).getByText(
-        "Items in the fridge will be listed here.",
-      ),
+      within(fridgeSection).queryByText("Low Fat Vanilla Yogurt"),
+    ).toBeNull();
+    expect(within(fridgeSection).queryByText("Apple Sauce")).toBeNull();
+    expect(
+      screen.getByRole("heading", { name: /^Fridge \(/, level: 2 }),
     ).toBeTruthy();
+  });
+});
+
+describe("App – pagination behavior", () => {
+  it("resets pantry pagination when search reduces the section to one page", () => {
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
+    act(() => vi.runAllTimers());
+
+    const addForm = screen.getByRole("form", {
+      name: "Quick add inventory item",
+    });
+
+    for (let index = 1; index <= 11; index += 1) {
+      addQuickItem(addForm, `Pantry Seed ${String(index).padStart(2, "0")}`);
+    }
+
+    fireEvent.change(screen.getByLabelText("Search:"), {
+      target: { value: "Pantry Seed" },
+    });
+    act(() => vi.runAllTimers());
+
+    let pantrySection = screen
+      .getByRole("heading", { name: /^Pantry \(/, level: 2 })
+      .closest("section");
+
+    fireEvent.change(within(pantrySection).getByLabelText("Items per page:"), {
+      target: { value: "5" },
+    });
+    fireEvent.click(
+      within(pantrySection).getByRole("button", { name: "Next page" }),
+    );
+    fireEvent.click(
+      within(pantrySection).getByRole("button", { name: "Next page" }),
+    );
+
+    expect(within(pantrySection).getByText("Page 3 of 3")).toBeTruthy();
+
+    fireEvent.change(screen.getByLabelText("Search:"), {
+      target: { value: "Pantry Seed 01" },
+    });
+    act(() => vi.runAllTimers());
+
+    pantrySection = screen
+      .getByRole("heading", { name: /^Pantry \(/, level: 2 })
+      .closest("section");
+
+    expect(
+      screen.getByRole("heading", {
+        name: "Pantry (1 item, page 1 of 1)",
+        level: 2,
+      }),
+    ).toBeTruthy();
+    expect(within(pantrySection).getByText("Pantry Seed 01")).toBeTruthy();
+    expect(
+      within(pantrySection).queryByRole("button", { name: "Next page" }),
+    ).toBeNull();
+  });
+
+  it("moves to the previous pantry page when deleting the last item on the current page", () => {
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
+    act(() => vi.runAllTimers());
+
+    const addForm = screen.getByRole("form", {
+      name: "Quick add inventory item",
+    });
+
+    for (let index = 1; index <= 11; index += 1) {
+      addQuickItem(addForm, `Pantry Seed ${String(index).padStart(2, "0")}`);
+    }
+
+    fireEvent.change(screen.getByLabelText("Search:"), {
+      target: { value: "Pantry Seed" },
+    });
+    act(() => vi.runAllTimers());
+
+    let pantrySection = screen
+      .getByRole("heading", { name: /^Pantry \(/, level: 2 })
+      .closest("section");
+
+    fireEvent.change(within(pantrySection).getByLabelText("Items per page:"), {
+      target: { value: "5" },
+    });
+    fireEvent.click(
+      within(pantrySection).getByRole("button", { name: "Next page" }),
+    );
+    fireEvent.click(
+      within(pantrySection).getByRole("button", { name: "Next page" }),
+    );
+
+    const lastPageArticle = within(pantrySection)
+      .getByRole("heading", { name: "Pantry Seed 11", level: 2 })
+      .closest("article");
+    fireEvent.click(
+      within(lastPageArticle).getByRole("button", { name: "Delete" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Confirm" }));
+
+    pantrySection = screen
+      .getByRole("heading", { name: /^Pantry \(/, level: 2 })
+      .closest("section");
+
+    expect(within(pantrySection).getByText("Page 2 of 2")).toBeTruthy();
+    expect(within(pantrySection).queryByText("Pantry Seed 11")).toBeNull();
+    expect(within(pantrySection).getByText("Pantry Seed 06")).toBeTruthy();
   });
 });
 
@@ -266,6 +420,11 @@ describe("App – field visibility", () => {
         <App />
       </InventoryProvider>,
     );
+    act(() => vi.runAllTimers());
+
+    fireEvent.change(screen.getByLabelText("Search:"), {
+      target: { value: "Pearl Couscous" },
+    });
     act(() => vi.runAllTimers());
 
     // Pearl Couscous has Brand="Rice Select" — Brand is a default visible field
@@ -295,9 +454,13 @@ describe("App – field visibility", () => {
     // Close the dialog
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
 
+    fireEvent.change(screen.getByLabelText("Search:"), {
+      target: { value: "Pearl Couscous" },
+    });
+    act(() => vi.runAllTimers());
+
     // Brand field should no longer appear on cards
     expect(screen.queryByText("Brand: Rice Select")).toBeNull();
-    expect(screen.queryByText("Brand: Dabur")).toBeNull();
   });
 
   it("toggling a field on shows it on the card", () => {
@@ -333,6 +496,11 @@ describe("App – field visibility", () => {
     fireEvent.click(subCatCb);
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
 
+    fireEvent.change(screen.getByLabelText("Search:"), {
+      target: { value: "Sesame Oil" },
+    });
+    act(() => vi.runAllTimers());
+
     // Sesame Oil has SubCategory="Oils"
     expect(screen.getByText("Sub-Category: Oils")).toBeTruthy();
   });
@@ -356,14 +524,15 @@ describe("App – field visibility", () => {
     expect(itemNameCb.checked).toBe(true);
 
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    fireEvent.change(screen.getByLabelText("Search:"), {
+      target: { value: "Pearl Couscous" },
+    });
+    act(() => vi.runAllTimers());
 
     // Item names still visible
     expect(
       screen.getByRole("heading", { name: "Pearl Couscous", level: 2 }),
     ).toBeTruthy();
-    expect(
-      screen.getAllByRole("heading", { name: "Sesame Oil", level: 2 }).length,
-    ).toBeGreaterThan(0);
   });
 
   it("Reset to Defaults restores original visible field set", () => {
@@ -389,6 +558,10 @@ describe("App – field visibility", () => {
     );
     fireEvent.click(screen.getByRole("button", { name: "Reset to Defaults" }));
     fireEvent.click(screen.getByRole("button", { name: "Done" }));
+    fireEvent.change(screen.getByLabelText("Search:"), {
+      target: { value: "Pearl Couscous" },
+    });
+    act(() => vi.runAllTimers());
 
     // Brand should be back
     expect(screen.getByText("Brand: Rice Select")).toBeTruthy();
