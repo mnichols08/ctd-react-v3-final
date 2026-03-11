@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add comprehensive CSS styles including design tokens, theming, and accessibility utilities
 - Add Dark Mode Toggle component to SettingsPage for theme selection
+- Add styled-components dependency to package.json and package-lock.jsonnpm ver
 
 ### Changed
 
