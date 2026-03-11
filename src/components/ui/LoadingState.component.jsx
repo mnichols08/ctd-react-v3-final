@@ -5,7 +5,7 @@ function LoadingState() {
   const { isLoading, loadingProgress } = useInventoryData();
   if (!isLoading) return null;
   return (
-    <div role="status">
+    <div role="status" aria-live="polite" aria-busy="true">
       <p>Loading…{loadingProgress != null && ` ${loadingProgress} items`}</p>
     </div>
   );

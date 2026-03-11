@@ -11,10 +11,10 @@ function ComingSoonPage() {
     document.title = `${generatePageTitle(pathname)} - Kitchen Inventory`;
   }, [pathname]);
   return (
-    <main>
+    <article>
       <h2>{generatePageTitle(pathname)}</h2>
       <p>Coming Soon....</p>
-    </main>
+    </article>
   );
 }
 

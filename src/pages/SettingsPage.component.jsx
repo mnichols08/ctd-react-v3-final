@@ -1,6 +1,7 @@
 import { memo, useEffect } from "react";
 import useToggle from "../hooks/useToggle";
 import FieldSelector from "../components/cards/FieldSelector.component";
+import DarkModeToggle from "../components/forms/DarkModeToggle.component";
 
 function SettingsPage() {
   const [showFieldSelector, toggleFieldSelector, , closeFieldSelector] =
@@ -9,7 +10,7 @@ function SettingsPage() {
     document.title = "Settings Page - Kitchen Inventory";
   }, [])
   return (
-    <main>
+    <article>
       <h2>Settings</h2>
       <p>
         This is the settings page. Here you can customize your preferences and
@@ -25,7 +26,8 @@ function SettingsPage() {
       </button>
 
       {showFieldSelector && <FieldSelector onClose={closeFieldSelector} />}
-    </main>
+      <DarkModeToggle />
+    </article>
   );
 }
 

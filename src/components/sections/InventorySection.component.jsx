@@ -1,4 +1,11 @@
-import { memo, useCallback, useEffect, useEffectEvent, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import useToggle from "../../hooks/useToggle";
 import ItemCard from "../cards/ItemCard.component";
 import EditDialog from "../ui/EditDialog.component";
@@ -10,7 +17,15 @@ function InventorySection({ id, title, items, variant = "inventory" }) {
 
   // State to track whether the section is collapsed or expanded
   const isArchivedSection = id === "archived";
-  const [isCollapsed, toggleCollapsed] = useToggle(isArchivedSection);
+  const [isCollapsed, setIsCollapsed] = useToggle(isArchivedSection);
+  const toggleButtonRef = useRef(null);
+  const handleToggle = () => {
+    setIsCollapsed((prev) => !prev);
+    // Focus remains on button after toggle
+    setTimeout(() => {
+      toggleButtonRef.current?.focus();
+    }, 0);
+  };
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -51,15 +66,16 @@ function InventorySection({ id, title, items, variant = "inventory" }) {
   const contentId = `${id}-content`;
 
   return (
-    <section id={id}>
+    <section id={id} aria-labelledby={`${id}-heading`}>
       <h2 id={`${id}-heading`}>
         {title} ({headingSummary})
       </h2>{" "}
       {itemCount > 0 && (
         <button
+          ref={toggleButtonRef}
           aria-expanded={!isCollapsed}
           aria-controls={contentId}
-          onClick={toggleCollapsed}
+          onClick={handleToggle}
         >
           {isCollapsed ? "Show Collapsed" : "Collapse"}
         </button>
@@ -70,13 +86,29 @@ function InventorySection({ id, title, items, variant = "inventory" }) {
             <p>Collapsed</p>
           ) : (
             <>
-              <ul>
-                {paginatedItems.map((item) => (
+              <ul aria-label={title}>
+                {paginatedItems.map((item, idx) => (
                   <ItemCard
                     key={item.id}
                     item={item}
                     onEdit={setEditingItemId}
                     variant={variant}
+                    onDeleteFocus={(cardRef) => {
+                      // Try to focus next item, or previous, or section heading
+                      const list = document
+                        .getElementById(id)
+                        ?.querySelectorAll("li button, li a");
+                      if (list && list.length > 0) {
+                        if (idx < list.length - 1) {
+                          list[idx + 1]?.focus();
+                        } else if (idx > 0) {
+                          list[idx - 1]?.focus();
+                        } else {
+                          // Fallback: focus section heading
+                          document.getElementById(`${id}-heading`)?.focus();
+                        }
+                      }
+                    }}
                   />
                 ))}
               </ul>

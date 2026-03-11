@@ -41,6 +41,16 @@ function ShoppingListControl({ item, variant }) {
   // Case 1: Shopping List section — show stepper
   if (isInShoppingList && isShoppingVariant) {
     const willRemove = targetQty - 1 <= qtyOnHand;
+    // Keyboard handler for arrow keys
+    const handleStepperKeyDown = (e) => {
+      if (e.key === "ArrowLeft" || e.key === "ArrowDown") {
+        e.preventDefault();
+        handleDecrement();
+      } else if (e.key === "ArrowRight" || e.key === "ArrowUp") {
+        e.preventDefault();
+        handleIncrement();
+      }
+    };
     return (
       <div>
         {componentHeading}
@@ -48,6 +58,8 @@ function ShoppingListControl({ item, variant }) {
         <button
           onClick={handleDecrement}
           aria-label={`${willRemove ? "Remove from" : "Decrease quantity for"} ${itemName}`}
+          tabIndex={0}
+          onKeyDown={handleStepperKeyDown}
         >
           {willRemove ? "Remove" : "-"}
         </button>{" "}
@@ -55,6 +67,8 @@ function ShoppingListControl({ item, variant }) {
         <button
           onClick={handleIncrement}
           aria-label={`Increase quantity for ${itemName}`}
+          tabIndex={0}
+          onKeyDown={handleStepperKeyDown}
         >
           +
         </button>

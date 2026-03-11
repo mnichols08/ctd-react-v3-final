@@ -12,7 +12,7 @@ function ErrorState() {
   if (!error) return null;
 
   return (
-    <div role="alert">
+    <div role="alert" aria-live="assertive">
       <p>Error: {error}</p>
       {!hasAirtableConfig() && (
         <p>

@@ -4,7 +4,7 @@ function AboutPage() {
     const version = `v${__APP_VERSION__}`
     useEffect(() => {document.title = "About - Kitchen Inventory"}, [])
   return (
-    <main>
+    <article>
       <section>
         <p>Code The Dream · Lark Cohort · Final Exam - {version}</p>
         <h1>About Page</h1>
@@ -224,7 +224,7 @@ function AboutPage() {
           codethedream.org →
         </a>
       </section>
-    </main>
+    </article>
   );
 }
 

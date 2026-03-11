@@ -21,6 +21,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.9.0] - 2026-03-10
+
+### Added
+
+- Add comprehensive CSS styles including design tokens, theming, and accessibility utilities
+- Add Dark Mode Toggle component to SettingsPage for theme selection
+- Add styled-components dependency to package.json and package-lock.jsonnpm ver
+
+### Changed
+
+- Enhance accessibility by adding ARIA attributes and changing main elements to articles across multiple components
+- Enhance accessibility and keyboard navigation across components
+
+---
+
 ## [0.8.4] - 2026-03-10
 
 ### Added
