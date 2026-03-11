@@ -1,6 +1,7 @@
 import { memo, useEffect } from "react";
 import useToggle from "../hooks/useToggle";
 import FieldSelector from "../components/cards/FieldSelector.component";
+import DarkModeToggle from "../components/forms/DarkModeToggle.component";
 
 function SettingsPage() {
   const [showFieldSelector, toggleFieldSelector, , closeFieldSelector] =
@@ -25,6 +26,7 @@ function SettingsPage() {
       </button>
 
       {showFieldSelector && <FieldSelector onClose={closeFieldSelector} />}
+      <DarkModeToggle />
     </article>
   );
 }
