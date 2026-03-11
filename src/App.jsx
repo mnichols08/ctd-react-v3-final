@@ -1,13 +1,32 @@
+import { Routes, Route } from "react-router-dom";
 import "./App.css";
 import Header from "./components/shared/Header/Header.component";
-import MainContainer from "./components/ui/MainContainer.component";
+import SettingsPage from "./pages/SettingsPage.component";
+import IndexPage from "./pages/IndexPage.component";
+import AboutPage from "./pages/AboutPage.component";
+import ItemDetailPage from "./pages/ItemDetailPage.component";
+import ComingSoonPage from "./pages/ComingSoonPage.component";
+import NotFoundPage from "./pages/NotFoundPage.component";
 import Footer from "./components/shared/Footer.component";
 
 function App() {
   return (
     <>
       <Header />
-      <MainContainer />
+      <Routes>
+        <Route path="/" element={<IndexPage />} />
+        <Route path="/item/:id" element={<ItemDetailPage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/add-item" element={<ComingSoonPage />} />
+        <Route path="/fridge" element={<ComingSoonPage />} />
+        <Route path="/freezer" element={<ComingSoonPage />} />
+        <Route path="/pantry" element={<ComingSoonPage />} />
+        <Route path="/shopping-list" element={<ComingSoonPage />} />
+        <Route path="/archive" element={<ComingSoonPage />} />
+        <Route path="/reports" element={<ComingSoonPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
       <Footer />
     </>
   );
