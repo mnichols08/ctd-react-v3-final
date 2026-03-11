@@ -40,7 +40,12 @@ function ItemCard({ item, onEdit, variant }) {
           <Link to={`/item/${item.id}`}>{item.ItemName}</Link>
         </h2>
         {variant === "archived" && (
-          <button onClick={() => unarchiveItem(item.id)}>Unarchive</button>
+          <button
+            onClick={() => unarchiveItem(item.id)}
+            aria-label={`Unarchive ${item.ItemName}`}
+          >
+            Unarchive
+          </button>
         )}
         {variant === "inventory" && (
           <>
@@ -49,13 +54,31 @@ function ItemCard({ item, onEdit, variant }) {
                 {label}: {formatValue(item[key])}
               </p>
             ))}
-            <button onClick={() => onEdit(item.id)}>Edit</button>
-            <button onClick={() => archiveItem(item.id)}>Archive</button>
+            <button
+              onClick={() => onEdit(item.id)}
+              aria-label={`Edit ${item.ItemName}`}
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => archiveItem(item.id)}
+              aria-label={`Archive ${item.ItemName}`}
+            >
+              Archive
+            </button>
           </>
         )}
         {variant !== "shopping" && (
           <>
-            <button onClick={openDeleteConfirm} disabled={item.isDeleting}>
+            <button
+              onClick={openDeleteConfirm}
+              disabled={item.isDeleting}
+              aria-label={
+                item.isDeleting
+                  ? `Deleting ${item.ItemName}`
+                  : `Delete ${item.ItemName}`
+              }
+            >
               {item.isDeleting ? "Deleting…" : "Delete"}
             </button>
             {showDeleteConfirm && (

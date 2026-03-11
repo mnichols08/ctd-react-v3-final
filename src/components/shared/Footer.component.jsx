@@ -1,6 +1,6 @@
 function Footer() {
   return (
-    <footer>
+    <footer aria-label="Site footer">
       <hr />
       <p>&copy; 2026 Kitchen Inventory App</p>
       <p>

@@ -21,6 +21,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.9.0] - 2026-03-10
+
+### Changed
+
+- Enhance accessibility by adding ARIA attributes and changing main elements to articles across multiple components
+
+---
+
 ## [0.8.4] - 2026-03-10
 
 ### Added

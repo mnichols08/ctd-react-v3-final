@@ -51,7 +51,7 @@ function InventorySection({ id, title, items, variant = "inventory" }) {
   const contentId = `${id}-content`;
 
   return (
-    <section id={id}>
+    <section id={id} aria-labelledby={`${id}-heading`}>
       <h2 id={`${id}-heading`}>
         {title} ({headingSummary})
       </h2>{" "}
@@ -70,7 +70,7 @@ function InventorySection({ id, title, items, variant = "inventory" }) {
             <p>Collapsed</p>
           ) : (
             <>
-              <ul>
+              <ul aria-label={title}>
                 {paginatedItems.map((item) => (
                   <ItemCard
                     key={item.id}

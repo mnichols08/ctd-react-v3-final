@@ -34,32 +34,32 @@ function ItemDetailPage() {
 
   if (isLoading) {
     return (
-      <main>
+      <article>
         <p role="status">Loading item details...</p>
-      </main>
+      </article>
     );
   }
 
   if (error) {
     return (
-      <main>
+      <article>
         <p role="alert">Error: {error}</p>
         <p>
           <Link to="/">Back to Inventory</Link>
         </p>
-      </main>
+      </article>
     );
   }
 
   if (!id || !item) {
     return (
-      <main>
+      <article>
         <h2>Item not found</h2>
         <p>The requested item could not be found.</p>
         <p>
           <Link to="/">Back to Inventory</Link>
         </p>
-      </main>
+      </article>
     );
   }
 
@@ -86,7 +86,7 @@ function ItemDetailPage() {
   };
 
   return (
-    <main>
+    <article>
       {/* Breadcrumb navigation */}
       <nav aria-label="Breadcrumb">
         <ol>
@@ -153,7 +153,7 @@ function ItemDetailPage() {
           ))}
         </dl>
       </section>
-    </main>
+    </article>
   );
 }
 

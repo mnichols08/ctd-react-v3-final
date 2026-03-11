@@ -22,7 +22,7 @@ function NotFoundPage() {
   }, []);
 
   return (
-    <main>
+    <article>
       <h2>404 Not Found</h2>
       <p>
         {randomMessage} <code>{location.pathname}</code> does not exist just
@@ -33,7 +33,7 @@ function NotFoundPage() {
           Go Home
         </Link>
       </h3>
-    </main>
+    </article>
   );
 }
 

@@ -94,7 +94,7 @@ function FilterBarForm() {
           <option value="asc">Asc</option>
           <option value="desc">Desc</option>
         </select>
-        <button type="button" onClick={handleReset}>
+        <button type="button" onClick={handleReset} aria-label="Reset filters">
           Reset
         </button>
         {/* Filter Controls */}
@@ -137,10 +137,14 @@ function FilterBarForm() {
           />
           Low Stock
         </label>
-        <button type="button" onClick={clearFilters}>
+        <button
+          type="button"
+          onClick={clearFilters}
+          aria-label="Clear all filters"
+        >
           Clear All Filters
         </button>
-        <button type="button" onClick={refetch}>
+        <button type="button" onClick={refetch} aria-label="Refresh results">
           Refresh
         </button>
       </form>

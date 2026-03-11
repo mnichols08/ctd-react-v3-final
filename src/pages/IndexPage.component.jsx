@@ -48,7 +48,8 @@ function IndexPage() {
     document.title = "Dashboard - Kitchen Inventory";
   }, []);
   return (
-    <main>
+    <article>
+      <h1 id="dashboard-title">Dashboard</h1>
       <LoadingState />
       <ErrorState />
       {partialLoadWarning && (
@@ -115,7 +116,7 @@ function IndexPage() {
           )}
         </>
       )}
-    </main>
+    </article>
   );
 }
 

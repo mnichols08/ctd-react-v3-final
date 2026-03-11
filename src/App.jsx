@@ -13,20 +13,22 @@ function App() {
   return (
     <>
       <Header />
-      <Routes>
-        <Route path="/" element={<IndexPage />} />
-        <Route path="/item/:id" element={<ItemDetailPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/settings" element={<SettingsPage />} />
-        <Route path="/add-item" element={<ComingSoonPage />} />
-        <Route path="/fridge" element={<ComingSoonPage />} />
-        <Route path="/freezer" element={<ComingSoonPage />} />
-        <Route path="/pantry" element={<ComingSoonPage />} />
-        <Route path="/shopping-list" element={<ComingSoonPage />} />
-        <Route path="/archive" element={<ComingSoonPage />} />
-        <Route path="/reports" element={<ComingSoonPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
+      <main aria-label="Main content area">
+        <Routes>
+          <Route path="/" element={<IndexPage />} />
+          <Route path="/item/:id" element={<ItemDetailPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/add-item" element={<ComingSoonPage />} />
+          <Route path="/fridge" element={<ComingSoonPage />} />
+          <Route path="/freezer" element={<ComingSoonPage />} />
+          <Route path="/pantry" element={<ComingSoonPage />} />
+          <Route path="/shopping-list" element={<ComingSoonPage />} />
+          <Route path="/archive" element={<ComingSoonPage />} />
+          <Route path="/reports" element={<ComingSoonPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </main>
       <Footer />
     </>
   );
