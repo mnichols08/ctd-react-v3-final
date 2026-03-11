@@ -12,8 +12,10 @@ import Footer from "./components/shared/Footer.component";
 function App() {
   return (
     <>
+      {/* Skip to main content link for keyboard users */}
+      <a href="#main-content">Skip to main content</a>
       <Header />
-      <main aria-label="Main content area">
+      <main id="main-content" aria-label="Main content area">
         <Routes>
           <Route path="/" element={<IndexPage />} />
           <Route path="/item/:id" element={<ItemDetailPage />} />
