@@ -1,0 +1,103 @@
+import { useCallback, useEffect, useRef } from "react";
+import {
+  isLocalStorageFallbackMode,
+  isSampleDataMode,
+} from "../data/airtableUtils";
+import {
+  isDataStale,
+  fetchParamsEqual,
+  STALE_CHECK_INTERVAL_MS,
+} from "../data/inventoryUtils";
+
+export default function useAutoRefresh({
+  sortConfig,
+  filters,
+  searchTerm,
+  refetch,
+  lastFetchedAt,
+  isLoading,
+}) {
+  // Track last-fetched params to prevent redundant server-side re-fetches
+  const lastFetchedParamsRef = useRef({
+    sortField: sortConfig.field,
+    sortDirection: sortConfig.direction,
+    filters,
+    searchTerm,
+  });
+
+  // Guard against overlapping silent refreshes: visibility and interval
+  // triggers share this timestamp so only one fetch fires within a short
+  // window.  Unlike a boolean flag, a timestamp naturally expires — a
+  // failed fetch (which never updates lastFetchedAt) can't permanently
+  // block future refreshes.
+  const DEDUP_WINDOW_MS = 5_000;
+  const lastRefreshAttemptRef = useRef(0);
+
+  const silentRefresh = useCallback(() => {
+    if (Date.now() - lastRefreshAttemptRef.current < DEDUP_WINDOW_MS) return;
+    lastRefreshAttemptRef.current = Date.now();
+    refetch({ silent: true });
+  }, [refetch]);
+
+  // When server-side filtering is enabled, re-fetch on sort/filter/search changes
+  useEffect(() => {
+    if (
+      isSampleDataMode() ||
+      isLocalStorageFallbackMode() ||
+      import.meta.env.VITE_SERVER_FILTER !== "true"
+    ) {
+      return;
+    }
+    const params = {
+      sortField: sortConfig.field,
+      sortDirection: sortConfig.direction,
+      filters,
+      searchTerm,
+    };
+    if (fetchParamsEqual(params, lastFetchedParamsRef.current)) {
+      return;
+    }
+    lastFetchedParamsRef.current = params;
+    refetch({
+      sortConfig,
+      filterConfig: filters,
+      searchTerm,
+    });
+  }, [sortConfig, filters, searchTerm, refetch]);
+
+  // Auto-refresh when the tab regains focus and data is stale
+  useEffect(() => {
+    if (isSampleDataMode() || isLocalStorageFallbackMode()) return;
+
+    const handleVisibilityChange = () => {
+      if (
+        document.visibilityState === "visible" &&
+        isDataStale(lastFetchedAt) &&
+        !isLoading
+      ) {
+        silentRefresh();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [lastFetchedAt, isLoading, silentRefresh]);
+
+  // Periodic stale-check while the tab stays visible
+  useEffect(() => {
+    if (isSampleDataMode() || isLocalStorageFallbackMode()) return;
+
+    const intervalId = setInterval(() => {
+      if (
+        document.visibilityState === "visible" &&
+        isDataStale(lastFetchedAt) &&
+        !isLoading
+      ) {
+        silentRefresh();
+      }
+    }, STALE_CHECK_INTERVAL_MS);
+
+    return () => clearInterval(intervalId);
+  }, [lastFetchedAt, isLoading, silentRefresh]);
+}

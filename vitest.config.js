@@ -5,5 +5,9 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: "jsdom",
+    setupFiles: ["./src/test-setup.js"],
+    env: {
+      VITE_SAMPLE_DATA: "true",
+    },
   },
 });

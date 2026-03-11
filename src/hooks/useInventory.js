@@ -1,0 +1,233 @@
+import { useCallback, useEffect, useReducer, useRef } from "react";
+import inventoryReducer, {
+  actions,
+  initialState,
+} from "../reducers/inventoryReducer";
+import {
+  fetchInventoryItems,
+  hasAirtableConfig,
+  isLocalStorageFallbackMode,
+  isSampleDataMode,
+  loadSampleData,
+} from "../data/airtableUtils";
+import { loadLocalInventory } from "../data/localInventoryStorage";
+import useFilters from "./useFilters";
+import useFieldVisibility from "./useFieldVisibility";
+import useUIToggles from "./useUIToggles";
+import useInventoryActions from "./useInventoryActions";
+import useShoppingList from "./useShoppingList";
+
+export default function useInventory() {
+  const [state, dispatch] = useReducer(inventoryReducer, initialState);
+  const {
+    items,
+    isLoading,
+    error,
+    showQuickAdd,
+    showArchived,
+    isSaving,
+    saveError,
+    lastFetchedAt,
+    loadingProgress,
+    partialLoadWarning,
+    searchTerm,
+    sortConfig,
+    filters,
+    visibleFields,
+  } = state;
+
+  // Refs for reading current state in refetch without stale closures
+  const sortConfigRef = useRef(state.sortConfig);
+  const filtersRef = useRef(state.filters);
+  const searchTermRef = useRef(state.searchTerm);
+  useEffect(() => {
+    sortConfigRef.current = state.sortConfig;
+    filtersRef.current = state.filters;
+    searchTermRef.current = state.searchTerm;
+  }, [state.sortConfig, state.filters, state.searchTerm]);
+
+  // AbortController for cancelling in-flight fetches
+  const abortControllerRef = useRef(null);
+  const sampleDataCleanupRef = useRef(null);
+
+  const startSampleDataLoad = useCallback(() => {
+    sampleDataCleanupRef.current?.();
+    sampleDataCleanupRef.current = loadSampleData({
+      setInventoryItems: (data) =>
+        dispatch({ type: actions.setItems, payload: data }),
+      setIsLoading: (val) =>
+        dispatch({ type: actions.setLoading, payload: val }),
+      setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
+    });
+  }, []);
+
+  const startLocalInventoryLoad = useCallback(() => {
+    loadLocalInventory({
+      setInventoryItems: (data) =>
+        dispatch({ type: actions.setItems, payload: data }),
+      setIsLoading: (val) =>
+        dispatch({ type: actions.setLoading, payload: val }),
+      setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
+      setLastFetchedAt: (date) =>
+        dispatch({ type: actions.setLastFetchedAt, payload: date }),
+    });
+  }, []);
+
+  const shouldUseSampleData = useCallback(() => isSampleDataMode(), []);
+
+  const shouldUseLocalStorageFallback = useCallback(
+    () => isLocalStorageFallbackMode(),
+    [],
+  );
+
+  const loadSampleDataFallback = useCallback(() => {
+    startSampleDataLoad();
+  }, [startSampleDataLoad]);
+
+  const canLoadSampleDataFallback = !isSampleDataMode() && hasAirtableConfig();
+
+  // --- Initial data fetch ---
+  useEffect(() => {
+    if (shouldUseSampleData()) {
+      startSampleDataLoad();
+      return () => {
+        sampleDataCleanupRef.current?.();
+        sampleDataCleanupRef.current = null;
+      };
+    }
+
+    if (shouldUseLocalStorageFallback()) {
+      startLocalInventoryLoad();
+      return;
+    }
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    fetchInventoryItems({
+      setInventoryItems: (data) =>
+        dispatch({ type: actions.setItems, payload: data }),
+      setIsLoading: (val) =>
+        dispatch({ type: actions.setLoading, payload: val }),
+      setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
+      sortConfig: state.sortConfig,
+      filterConfig: state.filters,
+      searchTerm: state.searchTerm,
+      setLastFetchedAt: (date) =>
+        dispatch({ type: actions.setLastFetchedAt, payload: date }),
+      onProgress: (count) =>
+        dispatch({ type: actions.setLoadingProgress, payload: count }),
+      setPartialLoadWarning: (msg) =>
+        dispatch({ type: actions.setPartialLoadWarning, payload: msg }),
+      signal: controller.signal,
+    });
+
+    return () => controller.abort();
+    // Run once on mount - dependencies are internal functions that won't change identity
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    shouldUseLocalStorageFallback,
+    shouldUseSampleData,
+    startLocalInventoryLoad,
+    startSampleDataLoad,
+  ]);
+
+  // Re-run the fetch/load logic (for retry, refresh, or re-fetch with new params)
+  const refetch = useCallback(
+    (options = {}) => {
+      if (shouldUseSampleData()) {
+        startSampleDataLoad();
+        return;
+      }
+
+      if (shouldUseLocalStorageFallback()) {
+        startLocalInventoryLoad();
+        return;
+      }
+
+      if (abortControllerRef.current) abortControllerRef.current.abort();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      fetchInventoryItems({
+        setInventoryItems: (data) =>
+          dispatch({ type: actions.setItems, payload: data }),
+        setIsLoading: options.silent
+          ? () => {}
+          : (val) => dispatch({ type: actions.setLoading, payload: val }),
+        setError: (msg) => dispatch({ type: actions.setError, payload: msg }),
+        sortConfig: options.sortConfig ?? sortConfigRef.current,
+        filterConfig: options.filterConfig ?? filtersRef.current,
+        searchTerm: options.searchTerm ?? searchTermRef.current,
+        setLastFetchedAt: (date) =>
+          dispatch({ type: actions.setLastFetchedAt, payload: date }),
+        onProgress: (count) =>
+          dispatch({ type: actions.setLoadingProgress, payload: count }),
+        setPartialLoadWarning: (msg) =>
+          dispatch({ type: actions.setPartialLoadWarning, payload: msg }),
+        signal: controller.signal,
+      });
+    },
+    [
+      shouldUseLocalStorageFallback,
+      shouldUseSampleData,
+      startLocalInventoryLoad,
+      startSampleDataLoad,
+    ],
+  );
+
+  // --- Composed hooks ---
+
+  const { setSearch, setSort, setFilters, clearFilters } = useFilters({
+    dispatch,
+  });
+
+  const { toggleField, resetFields } = useFieldVisibility({ dispatch });
+
+  const { toggleQuickAdd, toggleShowArchived, dismissSaveError } = useUIToggles(
+    { dispatch },
+  );
+
+  const { addItem, deleteItem, updateItem, archiveItem, unarchiveItem } =
+    useInventoryActions({ items, dispatch });
+
+  const { addToShoppingList, removeFromShoppingList, updateTargetQty } =
+    useShoppingList({ items, dispatch });
+
+  return {
+    items,
+    isLoading,
+    error,
+    showQuickAdd,
+    showArchived,
+    isSaving,
+    saveError,
+    canLoadSampleDataFallback,
+    addItem,
+    deleteItem,
+    updateItem,
+    archiveItem,
+    unarchiveItem,
+    refetch,
+    loadSampleDataFallback,
+    lastFetchedAt,
+    loadingProgress,
+    partialLoadWarning,
+    searchTerm,
+    sortConfig,
+    filters,
+    setSearch,
+    setSort,
+    setFilters,
+    clearFilters,
+    visibleFields,
+    toggleField,
+    resetFields,
+    toggleQuickAdd,
+    toggleShowArchived,
+    dismissSaveError,
+    addToShoppingList,
+    removeFromShoppingList,
+    updateTargetQty,
+  };
+}
