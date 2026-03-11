@@ -1,5 +1,5 @@
 # Changelog
-
+---
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
@@ -20,6 +20,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Security
 
 --- -->
+
+## [0.9.1] - 2026-03-10
+
+### Added
+- Styled Components for all forms, dialogs, cards, navigation, and utility pages
+- Global CSS variables and theme support (light/dark mode) in GlobalStyles.js
+- Responsive layouts for all components (320px-480px mobile, landscape, tablet, desktop)
+- Mobile hamburger navigation and improved desktop nav
+- Advanced grid readability for ItemDetailPage details
+- Animated ComingSoonPage and modernized AboutPage
+
+### Changed
+- Refactored all forms (Add, Edit, QuickAdd, FilterBar) to use styled components and mobile-friendly layouts
+- Refactored all dialogs (EditDialog, ConfirmDialog) for theme, accessibility, and mobile usability
+- Refactored ShoppingListControl, PaginationControls, QuickStatsBar, Footer, ErrorState, EmptyState, LoadingState, NotFoundPage, and InventorySection for theme and mobile
+- Improved ItemCard button alignment and grid layouts for landscape/mobile
+- Improved accessibility and touch targets throughout
+
+### Removed
+- All test references from AboutPage
+
+### Fixed
+- Dialog/modal background and text color for dark mode
+- Dialog/modal scrollability and usability on mobile
+- ItemDetailPage details grid readability and stacking
+- Miscellaneous layout, overflow, and color issues in mobile/landscape
+
+---
+
+## [0.9.0] - 2026-03-10
+
+### Added
+
+- Add comprehensive CSS styles including design tokens, theming, and accessibility utilities
+- Add Dark Mode Toggle component to SettingsPage for theme selection
+- Add styled-components dependency to package.json and package-lock.jsonnpm ver
+
+### Changed
+
+- Enhance accessibility by adding ARIA attributes and changing main elements to articles across multiple components
+- Enhance accessibility and keyboard navigation across components
+
+---
 
 ## [0.8.4] - 2026-03-10
 

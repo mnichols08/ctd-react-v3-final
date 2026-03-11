@@ -1,4 +1,12 @@
 import { LOCATIONS } from "../../data/fieldConfig";
+import {
+  StyledFieldset,
+  StyledLegend,
+  StyledLabel,
+  StyledInput,
+  StyledTextarea,
+  StyledSelect,
+} from "./InventoryFormFields.styles";
 
 function id(name, suffix) {
   return suffix ? `${name}-${suffix}` : name;
@@ -13,10 +21,10 @@ export default function InventoryFormFields({
 }) {
   return (
     <>
-      <fieldset>
-        <legend>Basic Details</legend>
-        <label htmlFor={id("ItemName", idSuffix)}>Item Name:</label>
-        <input
+      <StyledFieldset>
+        <StyledLegend>Basic Details</StyledLegend>
+        <StyledLabel htmlFor={id("ItemName", idSuffix)}>Item Name</StyledLabel>
+        <StyledInput
           ref={firstFieldRef}
           value={formData.ItemName}
           onChange={handleChange}
@@ -24,20 +32,28 @@ export default function InventoryFormFields({
           id={id("ItemName", idSuffix)}
           name="ItemName"
           required
+          aria-required="true"
+          aria-describedby={id("ItemName-error", idSuffix)}
+        />
+        {/* Error message region for ItemName */}
+        <span
+          id={id("ItemName-error", idSuffix)}
+          className="visually-hidden"
+          aria-live="assertive"
         />
 
-        <label htmlFor={id("ItemDescription", idSuffix)}>
-          Item Description:
-        </label>
-        <textarea
+        <StyledLabel htmlFor={id("ItemDescription", idSuffix)}>
+          Item Description
+        </StyledLabel>
+        <StyledTextarea
           value={formData.ItemDescription}
           onChange={handleChange}
           id={id("ItemDescription", idSuffix)}
           name="ItemDescription"
         />
 
-        <label htmlFor={id("Brand", idSuffix)}>Brand:</label>
-        <input
+        <StyledLabel htmlFor={id("Brand", idSuffix)}>Brand</StyledLabel>
+        <StyledInput
           value={formData.Brand}
           onChange={handleChange}
           type="text"
@@ -45,8 +61,10 @@ export default function InventoryFormFields({
           name="Brand"
         />
 
-        <label htmlFor={id("PackageSize", idSuffix)}>Package Size:</label>
-        <input
+        <StyledLabel htmlFor={id("PackageSize", idSuffix)}>
+          Package Size
+        </StyledLabel>
+        <StyledInput
           value={formData.PackageSize}
           onChange={handleChange}
           type="text"
@@ -54,20 +72,20 @@ export default function InventoryFormFields({
           name="PackageSize"
         />
 
-        <label htmlFor={id("UPC", idSuffix)}>UPC:</label>
-        <input
+        <StyledLabel htmlFor={id("UPC", idSuffix)}>UPC</StyledLabel>
+        <StyledInput
           value={formData.UPC}
           onChange={handleChange}
           type="text"
           id={id("UPC", idSuffix)}
           name="UPC"
         />
-      </fieldset>
+      </StyledFieldset>
 
-      <fieldset>
-        <legend>Classification & Storage</legend>
-        <label htmlFor={id("Category", idSuffix)}>Category:</label>
-        <input
+      <StyledFieldset>
+        <StyledLegend>Classification & Storage</StyledLegend>
+        <StyledLabel htmlFor={id("Category", idSuffix)}>Category</StyledLabel>
+        <StyledInput
           value={formData.Category}
           onChange={handleChange}
           type="text"
@@ -75,8 +93,10 @@ export default function InventoryFormFields({
           name="Category"
         />
 
-        <label htmlFor={id("SubCategory", idSuffix)}>Sub Category:</label>
-        <input
+        <StyledLabel htmlFor={id("SubCategory", idSuffix)}>
+          Sub Category
+        </StyledLabel>
+        <StyledInput
           value={formData.SubCategory}
           onChange={handleChange}
           type="text"
@@ -84,13 +104,15 @@ export default function InventoryFormFields({
           name="SubCategory"
         />
 
-        <label htmlFor={id("Location", idSuffix)}>Location:</label>
-        <select
+        <StyledLabel htmlFor={id("Location", idSuffix)}>Location</StyledLabel>
+        <StyledSelect
           value={formData.Location}
           onChange={handleChange}
           id={id("Location", idSuffix)}
           name="Location"
           required
+          aria-required="true"
+          aria-describedby={id("Location-error", idSuffix)}
         >
           <option value="">Select location</option>
           {LOCATIONS.map((loc) => (
@@ -98,10 +120,18 @@ export default function InventoryFormFields({
               {loc}
             </option>
           ))}
-        </select>
+        </StyledSelect>
+        {/* Error message region for Location */}
+        <span
+          id={id("Location-error", idSuffix)}
+          className="visually-hidden"
+          aria-live="assertive"
+        />
 
-        <label htmlFor={id("SubLocation", idSuffix)}>Sub-Location:</label>
-        <input
+        <StyledLabel htmlFor={id("SubLocation", idSuffix)}>
+          Sub-Location
+        </StyledLabel>
+        <StyledInput
           value={formData.SubLocation}
           onChange={handleChange}
           type="text"
@@ -110,8 +140,8 @@ export default function InventoryFormFields({
           placeholder="e.g. Shelf 3, Door, Drawer 2"
         />
 
-        <label htmlFor={id("Tags", idSuffix)}>Tags:</label>
-        <input
+        <StyledLabel htmlFor={id("Tags", idSuffix)}>Tags</StyledLabel>
+        <StyledInput
           value={formData.Tags}
           onChange={handleChange}
           type="text"
@@ -119,20 +149,22 @@ export default function InventoryFormFields({
           name="Tags"
         />
 
-        <label htmlFor={id("Allergens", idSuffix)}>Allergens:</label>
-        <input
+        <StyledLabel htmlFor={id("Allergens", idSuffix)}>Allergens</StyledLabel>
+        <StyledInput
           value={formData.Allergens}
           onChange={handleChange}
           type="text"
           id={id("Allergens", idSuffix)}
           name="Allergens"
         />
-      </fieldset>
+      </StyledFieldset>
 
-      <fieldset>
-        <legend>Quantities</legend>
-        <label htmlFor={id("QtyOnHand", idSuffix)}>Quantity on Hand:</label>
-        <input
+      <StyledFieldset>
+        <StyledLegend>Quantities</StyledLegend>
+        <StyledLabel htmlFor={id("QtyOnHand", idSuffix)}>
+          Quantity on Hand
+        </StyledLabel>
+        <StyledInput
           value={formData.QtyOnHand}
           onChange={handleChange}
           type="number"
@@ -141,10 +173,18 @@ export default function InventoryFormFields({
           min="0"
           step="any"
           required
+          aria-required="true"
+          aria-describedby={id("QtyOnHand-error", idSuffix)}
+        />
+        {/* Error message region for QtyOnHand */}
+        <span
+          id={id("QtyOnHand-error", idSuffix)}
+          className="visually-hidden"
+          aria-live="assertive"
         />
 
-        <label htmlFor={id("QtyUnit", idSuffix)}>Unit:</label>
-        <input
+        <StyledLabel htmlFor={id("QtyUnit", idSuffix)}>Unit</StyledLabel>
+        <StyledInput
           value={formData.QtyUnit}
           onChange={handleChange}
           type="text"
@@ -152,8 +192,10 @@ export default function InventoryFormFields({
           name="QtyUnit"
         />
 
-        <label htmlFor={id("TargetQty", idSuffix)}>Target Qty:</label>
-        <input
+        <StyledLabel htmlFor={id("TargetQty", idSuffix)}>
+          Target Qty
+        </StyledLabel>
+        <StyledInput
           value={formData.TargetQty}
           onChange={handleChange}
           type="number"
@@ -165,22 +207,35 @@ export default function InventoryFormFields({
 
         {showNeedRestock && (
           <>
-            <label htmlFor={id("NeedRestock", idSuffix)}>Need Restock:</label>
-            <input
+            <StyledLabel htmlFor={id("NeedRestock", idSuffix)}>
+              Need Restock
+            </StyledLabel>
+            <StyledInput
               checked={formData.NeedRestock}
               onChange={handleChange}
               type="checkbox"
               id={id("NeedRestock", idSuffix)}
               name="NeedRestock"
+              aria-required="true"
+              aria-describedby={id("NeedRestock-error", idSuffix)}
+              style={{ minWidth: 24, minHeight: 24, width: 24, height: 24 }}
+            />
+            {/* Error message region for NeedRestock */}
+            <span
+              id={id("NeedRestock-error", idSuffix)}
+              className="visually-hidden"
+              aria-live="assertive"
             />
           </>
         )}
-      </fieldset>
+      </StyledFieldset>
 
-      <fieldset>
-        <legend>Dates</legend>
-        <label htmlFor={id("ExpiresOn", idSuffix)}>Expires On:</label>
-        <input
+      <StyledFieldset>
+        <StyledLegend>Dates</StyledLegend>
+        <StyledLabel htmlFor={id("ExpiresOn", idSuffix)}>
+          Expires On
+        </StyledLabel>
+        <StyledInput
           value={formData.ExpiresOn}
           onChange={handleChange}
           type="date"
@@ -188,8 +243,10 @@ export default function InventoryFormFields({
           name="ExpiresOn"
         />
 
-        <label htmlFor={id("DatePurchased", idSuffix)}>Date Purchased:</label>
-        <input
+        <StyledLabel htmlFor={id("DatePurchased", idSuffix)}>
+          Date Purchased
+        </StyledLabel>
+        <StyledInput
           value={formData.DatePurchased}
           onChange={handleChange}
           type="date"
@@ -197,20 +254,24 @@ export default function InventoryFormFields({
           name="DatePurchased"
         />
 
-        <label htmlFor={id("DateFrozen", idSuffix)}>Date Frozen:</label>
-        <input
+        <StyledLabel htmlFor={id("DateFrozen", idSuffix)}>
+          Date Frozen
+        </StyledLabel>
+        <StyledInput
           value={formData.DateFrozen}
           onChange={handleChange}
           type="date"
           id={id("DateFrozen", idSuffix)}
           name="DateFrozen"
         />
-      </fieldset>
+      </StyledFieldset>
 
-      <fieldset>
-        <legend>Pricing & Purchase</legend>
-        <label htmlFor={id("PurchasePrice", idSuffix)}>Purchase Price:</label>
-        <input
+      <StyledFieldset>
+        <StyledLegend>Pricing & Purchase</StyledLegend>
+        <StyledLabel htmlFor={id("PurchasePrice", idSuffix)}>
+          Purchase Price
+        </StyledLabel>
+        <StyledInput
           value={formData.PurchasePrice}
           onChange={handleChange}
           type="number"
@@ -220,8 +281,8 @@ export default function InventoryFormFields({
           step="0.01"
         />
 
-        <label htmlFor={id("UnitCost", idSuffix)}>Unit Cost:</label>
-        <input
+        <StyledLabel htmlFor={id("UnitCost", idSuffix)}>Unit Cost</StyledLabel>
+        <StyledInput
           value={formData.UnitCost}
           onChange={handleChange}
           type="number"
@@ -231,20 +292,22 @@ export default function InventoryFormFields({
           step="0.01"
         />
 
-        <label htmlFor={id("Store", idSuffix)}>Store:</label>
-        <input
+        <StyledLabel htmlFor={id("Store", idSuffix)}>Store</StyledLabel>
+        <StyledInput
           value={formData.Store}
           onChange={handleChange}
           type="text"
           id={id("Store", idSuffix)}
           name="Store"
         />
-      </fieldset>
+      </StyledFieldset>
 
-      <fieldset>
-        <legend>References & Notes</legend>
-        <label htmlFor={id("ProductUrl", idSuffix)}>Product URL:</label>
-        <input
+      <StyledFieldset>
+        <StyledLegend>References & Notes</StyledLegend>
+        <StyledLabel htmlFor={id("ProductUrl", idSuffix)}>
+          Product URL
+        </StyledLabel>
+        <StyledInput
           value={formData.ProductUrl}
           onChange={handleChange}
           type="url"
@@ -252,8 +315,10 @@ export default function InventoryFormFields({
           name="ProductUrl"
         />
 
-        <label htmlFor={id("ImageRef", idSuffix)}>Image Reference:</label>
-        <input
+        <StyledLabel htmlFor={id("ImageRef", idSuffix)}>
+          Image Reference
+        </StyledLabel>
+        <StyledInput
           value={formData.ImageRef}
           onChange={handleChange}
           type="text"
@@ -261,14 +326,14 @@ export default function InventoryFormFields({
           name="ImageRef"
         />
 
-        <label htmlFor={id("Notes", idSuffix)}>Notes:</label>
-        <textarea
+        <StyledLabel htmlFor={id("Notes", idSuffix)}>Notes</StyledLabel>
+        <StyledTextarea
           value={formData.Notes}
           onChange={handleChange}
           id={id("Notes", idSuffix)}
           name="Notes"
         />
-      </fieldset>
+      </StyledFieldset>
     </>
   );
 }

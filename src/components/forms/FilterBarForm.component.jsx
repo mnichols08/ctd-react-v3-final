@@ -3,6 +3,16 @@ import {
   useInventoryData,
   useInventoryActions,
 } from "../../context/InventoryContext";
+import {
+  FilterBarContainer,
+  FilterForm,
+  FilterLabel,
+  FilterInput,
+  FilterSelect,
+  FilterButton,
+  FilterFieldset,
+  FilterLegend,
+} from "./FilterBarForm.styles";
 
 function FilterBarForm() {
   const { items, sortConfig, searchTerm, filters } = useInventoryData();
@@ -59,61 +69,70 @@ function FilterBarForm() {
   };
 
   return (
-    <>
-      <form onSubmit={(e) => e.preventDefault()}>
-        <label htmlFor="search">Search:</label>
-        <input
-          value={localSearch}
-          onChange={handleSearchChange}
-          type="text"
-          id="search"
-          name="search"
-          placeholder="Search inventory..."
-        />
-        <label htmlFor="sort-field">Sort by:</label>
-        <select
-          id="sort-field"
-          name="sort-field"
-          value={sortField}
-          onChange={handleSortChange}
+    <FilterBarContainer>
+      <FilterForm onSubmit={(e) => e.preventDefault()}>
+        <FilterLabel htmlFor="search">
+          Search:
+          <FilterInput
+            value={localSearch}
+            onChange={handleSearchChange}
+            type="text"
+            id="search"
+            name="search"
+            placeholder="Search inventory..."
+          />
+        </FilterLabel>
+        <FilterLabel htmlFor="sort-field">
+          Sort by:
+          <FilterSelect
+            id="sort-field"
+            name="sort-field"
+            value={sortField}
+            onChange={handleSortChange}
+          >
+            <option value="">None</option>
+            <option value="ItemName">Item Name</option>
+            <option value="Category">Category</option>
+            <option value="QtyOnHand">Qty on Hand</option>
+            <option value="ExpiresOn">Expires On</option>
+            <option value="LastUpdated">Last Updated</option>
+          </FilterSelect>
+        </FilterLabel>
+        <FilterLabel htmlFor="sort-direction">
+          Sort Direction:
+          <FilterSelect
+            id="sort-direction"
+            name="sort-direction"
+            value={sortDirection}
+            onChange={(e) => setSort(sortField, e.target.value)}
+          >
+            <option value="asc">Asc</option>
+            <option value="desc">Desc</option>
+          </FilterSelect>
+        </FilterLabel>
+        <FilterButton
+          type="button"
+          onClick={handleReset}
+          aria-label="Reset filters"
         >
-          <option value="">None</option>
-          <option value="ItemName">Item Name</option>
-          <option value="Category">Category</option>
-          <option value="QtyOnHand">Qty on Hand</option>
-          <option value="ExpiresOn">Expires On</option>
-          <option value="LastUpdated">Last Updated</option>
-        </select>
-        <label htmlFor="sort-direction">Sort Direction:</label>
-        <select
-          id="sort-direction"
-          name="sort-direction"
-          value={sortDirection}
-          onChange={(e) => setSort(sortField, e.target.value)}
-        >
-          <option value="asc">Asc</option>
-          <option value="desc">Desc</option>
-        </select>
-        <button type="button" onClick={handleReset}>
           Reset
-        </button>
+        </FilterButton>
         {/* Filter Controls */}
-        <fieldset>
-          <legend>Filter by Category:</legend>
+        <FilterFieldset>
+          <FilterLegend>Filter by Category:</FilterLegend>
           {availableCategories.map((cat) => (
-            <label key={cat}>
-              <input
+            <FilterLabel key={cat}>
+              <FilterInput
                 type="checkbox"
                 checked={filters.categories.includes(cat)}
                 onChange={() => handleCategoryToggle(cat)}
               />
               {cat}
-            </label>
+            </FilterLabel>
           ))}
-        </fieldset>
-
-        <label htmlFor="filter-expiring-soon">
-          <input
+        </FilterFieldset>
+        <FilterLabel htmlFor="filter-expiring-soon">
+          <FilterInput
             type="checkbox"
             id="filter-expiring-soon"
             name="filter-expiring-soon"
@@ -123,10 +142,9 @@ function FilterBarForm() {
             }
           />
           Expiring Soon
-        </label>
-
-        <label htmlFor="filter-low-stock">
-          <input
+        </FilterLabel>
+        <FilterLabel htmlFor="filter-low-stock">
+          <FilterInput
             type="checkbox"
             id="filter-low-stock"
             name="filter-low-stock"
@@ -136,15 +154,23 @@ function FilterBarForm() {
             }
           />
           Low Stock
-        </label>
-        <button type="button" onClick={clearFilters}>
+        </FilterLabel>
+        <FilterButton
+          type="button"
+          onClick={clearFilters}
+          aria-label="Clear all filters"
+        >
           Clear All Filters
-        </button>
-        <button type="button" onClick={refetch}>
+        </FilterButton>
+        <FilterButton
+          type="button"
+          onClick={refetch}
+          aria-label="Refresh results"
+        >
           Refresh
-        </button>
-      </form>
-    </>
+        </FilterButton>
+      </FilterForm>
+    </FilterBarContainer>
   );
 }
 

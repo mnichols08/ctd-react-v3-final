@@ -1,5 +1,12 @@
 import { memo, useEffect, useState } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import {
+  NotFoundContainer,
+  NotFoundHeading,
+  NotFoundMessage,
+  NotFoundCode,
+  NotFoundHomeLink,
+} from "./NotFoundPage.styles";
 
 function NotFoundPage() {
   const location = useLocation();
@@ -22,18 +29,15 @@ function NotFoundPage() {
   }, []);
 
   return (
-    <main>
-      <h2>404 Not Found</h2>
-      <p>
-        {randomMessage} <code>{location.pathname}</code> does not exist just
-        yet. 
-      </p>
-      <h3>
-        <Link to="/" aria-label="Go to home page">
-          Go Home
-        </Link>
-      </h3>
-    </main>
+    <NotFoundContainer role="status" aria-live="polite">
+      <NotFoundHeading>404 Not Found</NotFoundHeading>
+      <NotFoundMessage>
+        {randomMessage} <NotFoundCode>{location.pathname}</NotFoundCode> does not exist just yet.
+      </NotFoundMessage>
+      <NotFoundHomeLink to="/" aria-label="Go to home page">
+        Go Home
+      </NotFoundHomeLink>
+    </NotFoundContainer>
   );
 }
 

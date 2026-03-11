@@ -13,6 +13,11 @@ import AddInventoryItemForm from "../components/forms/AddInventoryItemForm.compo
 import QuickAddForm from "../components/forms/QuickAddForm.component";
 import InventorySection from "../components/sections/InventorySection.component";
 import FilterBarForm from "../components/forms/FilterBarForm.component";
+import {
+  DashboardArticle,
+  DashboardTitle,
+  SectionAlert,
+} from "./IndexPage.styles";
 
 function IndexPage() {
   const {
@@ -48,13 +53,14 @@ function IndexPage() {
     document.title = "Dashboard - Kitchen Inventory";
   }, []);
   return (
-    <main>
+    <DashboardArticle>
+      <DashboardTitle id="dashboard-title">Dashboard</DashboardTitle>
       <LoadingState />
       <ErrorState />
       {partialLoadWarning && (
-        <div role="alert">
+        <SectionAlert role="alert">
           <p>Warning: {partialLoadWarning}</p>
-        </div>
+        </SectionAlert>
       )}
       {!isLoading && !error && (
         <>
@@ -78,12 +84,12 @@ function IndexPage() {
             </button>
             {isSaving && <p role="status">Saving item to Airtable…</p>}
             {saveError && (
-              <div role="alert">
+              <SectionAlert role="alert">
                 <p>{saveError}</p>
                 <button type="button" onClick={dismissSaveError}>
                   Dismiss
                 </button>
-              </div>
+              </SectionAlert>
             )}
             {showQuickAdd ? <QuickAddForm /> : <AddInventoryItemForm />}
           </ToolSection>
@@ -115,7 +121,7 @@ function IndexPage() {
           )}
         </>
       )}
-    </main>
+    </DashboardArticle>
   );
 }
 

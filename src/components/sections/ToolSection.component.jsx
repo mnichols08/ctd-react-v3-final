@@ -1,11 +1,12 @@
 import { memo } from "react";
+import { Section, SectionTitle } from "./ToolSection.styles";
 
 function ToolSection({ id, title, children }) {
   return (
-    <section id={id}>
-      <h2>{title}</h2>
+    <Section id={id}>
+      <SectionTitle>{title}</SectionTitle>
       {children}
-    </section>
+    </Section>
   );
 }
 

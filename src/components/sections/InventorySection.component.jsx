@@ -1,16 +1,38 @@
-import { memo, useCallback, useEffect, useEffectEvent, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import useToggle from "../../hooks/useToggle";
 import ItemCard from "../cards/ItemCard.component";
 import EditDialog from "../ui/EditDialog.component";
 import EmptyState from "../ui/EmptyState.component";
 import PaginationControls from "../ui/PaginationControls.component";
+import {
+  SectionContainer,
+  SectionHeading,
+  CollapseButton,
+  ItemsList,
+  CollapsedText,
+} from "./InventorySection.styles";
 
 function InventorySection({ id, title, items, variant = "inventory" }) {
   const itemsList = items ?? [];
 
   // State to track whether the section is collapsed or expanded
   const isArchivedSection = id === "archived";
-  const [isCollapsed, toggleCollapsed] = useToggle(isArchivedSection);
+  const [isCollapsed, setIsCollapsed] = useToggle(isArchivedSection);
+  const toggleButtonRef = useRef(null);
+  const handleToggle = () => {
+    setIsCollapsed((prev) => !prev);
+    // Focus remains on button after toggle
+    setTimeout(() => {
+      toggleButtonRef.current?.focus();
+    }, 0);
+  };
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -51,35 +73,52 @@ function InventorySection({ id, title, items, variant = "inventory" }) {
   const contentId = `${id}-content`;
 
   return (
-    <section id={id}>
-      <h2 id={`${id}-heading`}>
+    <SectionContainer id={id} aria-labelledby={`${id}-heading`}>
+      <SectionHeading id={`${id}-heading`}>
         {title} ({headingSummary})
-      </h2>{" "}
+      </SectionHeading>
       {itemCount > 0 && (
-        <button
+        <CollapseButton
+          ref={toggleButtonRef}
           aria-expanded={!isCollapsed}
           aria-controls={contentId}
-          onClick={toggleCollapsed}
+          onClick={handleToggle}
         >
           {isCollapsed ? "Show Collapsed" : "Collapse"}
-        </button>
+        </CollapseButton>
       )}
       <div id={contentId} role="region" aria-labelledby={`${id}-heading`}>
         {itemCount > 0 ? (
           isCollapsed ? (
-            <p>Collapsed</p>
+            <CollapsedText>Collapsed</CollapsedText>
           ) : (
             <>
-              <ul>
-                {paginatedItems.map((item) => (
+              <ItemsList aria-label={title}>
+                {paginatedItems.map((item, idx) => (
                   <ItemCard
                     key={item.id}
                     item={item}
                     onEdit={setEditingItemId}
                     variant={variant}
+                    onDeleteFocus={(cardRef) => {
+                      // Try to focus next item, or previous, or section heading
+                      const list = document
+                        .getElementById(id)
+                        ?.querySelectorAll("li button, li a");
+                      if (list && list.length > 0) {
+                        if (idx < list.length - 1) {
+                          list[idx + 1]?.focus();
+                        } else if (idx > 0) {
+                          list[idx - 1]?.focus();
+                        } else {
+                          // Fallback: focus section heading
+                          document.getElementById(`${id}-heading`)?.focus();
+                        }
+                      }
+                    }}
                   />
                 ))}
-              </ul>
+              </ItemsList>
               {shouldShowPagination && (
                 <PaginationControls
                   currentPage={validCurrentPage}
@@ -99,7 +138,7 @@ function InventorySection({ id, title, items, variant = "inventory" }) {
       {variant === "inventory" && editingItem && (
         <EditDialog item={editingItem} onClose={closeEditor} />
       )}
-    </section>
+    </SectionContainer>
   );
 }
 

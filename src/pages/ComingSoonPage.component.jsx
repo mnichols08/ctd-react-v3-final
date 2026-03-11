@@ -1,9 +1,11 @@
 import { memo, useEffect } from "react";
-import { useLocation } from "react-router-dom";
-
-// This is a simple placeholder page for routes that haven't been implemented yet
-// It dynamically generates a title based on the current pathname
+import { useLocation, Link } from "react-router-dom";
 import generatePageTitle from "../utils/generatePageTitle";
+import {
+  ComingSoonContainer,
+  SoonIcon,
+  BackLink,
+} from "./ComingSoonPage.styles";
 
 function ComingSoonPage() {
   const { pathname } = useLocation();
@@ -11,10 +13,16 @@ function ComingSoonPage() {
     document.title = `${generatePageTitle(pathname)} - Kitchen Inventory`;
   }, [pathname]);
   return (
-    <main>
+    <ComingSoonContainer>
+      <SoonIcon aria-hidden="true" role="img">
+        🚧
+      </SoonIcon>
       <h2>{generatePageTitle(pathname)}</h2>
-      <p>Coming Soon....</p>
-    </main>
+      <p>Coming Soon…</p>
+      <BackLink as={Link} to="/">
+        ← Back to Inventory
+      </BackLink>
+    </ComingSoonContainer>
   );
 }
 

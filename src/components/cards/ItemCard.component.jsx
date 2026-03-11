@@ -8,6 +8,17 @@ import useToggle from "../../hooks/useToggle";
 import ShoppingListControl from "../forms/ShoppingListControl.component";
 import ConfirmDialog from "../ui/ConfirmDialog.component";
 import { ALL_FIELDS } from "../../data/fieldConfig";
+import {
+  CardContainer,
+  CardHeading,
+  CardButton,
+  CardButtonDanger,
+  CardButtonSecondary,
+  CardButtonGroup,
+  CardDetailsRow,
+  CardProperties,
+  CardActions,
+} from "./ItemCard.styles";
 
 // Helper function to format field values for display (e.g., convert booleans to "Yes"/"No")
 function formatValue(value) {
@@ -35,45 +46,75 @@ function ItemCard({ item, onEdit, variant }) {
   // Render the item card with conditional buttons/forms based on shopping cart status and restock needs
   return (
     <li id={item.id}>
-      <article>
-        <h2>
+      <CardContainer>
+        <CardHeading>
           <Link to={`/item/${item.id}`}>{item.ItemName}</Link>
-        </h2>
-        {variant === "archived" && (
-          <button onClick={() => unarchiveItem(item.id)}>Unarchive</button>
-        )}
-        {variant === "inventory" && (
-          <>
-            {fieldsToRender.map(({ key, label }) => (
-              <p key={key}>
-                {label}: {formatValue(item[key])}
-              </p>
-            ))}
-            <button onClick={() => onEdit(item.id)}>Edit</button>
-            <button onClick={() => archiveItem(item.id)}>Archive</button>
-          </>
-        )}
-        {variant !== "shopping" && (
-          <>
-            <button onClick={openDeleteConfirm} disabled={item.isDeleting}>
-              {item.isDeleting ? "Deleting…" : "Delete"}
-            </button>
-            {showDeleteConfirm && (
-              <ConfirmDialog
-                message={`Delete "${item.ItemName}"? This cannot be undone.`}
-                onConfirm={() => {
-                  closeDeleteConfirm();
-                  deleteItem(item.id);
-                }}
-                onCancel={closeDeleteConfirm}
-              />
+        </CardHeading>
+        <CardDetailsRow>
+          <CardProperties>
+            {variant === "inventory" &&
+              fieldsToRender.map(({ key, label }) => (
+                <p key={key}>
+                  {label}: {formatValue(item[key])}
+                </p>
+              ))}
+          </CardProperties>
+          <CardActions>
+            {variant === "archived" && (
+              <CardButtonSecondary
+                onClick={() => unarchiveItem(item.id)}
+                aria-label={`Unarchive ${item.ItemName}`}
+              >
+                Unarchive
+              </CardButtonSecondary>
             )}
-          </>
-        )}
+            {variant === "inventory" && (
+              <>
+                <CardButton
+                  onClick={() => onEdit(item.id)}
+                  aria-label={`Edit ${item.ItemName}`}
+                >
+                  Edit
+                </CardButton>
+                <CardButtonSecondary
+                  onClick={() => archiveItem(item.id)}
+                  aria-label={`Archive ${item.ItemName}`}
+                >
+                  Archive
+                </CardButtonSecondary>
+              </>
+            )}
+            {variant !== "shopping" && (
+              <>
+                <CardButtonDanger
+                  onClick={openDeleteConfirm}
+                  disabled={item.isDeleting}
+                  aria-label={
+                    item.isDeleting
+                      ? `Deleting ${item.ItemName}`
+                      : `Delete ${item.ItemName}`
+                  }
+                >
+                  {item.isDeleting ? "Deleting…" : "Delete"}
+                </CardButtonDanger>
+                {showDeleteConfirm && (
+                  <ConfirmDialog
+                    message={`Delete "${item.ItemName}"? This cannot be undone.`}
+                    onConfirm={() => {
+                      closeDeleteConfirm();
+                      deleteItem(item.id);
+                    }}
+                    onCancel={closeDeleteConfirm}
+                  />
+                )}
+              </>
+            )}
+          </CardActions>
+        </CardDetailsRow>
         {variant !== "archived" && (
           <ShoppingListControl item={item} variant={variant} />
         )}
-      </article>
+      </CardContainer>
     </li>
   );
 }
