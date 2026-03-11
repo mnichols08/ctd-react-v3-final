@@ -26,6 +26,14 @@ export const ALL_FIELDS = [
   { key: "LastUpdated", label: "Last Updated" },
 ];
 
+export const SEARCHABLE_FIELDS = [
+  "ItemName",
+  "Brand",
+  "Category",
+  "Tags",
+  "Notes",
+];
+
 export const DEFAULT_VISIBLE_FIELDS = [
   "ItemName",
   "Brand",
@@ -35,3 +43,47 @@ export const DEFAULT_VISIBLE_FIELDS = [
   "ExpiresOn",
   "Location",
 ];
+
+export const DEFAULT_VISIBLE_FIELDS_SET = new Set(DEFAULT_VISIBLE_FIELDS);
+
+export const CATEGORIES = [
+  "Cooking Essentials",
+  "Condiments",
+  "Dairy",
+  "Drinks",
+  "Dry",
+  "Fresh",
+  "Frozen",
+  "Meat",
+  "Produce",
+  "Snacks",
+  "Other",
+];
+
+export const LOCATIONS = ["Fridge", "Freezer", "Pantry"];
+
+export const SHOPPING_LIST_FIELDS = new Set([
+  "ItemName",
+  "QtyOnHand",
+  "QtyUnit",
+  "TargetQty",
+  "Location",
+]);
+
+const LOCATION_SEPARATOR = " - ";
+
+export function parseLocation(locationString) {
+  if (!locationString) return { location: "", subLocation: "" };
+  const idx = locationString.indexOf(LOCATION_SEPARATOR);
+  if (idx === -1) return { location: locationString, subLocation: "" };
+  return {
+    location: locationString.slice(0, idx),
+    subLocation: locationString.slice(idx + LOCATION_SEPARATOR.length),
+  };
+}
+
+export function formatLocation(location, subLocation) {
+  if (!location) return "";
+  if (!subLocation?.trim()) return location;
+  return `${location}${LOCATION_SEPARATOR}${subLocation.trim()}`;
+}

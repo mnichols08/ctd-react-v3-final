@@ -1,5 +1,14 @@
-function LoadingState({ isLoading }) {
-  return <div role="status">{isLoading ? <p>Loading...</p> : null}</div>;
+import { memo } from "react";
+import { useInventoryData } from "../../context/InventoryContext";
+
+function LoadingState() {
+  const { isLoading } = useInventoryData();
+  if (!isLoading) return null;
+  return (
+    <div role="status">
+      <p>Loading...</p>
+    </div>
+  );
 }
 
-export default LoadingState;
+export default memo(LoadingState);

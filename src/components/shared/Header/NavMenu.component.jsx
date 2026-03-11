@@ -1,13 +1,16 @@
-import { memo, useState } from "react";
+import { memo, useMemo } from "react";
+import { useInventoryData } from "../../../context/InventoryContext";
+import useToggle from "../../../hooks/useToggle";
 import FieldSelector from "../../cards/FieldSelector.component";
 
-function NavMenu({
-  visibleFields,
-  onToggleField,
-  onResetFields,
-  archivedItemsExist,
-}) {
-  const [showFieldSelector, setShowFieldSelector] = useState(false);
+function NavMenu() {
+  const { items } = useInventoryData();
+  const archivedItemsExist = useMemo(
+    () => items.some((item) => item.Status === "archived"),
+    [items],
+  );
+  const [showFieldSelector, toggleFieldSelector, , closeFieldSelector] =
+    useToggle(false);
 
   return (
     <nav>
@@ -28,14 +31,13 @@ function NavMenu({
           <a href="#shopping-list">Shopping List</a>
         </li>
         <li>
-          <a
-            href="#field-selector"
-            onClick={() => setShowFieldSelector((prev) => !prev)}
+          <button
+            onClick={toggleFieldSelector}
             aria-label="Select visible fields"
             title="Select visible fields"
           >
             Edit Visible Fields
-          </a>
+          </button>
         </li>
         {archivedItemsExist && (
           <li>
@@ -44,14 +46,7 @@ function NavMenu({
         )}
       </menu>
 
-      {showFieldSelector && (
-        <FieldSelector
-          visibleFields={visibleFields}
-          onToggleField={onToggleField}
-          onResetFields={onResetFields}
-          onClose={() => setShowFieldSelector(false)}
-        />
-      )}
+      {showFieldSelector && <FieldSelector onClose={closeFieldSelector} />}
     </nav>
   );
 }

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+﻿import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   act,
   cleanup,
@@ -10,6 +10,7 @@ import {
 import { memo, useCallback, useEffect, useState } from "react";
 
 import MainContainer from "./MainContainer.component";
+import { InventoryProvider } from "../../context/InventoryProvider";
 import inventorySampleData from "../../data/inventorySample.json";
 import { fetchInventoryItems } from "../../data/airtableUtils";
 
@@ -33,93 +34,117 @@ vi.mock("../sections/ToolSection.component", () => ({
   ),
 }));
 
-vi.mock("./QuickStatsBar.component", () => ({
-  default: ({ inventoryItems, filteredItems }) => (
-    <div data-testid="quick-stats">
-      QuickStatsBar
-      <span data-testid="stats-total">{inventoryItems?.length ?? 0}</span>
-      <span data-testid="stats-filtered">{filteredItems?.length ?? 0}</span>
-    </div>
-  ),
-}));
+vi.mock("./QuickStatsBar.component", async () => {
+  const { useInventoryData } = await import("../../context/InventoryContext");
+  return {
+    default: function MockQuickStatsBar() {
+      const { items, filterAppliedItems } = useInventoryData();
+      return (
+        <div data-testid="quick-stats">
+          QuickStatsBar
+          <span data-testid="stats-total">{items?.length ?? 0}</span>
+          <span data-testid="stats-filtered">
+            {filterAppliedItems?.length ?? 0}
+          </span>
+        </div>
+      );
+    },
+  };
+});
 
-vi.mock("../forms/FilterBarForm.component", () => ({
-  default: ({ handleRefresh, onSearch, onSort }) => (
-    <div>
-      FilterBarForm
-      <button type="button" onClick={handleRefresh}>
-        Refresh
-      </button>
-      <input
-        aria-label="mock-search"
-        onChange={(e) => onSearch(e.target.value)}
-      />
-      <button
-        type="button"
-        aria-label="mock-sort-category-desc"
-        onClick={() => onSort("Category", "desc")}
-      >
-        Sort
-      </button>
-    </div>
-  ),
-}));
-
-vi.mock("../sections/InventorySection.component", () => ({
-  default: (props) => {
-    sectionRenderLog.push(props);
-    const { title, items, addToShoppingList, updateItemQuantity } = props;
-    return (
-      <section>
-        <h2>{title}</h2>
-        <p>{`count:${items.length}`}</p>
-        <p>{items.map((item) => item.ItemName).join("|")}</p>
-        <p>
-          {items
-            .map(
-              (item) =>
-                `${item.ItemName}:${item.TargetQty}:${item.NeedRestock}`,
-            )
-            .join("|")}
-        </p>
-        {addToShoppingList && items[0] && (
-          <form
-            aria-label={`mock-form-${title}`}
-            onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target);
-              addToShoppingList?.({
-                itemId: items[0].id,
-                quantity: formData.get("quantity"),
-              });
-            }}
-          >
-            <input
-              aria-label={`mock-qty-${title}`}
-              name="quantity"
-              defaultValue="2"
-            />
-            <button type="submit">{`mock-add-${title}`}</button>
-          </form>
-        )}
-        {updateItemQuantity && items[0] && (
-          <button
-            onClick={() =>
-              updateItemQuantity?.(items[0].id, items[0].QtyOnHand)
-            }
-          >
-            {`mock-remove-${title}`}
+vi.mock("../forms/FilterBarForm.component", async () => {
+  const { useInventoryActions } =
+    await import("../../context/InventoryContext");
+  return {
+    default: function MockFilterBarForm() {
+      const { refetch, setSearch, setSort } = useInventoryActions();
+      return (
+        <div>
+          FilterBarForm
+          <button type="button" onClick={refetch}>
+            Refresh
           </button>
-        )}
-      </section>
-    );
-  },
-}));
+          <input
+            aria-label="mock-search"
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <button
+            type="button"
+            aria-label="mock-sort-category-desc"
+            onClick={() => setSort("Category", "desc")}
+          >
+            Sort
+          </button>
+        </div>
+      );
+    },
+  };
+});
+
+vi.mock("../sections/InventorySection.component", async () => {
+  const { useInventoryActions } =
+    await import("../../context/InventoryContext");
+  return {
+    default: function MockInventorySection(props) {
+      sectionRenderLog.push(props);
+      const { addToShoppingList, updateTargetQty } = useInventoryActions();
+      const { title, items, variant = "inventory" } = props;
+      return (
+        <section>
+          <h2>{title}</h2>
+          <p>{`count:${items.length}`}</p>
+          <p>{items.map((item) => item.ItemName).join("|")}</p>
+          <p>
+            {items
+              .map(
+                (item) =>
+                  `${item.ItemName}:${item.TargetQty}:${item.NeedRestock}`,
+              )
+              .join("|")}
+          </p>
+          {variant === "inventory" && items[0] && (
+            <form
+              aria-label={`mock-form-${title}`}
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                addToShoppingList?.(items[0].id, formData.get("quantity"));
+              }}
+            >
+              <input
+                aria-label={`mock-qty-${title}`}
+                name="quantity"
+                defaultValue="2"
+              />
+              <button type="submit">{`mock-add-${title}`}</button>
+            </form>
+          )}
+          {variant === "shopping" && items[0] && (
+            <button
+              onClick={() => updateTargetQty?.(items[0].id, items[0].QtyOnHand)}
+            >
+              {`mock-remove-${title}`}
+            </button>
+          )}
+        </section>
+      );
+    },
+  };
+});
 
 afterEach(() => {
   cleanup();
   sectionRenderLog.length = 0;
 });
+
+// Wrapper that provides context via InventoryProvider, mirroring what App does
+function TestMainContainer(props) {
+  return (
+    <InventoryProvider>
+      <MainContainer {...props} />
+    </InventoryProvider>
+  );
+}
 
 describe("MainContainer", () => {
   it("initializes state from sample data and passes filtered section items", () => {
@@ -136,7 +161,7 @@ describe("MainContainer", () => {
       (item) => item.NeedRestock && item.TargetQty > item.QtyOnHand,
     ).length;
 
-    render(<MainContainer />);
+    render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
     const fridgeSection = screen
@@ -176,7 +201,7 @@ describe("MainContainer", () => {
       (item) => item.Location.includes("Pantry") && item.Status !== "archived",
     ).length;
 
-    render(<MainContainer />);
+    render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
     // Locate the "Add Item" ToolSection and the default QuickAddForm by its accessible name
@@ -224,7 +249,7 @@ describe("MainContainer", () => {
 
     expect(pantryCandidate).toBeTruthy();
 
-    render(<MainContainer />);
+    render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
     fireEvent.change(screen.getByLabelText("mock-qty-Pantry"), {
@@ -253,7 +278,7 @@ describe("MainContainer", () => {
 
     expect(shoppingItemToRemove).toBeTruthy();
 
-    render(<MainContainer />);
+    render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
     fireEvent.click(
@@ -287,7 +312,7 @@ describe("MainContainer", () => {
         ? "Freezer"
         : "Pantry";
 
-    render(<MainContainer />);
+    render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
     fireEvent.click(
@@ -304,7 +329,7 @@ describe("MainContainer", () => {
     );
   });
   it("toggles between QuickAddForm and AddInventoryItemForm", () => {
-    render(<MainContainer />);
+    render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
     // QuickAddForm should be visible by default
@@ -354,7 +379,7 @@ describe("MainContainer", () => {
   // -- Loading / Error UI --------------------------------------------------
 
   it("loading spinner renders while isLoading is true", () => {
-    render(<MainContainer />);
+    render(<TestMainContainer />);
 
     // Before timers resolve, the loading indicator should be visible
     const loadingStatus = screen.getByRole("status");
@@ -372,9 +397,10 @@ describe("MainContainer", () => {
 
   it("error message and Retry button render when error is set", () => {
     // Make Math.random return 0 so loadSampleData triggers its failure branch
+    import.meta.env.VITE_SIMULATE_ERRORS = "true";
     vi.spyOn(Math, "random").mockReturnValue(0);
 
-    render(<MainContainer />);
+    render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
     // Error alert should be visible with the failure message
@@ -393,9 +419,10 @@ describe("MainContainer", () => {
 
   it("Retry clears error and re-fetches", () => {
     // First render triggers a failure
+    import.meta.env.VITE_SIMULATE_ERRORS = "true";
     vi.spyOn(Math, "random").mockReturnValue(0);
 
-    render(<MainContainer />);
+    render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
     // Error is shown
@@ -419,7 +446,7 @@ describe("MainContainer", () => {
   });
 
   it("Refresh button reloads sample data", () => {
-    render(<MainContainer />);
+    render(<TestMainContainer />);
     act(() => vi.runAllTimers());
 
     // Inventory is loaded
@@ -448,14 +475,14 @@ describe("MainContainer", () => {
 
   describe("useMemo behavior", () => {
     it("section lists keep the same reference when unrelated state (showQuickAdd) changes", () => {
-      render(<MainContainer />);
+      render(<TestMainContainer />);
       act(() => vi.runAllTimers());
 
       const pantryBefore = sectionRenderLog
         .filter((r) => r.title === "Pantry")
         .pop();
 
-      // Toggle showQuickAdd — an unrelated state change
+      // Toggle showQuickAdd - an unrelated state change
       fireEvent.click(
         screen.getByRole("button", { name: "Switch to Full Form" }),
       );
@@ -464,12 +491,12 @@ describe("MainContainer", () => {
         .filter((r) => r.title === "Pantry")
         .pop();
 
-      // useMemo should return the cached array — same reference
+      // useMemo should return the cached array - same reference
       expect(pantryAfter.items).toBe(pantryBefore.items);
     });
 
     it("filtered list recomputes when search term changes", () => {
-      render(<MainContainer />);
+      render(<TestMainContainer />);
       act(() => vi.runAllTimers());
 
       const pantryBefore = sectionRenderLog
@@ -485,13 +512,13 @@ describe("MainContainer", () => {
         .filter((r) => r.title === "Pantry")
         .pop();
 
-      // New reference — useMemo recomputed
+      // New reference - useMemo recomputed
       expect(pantryAfter.items).not.toBe(pantryBefore.items);
       expect(pantryAfter.items.length).toBeLessThan(pantryBefore.items.length);
     });
 
     it("sorted list recomputes when sort field or direction changes", () => {
-      render(<MainContainer />);
+      render(<TestMainContainer />);
       act(() => vi.runAllTimers());
 
       const fridgeBefore = sectionRenderLog
@@ -507,12 +534,12 @@ describe("MainContainer", () => {
         .filter((r) => r.title === "Fridge")
         .pop();
 
-      // New reference — useMemo recomputed due to sort dependency change
+      // New reference - useMemo recomputed due to sort dependency change
       expect(fridgeAfter.items).not.toBe(fridgeBefore.items);
     });
 
     it("section-specific lists recompute when inventoryItems changes", () => {
-      render(<MainContainer />);
+      render(<TestMainContainer />);
       act(() => vi.runAllTimers());
 
       const pantryBefore = sectionRenderLog
@@ -553,7 +580,7 @@ describe("MainContainer", () => {
     });
 
     it("QuickStatsBar values recompute when inventory changes", () => {
-      render(<MainContainer />);
+      render(<TestMainContainer />);
       act(() => vi.runAllTimers());
 
       const totalBefore = Number(screen.getByTestId("stats-total").textContent);
@@ -596,15 +623,15 @@ describe("MainContainer", () => {
   });
 
   describe("useCallback behavior", () => {
-    it("handler functions maintain same reference across renders when deps unchanged", () => {
-      render(<MainContainer />);
+    it("section props maintain same reference across renders when deps unchanged", () => {
+      render(<TestMainContainer />);
       act(() => vi.runAllTimers());
 
       const pantryBefore = sectionRenderLog
         .filter((r) => r.title === "Pantry")
         .pop();
 
-      // Toggle showQuickAdd — an unrelated state change that does not
+      // Toggle showQuickAdd - an unrelated state change that does not
       // affect any useCallback dependency array
       fireEvent.click(
         screen.getByRole("button", { name: "Switch to Full Form" }),
@@ -614,16 +641,8 @@ describe("MainContainer", () => {
         .filter((r) => r.title === "Pantry")
         .pop();
 
-      // useCallback should return the cached function — same reference
-      expect(pantryAfter.addToShoppingList).toBe(
-        pantryBefore.addToShoppingList,
-      );
-      expect(pantryAfter.removeFromShoppingList).toBe(
-        pantryBefore.removeFromShoppingList,
-      );
-      expect(pantryAfter.updateItem).toBe(pantryBefore.updateItem);
-      expect(pantryAfter.archiveItem).toBe(pantryBefore.archiveItem);
-      expect(pantryAfter.deleteItem).toBe(pantryBefore.deleteItem);
+      // useMemo should return the cached array - same reference
+      expect(pantryAfter.items).toBe(pantryBefore.items);
     });
 
     it("handler functions get new reference when deps change", () => {
@@ -714,12 +733,12 @@ describe("MainContainer", () => {
       import.meta.env.VITE_SAMPLE_DATA = "false";
       import.meta.env.VITE_SERVER_FILTER = "false";
 
-      render(<MainContainer />);
+      render(<TestMainContainer />);
 
       // Initial mount triggers one fetch
       expect(fetchInventoryItems).toHaveBeenCalledTimes(1);
 
-      // Change sort — should NOT trigger a re-fetch because server-side
+      // Change sort - should NOT trigger a re-fetch because server-side
       // filtering is disabled
       fireEvent.click(
         screen.getByRole("button", { name: "mock-sort-category-desc" }),
@@ -732,12 +751,12 @@ describe("MainContainer", () => {
       import.meta.env.VITE_SAMPLE_DATA = "false";
       import.meta.env.VITE_SERVER_FILTER = "true";
 
-      render(<MainContainer />);
+      render(<TestMainContainer />);
 
       // Initial mount fetch
       expect(fetchInventoryItems).toHaveBeenCalledTimes(1);
 
-      // Change sort — should trigger a re-fetch with server-side filtering
+      // Change sort - should trigger a re-fetch with server-side filtering
       fireEvent.click(
         screen.getByRole("button", { name: "mock-sort-category-desc" }),
       );
@@ -749,7 +768,7 @@ describe("MainContainer", () => {
       import.meta.env.VITE_SAMPLE_DATA = "false";
       import.meta.env.VITE_SERVER_FILTER = "false";
 
-      render(<MainContainer />);
+      render(<TestMainContainer />);
 
       expect(fetchInventoryItems).toHaveBeenCalledTimes(1);
 
@@ -781,7 +800,7 @@ describe("MainContainer", () => {
         },
       );
 
-      render(<MainContainer />);
+      render(<TestMainContainer />);
 
       // Initial fetch registered
       expect(signals).toHaveLength(1);

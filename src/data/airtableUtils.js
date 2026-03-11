@@ -1,11 +1,52 @@
 import sampleData from "./inventorySample.json";
 import { EXPIRING_SOON_MS, LOW_STOCK_THRESHOLD } from "./inventoryUtils";
+import { SEARCHABLE_FIELDS } from "./fieldConfig";
 
-const BASE_URL = `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${encodeURIComponent(import.meta.env.VITE_AIRTABLE_TABLE_NAME)}`;
-const AUTH_TOKEN = `Bearer ${import.meta.env.VITE_AIRTABLE_PAT}`;
+// ---------------------------------------------------------------------------
+// When VITE_AIRTABLE_PAT is set, call Airtable directly (local dev).
+// Otherwise, route through the Netlify serverless proxy so the PAT stays
+// server-side (production).
+// ---------------------------------------------------------------------------
+const USE_PROXY = !import.meta.env.VITE_AIRTABLE_PAT;
+const PROXY_URL = "/.netlify/functions/airtable";
 
-const SEARCHABLE_FIELDS = ["ItemName", "Brand", "Category", "Tags", "Notes"];
+const BASE_URL = USE_PROXY
+  ? null // not used when proxying
+  : `https://api.airtable.com/v0/${import.meta.env.VITE_AIRTABLE_BASE_ID}/${encodeURIComponent(import.meta.env.VITE_AIRTABLE_TABLE_NAME)}`;
+const AUTH_TOKEN = USE_PROXY
+  ? null
+  : `Bearer ${import.meta.env.VITE_AIRTABLE_PAT}`;
 const EXPIRING_SOON_DAYS = EXPIRING_SOON_MS / (24 * 60 * 60 * 1000);
+
+/**
+ * Returns a user-friendly error message for common HTTP status codes.
+ */
+function friendlyErrorMessage(status) {
+  switch (status) {
+    case 400:
+      return "Something went wrong with that request. Please check your input and try again.";
+    case 401:
+      return "Authentication failed: Invalid API token. Verify your VITE_AIRTABLE_PAT.";
+    case 403:
+      return "Access denied. You don't have permission to perform this action.";
+    case 404:
+      return "Not found: Invalid base or table name. Verify VITE_AIRTABLE_BASE_ID and VITE_AIRTABLE_TABLE_NAME.";
+    case 408:
+      return "The request timed out. Please check your connection and try again.";
+    case 422:
+      return "The data sent was invalid. Please check your input and try again.";
+    case 429:
+      return "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.";
+    case 500:
+      return "Something went wrong on the server. Please try again in a moment.";
+    case 502:
+      return "The server is temporarily unavailable. Please try again shortly.";
+    case 503:
+      return "The service is temporarily down for maintenance. Please try again later.";
+    default:
+      return `Something went wrong (error ${status}). Please try again or contact support if the problem persists.`;
+  }
+}
 
 function escapeFormulaString(value) {
   return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
@@ -44,11 +85,6 @@ export function buildAirtableParams(sortConfig, filterConfig, searchTerm) {
     formulaParts.push(
       catClauses.length === 1 ? catClauses[0] : `OR(${catClauses.join(", ")})`,
     );
-  }
-
-  // NeedRestock filter
-  if (filterConfig?.needRestock) {
-    formulaParts.push(`{NeedRestock}=TRUE()`);
   }
 
   // Status filter — "archived" shows only archived, otherwise exclude archived
@@ -103,6 +139,70 @@ const throttledFetch = async (url, options) => {
   return fetch(url, options);
 };
 
+const NETWORK_ERROR =
+  "Network error: Unable to reach the server. Check your internet connection.";
+
+// ---------------------------------------------------------------------------
+// airtableFetch — unified transport that works in both modes:
+//   Direct: builds the Airtable URL and attaches the PAT header
+//   Proxy:  POSTs to /.netlify/functions/airtable with the intended method
+//
+// Accepts { method, recordId?, params?, body?, signal? }
+// Returns the raw Response.
+// ---------------------------------------------------------------------------
+const airtableFetch = async ({ method, recordId, params, body, signal }) => {
+  if (USE_PROXY) {
+    const proxyBody = { method };
+    if (recordId) proxyBody.recordId = recordId;
+    if (params) proxyBody.params = params;
+    if (body) proxyBody.body = body;
+    return throttledFetch(PROXY_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(proxyBody),
+      ...(signal && { signal }),
+    });
+  }
+
+  // Direct mode — same as before
+  let url = recordId ? `${BASE_URL}/${encodeURIComponent(recordId)}` : BASE_URL;
+  if (params) url += `?${params}`;
+  const headers = { Authorization: AUTH_TOKEN };
+  if (body) headers["Content-Type"] = "application/json";
+  return throttledFetch(url, {
+    method,
+    headers,
+    ...(body ? { body: JSON.stringify(body) } : {}),
+    ...(signal && { signal }),
+  });
+};
+
+/**
+ * Wraps airtableFetch with network-error handling, 429 detection, and error
+ * body parsing.  Pass allowedStatuses (e.g. [404]) to let specific non-ok
+ * codes through without throwing.
+ */
+const checkedFetch = async (fetchOptions, { allowedStatuses = [] } = {}) => {
+  let resp;
+  try {
+    resp = await airtableFetch(fetchOptions);
+  } catch {
+    throw new Error(NETWORK_ERROR);
+  }
+  if (!resp.ok && !allowedStatuses.includes(resp.status)) {
+    if (resp.status === 429) {
+      throw new Error(
+        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
+      );
+    }
+    const errorBody = await resp.json().catch(() => null);
+    throw new Error(
+      errorBody?.error?.message || `${resp.status} ${resp.statusText}`,
+    );
+  }
+  return resp;
+};
+
 export const fetchInventoryItems = async ({
   setInventoryItems,
   setIsLoading,
@@ -120,64 +220,38 @@ export const fetchInventoryItems = async ({
   const params = useServerFilter
     ? buildAirtableParams(sortConfig, filterConfig, searchTerm)
     : new URLSearchParams();
-  const url = params.toString() ? `${BASE_URL}?${params.toString()}` : BASE_URL;
+  const paramString = params.toString();
 
-  const options = {
-    method: "GET",
-    headers: {
-      Authorization: AUTH_TOKEN,
-    },
-    ...(signal && { signal }),
-  };
   try {
     let resp;
     try {
-      resp = await throttledFetch(url, options);
+      resp = await airtableFetch({
+        method: "GET",
+        params: paramString || undefined,
+        signal,
+      });
     } catch {
-      throw new Error(
-        "Network error: Unable to reach the server. Check your internet connection.",
-      );
+      throw new Error(NETWORK_ERROR);
     }
     if (!resp.ok) {
       // On 422 with server-side params, fall back to fetching all records
       // and let client-side filtering handle it
-      if (resp.status === 422 && useServerFilter && params.toString()) {
+      if (resp.status === 422 && useServerFilter && paramString) {
         console.warn(
           "Airtable returned 422 for query params — falling back to unfiltered fetch.",
         );
         let fallbackResp;
         try {
-          fallbackResp = await throttledFetch(BASE_URL, options);
+          fallbackResp = await airtableFetch({ method: "GET", signal });
         } catch {
-          throw new Error(
-            "Network error: Unable to reach the server. Check your internet connection.",
-          );
+          throw new Error(NETWORK_ERROR);
         }
         if (!fallbackResp.ok) {
-          throw new Error(`${fallbackResp.status} ${fallbackResp.statusText}`);
+          throw new Error(friendlyErrorMessage(fallbackResp.status));
         }
         resp = fallbackResp;
       } else {
-        switch (resp.status) {
-          case 401:
-            throw new Error(
-              "Authentication failed: Invalid API token. Verify your VITE_AIRTABLE_PAT.",
-            );
-          case 404:
-            throw new Error(
-              "Not found: Invalid base or table name. Verify VITE_AIRTABLE_BASE_ID and VITE_AIRTABLE_TABLE_NAME.",
-            );
-          case 422:
-            throw new Error(
-              "Bad request: The request was invalid. Check your query parameters and field names.",
-            );
-          case 429:
-            throw new Error(
-              "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
-            );
-          default:
-            throw new Error(`${resp.status} ${resp.statusText}`);
-        }
+        throw new Error(friendlyErrorMessage(resp.status));
       }
     }
     const { records } = await resp.json();
@@ -187,9 +261,6 @@ export const fetchInventoryItems = async ({
           id: record.id,
           ...record.fields,
         };
-        if (!record.fields.isCompleted) {
-          item.isCompleted = false;
-        }
         return item;
       }),
     );
@@ -212,14 +283,14 @@ export const loadSampleData = ({
 }) => {
   setIsLoading(true);
   setError(null);
-  const randomFailure = Math.random() < 0.33; // 33% chance of failure
-  if (randomFailure) {
+  const simulateErrors = import.meta.env.VITE_SIMULATE_ERRORS === "true";
+  if (simulateErrors && Math.random() < 0.33) {
     setError("Failed to load sample data. Please try again.");
     setIsLoading(false);
-    return;
+    return () => {};
   }
-  setInventoryItems(sampleData.records.map((item) => ({ ...item })));
   const simulateLoad = setTimeout(() => {
+    setInventoryItems(sampleData.records.map((item) => ({ ...item })));
     setIsLoading(false);
   }, 500);
   return () => {
@@ -245,45 +316,16 @@ export const createInventoryItem = async ({
       },
     ],
   };
-  const options = {
-    method: "POST",
-    headers: {
-      Authorization: AUTH_TOKEN,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  };
 
   try {
     setError(null);
     setIsSaving(true);
-    let resp;
-    try {
-      resp = await throttledFetch(BASE_URL, options);
-    } catch {
-      throw new Error(
-        "Network error: Unable to reach the server. Check your internet connection.",
-      );
-    }
-    if (!resp.ok) {
-      if (resp.status === 429) {
-        throw new Error(
-          "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
-        );
-      }
-      const errorBody = await resp.json().catch(() => null);
-      const message =
-        errorBody?.error?.message || `${resp.status} ${resp.statusText}`;
-      throw new Error(message);
-    }
+    const resp = await checkedFetch({ method: "POST", body: payload });
     const { records } = await resp.json();
     const savedItem = {
       id: records[0].id,
       ...records[0].fields,
     };
-    if (!records[0].fields.isCompleted) {
-      savedItem.isCompleted = false;
-    }
     addInventoryItem(savedItem);
     return true;
   } catch (error) {
@@ -295,40 +337,22 @@ export const createInventoryItem = async ({
 };
 
 export const patchInventoryItem = async (id, fields) => {
+  // Coerce empty date strings to null (Airtable rejects "")
+  const airtableFields = { ...fields };
+  ["ExpiresOn", "DatePurchased", "DateFrozen"].forEach((field) => {
+    if (field in airtableFields && !airtableFields[field]) {
+      airtableFields[field] = null;
+    }
+  });
   const patchFields = {
-    ...fields,
+    ...airtableFields,
     LastUpdated: new Date().toISOString(),
   };
-  const options = {
+  const resp = await checkedFetch({
     method: "PATCH",
-    headers: {
-      Authorization: AUTH_TOKEN,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ fields: patchFields }),
-  };
-  let resp;
-  try {
-    resp = await throttledFetch(
-      `${BASE_URL}/${encodeURIComponent(id)}`,
-      options,
-    );
-  } catch {
-    throw new Error(
-      "Network error: Unable to reach the server. Check your internet connection.",
-    );
-  }
-  if (!resp.ok) {
-    if (resp.status === 429) {
-      throw new Error(
-        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
-      );
-    }
-    const errorBody = await resp.json().catch(() => null);
-    const message =
-      errorBody?.error?.message || `${resp.status} ${resp.statusText}`;
-    throw new Error(message);
-  }
+    recordId: id,
+    body: { fields: patchFields },
+  });
   const record = await resp.json();
   return {
     id: record.id,
@@ -337,38 +361,13 @@ export const patchInventoryItem = async (id, fields) => {
 };
 
 export const deleteInventoryItem = async (id) => {
-  const options = {
-    method: "DELETE",
-    headers: {
-      Authorization: AUTH_TOKEN,
-    },
-  };
-  let resp;
-  try {
-    resp = await throttledFetch(
-      `${BASE_URL}/${encodeURIComponent(id)}`,
-      options,
-    );
-  } catch {
-    throw new Error(
-      "Network error: Unable to reach the server. Check your internet connection.",
-    );
-  }
   // 404 means the record is already gone — treat as success
+  const resp = await checkedFetch(
+    { method: "DELETE", recordId: id },
+    { allowedStatuses: [404] },
+  );
   if (resp.status === 404) {
     return { id, deleted: true };
   }
-  if (!resp.ok) {
-    if (resp.status === 429) {
-      throw new Error(
-        "Rate limit exceeded: Too many requests. Please wait 30 seconds and try again.",
-      );
-    }
-    const errorBody = await resp.json().catch(() => null);
-    const message =
-      errorBody?.error?.message || `${resp.status} ${resp.statusText}`;
-    throw new Error(message);
-  }
-  const result = await resp.json();
-  return result;
+  return resp.json();
 };

@@ -1,14 +1,12 @@
 import { memo, useCallback } from "react";
+import { useInventoryActions } from "../../context/InventoryContext";
 
 // Unified shopping-list control for an inventory item.
 // Shows an "Add to Shopping List" button when the item isn't on the list,
 // and a quantity stepper ([ - ] count [ + ]) when it is.
-function ShoppingListControl({
-  item,
-  handleAddToShoppingList,
-  handleRemoveFromShoppingList,
-  handleUpdateItemQuantity,
-}) {
+function ShoppingListControl({ item, variant }) {
+  const { addToShoppingList, removeFromShoppingList, updateTargetQty } =
+    useInventoryActions();
   const {
     id,
     ItemName: itemName,
@@ -17,29 +15,31 @@ function ShoppingListControl({
     NeedRestock: needRestock,
   } = item;
 
+  // An item is considered "in the shopping list" if it needs restocking and the target quantity is greater than the quantity on hand.
   const isInShoppingList = needRestock && targetQty > qtyOnHand;
 
   const handleAdd = useCallback(() => {
-    if (typeof handleAddToShoppingList !== "function") return;
-    handleAddToShoppingList({ itemId: id, quantity: 1 });
-  }, [handleAddToShoppingList, id]);
+    addToShoppingList?.(id, 1);
+  }, [addToShoppingList, id]);
 
   const handleDecrement = useCallback(() => {
-    if (typeof handleUpdateItemQuantity !== "function") return;
-    handleUpdateItemQuantity(id, targetQty - 1);
-  }, [handleUpdateItemQuantity, id, targetQty]);
+    updateTargetQty(id, targetQty - 1);
+  }, [updateTargetQty, id, targetQty]);
 
   const handleIncrement = useCallback(() => {
-    if (typeof handleUpdateItemQuantity !== "function") return;
-    handleUpdateItemQuantity(id, targetQty + 1);
-  }, [handleUpdateItemQuantity, id, targetQty]);
-  const componentHeading = handleAddToShoppingList ? (
-    <h3>Shopping List Controls</h3>
-  ) : (
+    updateTargetQty(id, targetQty + 1);
+  }, [updateTargetQty, id, targetQty]);
+
+  const isShoppingVariant = variant === "shopping";
+
+  const componentHeading = isShoppingVariant ? (
     <p>Qty on Hand: {qtyOnHand}</p>
+  ) : (
+    <h3>Shopping List Controls</h3>
   );
-  // Case 1: On shopping list AND has stepper handler → render stepper
-  if (isInShoppingList && typeof handleUpdateItemQuantity === "function") {
+
+  // Case 1: Shopping List section — show stepper
+  if (isInShoppingList && isShoppingVariant) {
     const willRemove = targetQty - 1 <= qtyOnHand;
     return (
       <div>
@@ -62,21 +62,17 @@ function ShoppingListControl({
     );
   }
 
-  // Case 2: Already on shopping list but no stepper (location sections) → render "Remove from Shopping List" button (if handler provided) or static text
+  // Case 2: Inventory section — item is on shopping list → show "Remove" button
   if (isInShoppingList) {
     return (
       <div>
         {componentHeading}
-        {typeof handleRemoveFromShoppingList === "function" ? (
-          <button
-            onClick={() => handleRemoveFromShoppingList(id)}
-            aria-label={`Remove ${itemName} from shopping list`}
-          >
-            Remove from Shopping List
-          </button>
-        ) : (
-          <p>On Shopping List</p>
-        )}
+        <button
+          onClick={() => removeFromShoppingList(id)}
+          aria-label={`Remove ${itemName} from shopping list`}
+        >
+          Remove from Shopping List
+        </button>
       </div>
     );
   }

@@ -21,6 +21,247 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.6.7] - 2026-03-09
+
+### Added
+
+- Add origin validation to Airtable proxy function
+- Add useInventoryData() hook for reactive inventory state (items, filters, derived lists)
+- Add useInventoryUI() hook for UI-only state (showQuickAdd, showArchived, isSaving, saveError, visibleFields)
+
+### Changed
+
+- Refactor tests to remove unused context imports and update mock components for InventorySection
+- Split single InventoryContext into three separate contexts (InventoryDataContext, InventoryUIContext, - InventoryActionsContext) to reduce unnecessary re-renders
+- Add useInventoryActions() hook for stable callbacks (addItem, deleteItem, refetch, setSearch, etc.)
+- Migrate all 11 consumer components to use the most specific hook for their needs
+- Action-only consumers (forms) no longer re-render on data or UI state changes
+- Data-only consumers (QuickStatsBar, NavMenu) no longer re-render on UI toggle changes
+- Remove backward-compatible useInventoryContext hook; all consumers now use specific hooks
+- Extract `checkedFetch` helper in airtableUtils to deduplicate network-error, 429, and error-body handling across all mutation functions
+- Extract `prepareItemForSave` utility in inventoryUtils to deduplicate numeric coercion, date nullification, Location formatting, and SubLocation removal shared by AddInventoryItemForm and EditInventoryItemForm
+- Move `isDeleting` (client-only UI state) stripping from `patchInventoryItem` to `usePersistUpdate`, decoupling the API layer from UI concerns
+- Refactor `MainContainer` to render `LoadingState` and `ErrorState` unconditionally (both self-guard internally)
+- Refactor `LoadingState` to read `isLoading` from context instead of receiving it as a prop, matching `ErrorState` pattern
+- Simplify `MainContainer` rendering: replace nested ternary with flat conditional guard (`!isLoading && !error`)
+- Update HTML metadata for improved SEO and user experience
+
+### Fixed
+
+- Harden `formatRelativeTime` to accept both Date objects and numeric timestamps via `instanceof Date` normalization
+- Remove unreachable sort-direction toggle branch in `FilterBarForm.handleSortChange` (a `<select>` never fires `onChange` for the already-selected value); update misleading comment
+
+---
+
+## [0.6.6] - 2026-03-09
+
+### Changed
+
+- Replace prop drilling with `useInventoryContext()` in all components
+- Add `variant` prop (`inventory` | `shopping` | `archived`) to `InventorySection`, `ItemCard`, and `ShoppingListControl` to control rendering behavior instead of handler truthiness checks
+- `MainContainer` no longer accepts `inventory` prop; reads all state from context
+- `InventorySection` accepts only structural props (`id`, `title`, `items`, `variant`)
+- `ItemCard` accepts only per-instance props (`item`, `onEdit`, `variant`)
+- `ShoppingListControl` uses `variant` to decide stepper vs. add/remove button
+- `EditInventoryItemForm` calls `updateItem` from context; accepts `item` and `onClose`
+- `EditDialog` simplified to pass-through for `item` and `onClose`
+- `AddInventoryItemForm` and `QuickAddForm` get `addItem` from context; accept no props
+- `FilterBarForm` gets all state and handlers from context; accepts no props
+- `QuickStatsBar` gets all data from context; accepts no props
+- `Header` and `NavMenu` get all data from context; accept no props
+- `FieldSelector` gets field visibility state from context; only accepts `onClose`
+- `App.jsx` renders `<Header />`, `<MainContainer />`, `<Footer />` with zero props
+
+### Removed
+
+- Remove all inventory-related prop drilling from `MainContainer` → children
+- Remove redundant `visibleFields`, `onToggleField`, `onResetFields` props from `NavMenu` → `FieldSelector`
+- Remove `useFilteredInventory` call from `MainContainer` (now in `InventoryProvider`)
+- Remove `archivedItemsExist` derivation from `App`; moved into `NavMenu`
+
+### Fixed
+
+- Fix ShoppingListControl showing stepper on all sections after context migration by using `variant` prop instead of handler truthiness
+- Update tests to pass `variant="shopping"` where stepper behavior is expected
+
+### Deprecated
+
+- Remove unused status field from filters in inventoryReducer
+
+---
+
+## [0.6.5] - 2026-03-08
+
+### Added
+
+- Add InventoryContext and provider for managing inventory state
+
+### Changed
+
+- Refactor App component to use InventoryContext and wrap with InventoryProvider
+- Wrap App component in InventoryProvider for context access in tests
+
+---
+
+## [0.6.4] - 2026-03-08
+
+### Fixed
+
+- Fix airtableUtils test failing in CI due to proxy envelope
+
+---
+
+## [0.6.3] - 2026-03-08
+
+### Added
+
+- Added test covering `EditInventoryItemForm` submit coercion logic: numeric fields parsed to floats (or null when empty), cleared date fields set to null, and original item fields preserved through the update.
+- Added focus trap, Escape key dismissal, and auto-focus to the `FieldSelector` modal dialog. Screen reader and keyboard users can no longer tab into background content, and pressing Escape closes the modal. Added 4 tests covering the new behavior.
+- Add two useInventory hook tests exercising the loadSampleData simulated-failure branch: verifies error state is set when Math.random triggers the 33% failure, and verifies recovery after refetch
+- `ConfirmDialog` component using native `<dialog>` for delete confirmation
+- Added dedicated unit tests for `inventoryUtils.js` (48 tests), `usePersistUpdate` (4 tests), and `useAutoRefresh` (13 tests), bringing total test count from 199 to 264.
+- Add Netlify serverless proxy (`netlify/functions/airtable.mjs`) that forwards Airtable API calls using a server-side PAT, keeping the token out of the client bundle. When `VITE_AIRTABLE_PAT` is absent at build time, `airtableUtils.js` automatically routes through the proxy instead of calling Airtable directly.
+
+### Changed
+
+- Replace Date.now() with crypto.randomUUID() for unique ID generation in AddInventoryItemForm and QuickAddForm
+- Extract shared `usePersistUpdate` hook from duplicate `persistUpdate` logic in useInventory and useShoppingList, fixing action-type drift where useShoppingList incorrectly dispatched `setError` instead of `setSaveError` on save failure
+- Rewrite `useFilters` to delegate to the central `inventoryReducer` dispatch (same pattern as `useShoppingList`), moving filter/sort/search callbacks out of `useInventory` to reduce its size
+- Split `useInventory` god hook into focused composable hooks (`useInventoryActions`, `useFieldVisibility`, `useUIToggles`), reducing it to a slim orchestrator while preserving the same return API
+- Silenced expected `console.error` output in `airtableUtils.test.js` error-scenario tests (404, 422, 429, network error) using a scoped `vi.spyOn` mock to keep test output clean.
+- Replaced `<a href="">` collapse toggle in `InventorySection` and `<a href="#field-selector">` in `NavMenu` with semantic `<button>` elements. Anchors with empty or hash-only hrefs are incorrect for non-navigation actions and cause page scroll. Updated related test selectors in `InventorySection.test.jsx` and `App.test.jsx`.
+- Extracted hardcoded Category and Location option lists into shared `CATEGORIES` and `LOCATIONS` constants in `fieldConfig.js`. Updated `QuickAddForm` and `AddInventoryItemForm` to use the shared arrays. Added missing categories ("Cooking Essentials", "Fresh") that exist in sample data.
+- Simplify useFilters hook to accept only { dispatch } instead of passing through searchTerm, sortConfig, and filters state it never read internally — those values are already available directly from the reducer in useInventory
+- Simplify updateItem in useInventoryActions to accept a single full item object { id, ...fields } instead of a dual-signature (idOrItem, maybeFields) with an IIFE destructure — all callers (ItemCard, EditInventoryItemForm) already pass a full item
+- Add "Need Restock" checkbox to AddInventoryItemForm after Target Qty, allowing users to place a new item directly on the shopping list at creation time (defaults to unchecked)
+- Wire orphaned `clearFilters` action through `MainContainer` into `FilterBarForm`. The reset button now dispatches the reducer's `clearFilters` action via a new `onClearFilters` prop instead of manually calling `onSearch("")` and `onFilter(DEFAULT_FILTERS)` separately.
+- Diff form fields against the previous item in `updateItem` before sending to Airtable, so PATCH requests only include changed fields instead of all 25+ form fields. Skips the network call entirely when nothing changed.
+- Gate `loadSampleData` random failure behind `VITE_SIMULATE_ERRORS` env flag so developers using `VITE_SAMPLE_DATA=true` no longer hit unexplained 33% load failures by default
+- Extract shared `InventoryFormFields` component from duplicate field markup in `AddInventoryItemForm` and `EditInventoryItemForm`, reducing each form to ~80 lines of unique logic (state init, submit handling, buttons) while the shared component renders all 7 fieldsets
+- Sort `inventoryItems` once into `allSortedItems` in `useFilteredInventory` and derive `archivedItems` via `.filter()` instead of re-running `sortItems` independently on the full array
+- Consolidate four separate `useMemo` partition filters (fridge, freezer, pantry, shoppingList) in `useFilteredInventory` into a single-pass loop over `sortedItems`
+- Replace `useReducer` with `useState` in `useStaleFetchDisplay` so the 30-second interval tick skips re-renders when the display string and stale flag haven't changed
+- Centralized `DEFAULT_VISIBLE_FIELDS_SET` in fieldConfig; ItemCard and reducer now share the single source of truth
+- `handleClearFilters` in FilterBarForm now delegates to `onClearFilters` instead of using a local default constant
+- Replaced FieldSelector's manual modal implementation with native `<dialog>` element, removing custom focus trap, Escape handler, and backdrop logic
+- Delete flow now uses `ConfirmDialog` in `ItemCard` instead of `window.confirm` in `useInventoryActions`, making the hook testable without mocking globals
+- `ItemCard` now uses `useToggle` for delete confirmation state, consistent with the editing toggle
+- Split Location field into a select dropdown (from LOCATIONS) and a free-text sub-location input across all forms
+- Moved new Date().toISOString() calls out of the reducer into action dispatchers for deterministic, testable state updates
+- Renamed shadowed `id` variable to `intervalId` in useAutoRefresh for clarity
+- Filter archived items before sorting instead of sorting the entire unfiltered list in useFilteredInventory
+- FieldSelector close button now renders × (times symbol) instead of plain "x" for better screen reader clarity
+- Shopping List section now shows only relevant fields (name, quantity, unit, target, location) instead of the full default field set
+- Wrapped EmptyState, LoadingState, and ToolSection in memo() for consistency with other components
+- deleteItem now clears saveError before starting, matching addItem behavior
+- Edit Items now open in a native `<dialog>` modal (via new `EditDialog` component) instead of rendering inline within the card. Editing state is lifted to `InventorySection` so only one item can be edited at a time per section. `ItemCard` no longer manages its own editing toggle
+
+### Fixed
+
+- Update dependencies in form components to include resetForm in useCallback dependencies
+- Fix comments in test files to replace special characters with hyphens
+- `addItem` and `persistUpdate` now dispatch `setSaveError` instead of `setError`, preventing create/update failures from triggering the full-page error state. Save errors are shown inline and are dismissible. `addItem` also clears any prior `saveError` before starting.
+- Fix error handling in deleteItem action to use setSaveError
+- Prevent debounced search callback from firing after FilterBarForm unmount by adding useEffect cleanup to clear pending timer
+- Prevent potentialy null/undefined location by adding optional chaining for Location checks in useFilteredInventory
+- Return no-op cleanup function from `loadSampleData` error path so the return type is consistent with the success path
+- Fix item edits silently failing: `updateItem` now accepts both `(id, fields)` and `(fullItem)` signatures, and `patchInventoryItem` strips client-only properties (`isCompleted`, `isDeleting`) that caused Airtable 422 errors
+- Coerce empty date strings to `null` in `AddInventoryItemForm` and `patchInventoryItem` to prevent Airtable 422 errors on blank `ExpiresOn`, `DatePurchased`, and `DateFrozen` fields
+- Tighten date coercion in `AddInventoryItemForm` from `!value` (all falsy) to `=== ""` (empty string only) for precision
+- Remove redundant `sortConfig.field` and `sortConfig.direction` from `useAutoRefresh` effect dependency array, keeping only the `sortConfig` object reference
+- Removed misleading `useCallback` wrapper from `handleChange` and `handleSubmit` in `AddInventoryItemForm`, `QuickAddForm` and `EditInventoryItemForm`. The `formData` dependency changed on every keystroke, so the memoization had no effect. Replaced with a plain function for clarity.
+- Fix stale comment in test-setup.js (was < 0.55 / 1750 ms, now matches actual < 0.33 / 500 ms)
+- Fix misleading destructure alias in patchInventoryItem: renamed \_id to \_isDeleting to correctly reflect that the discarded property is the UI-only isDeleting flag, not an id field
+- Make `FilterBarForm` search input controlled via local state synced to the parent `searchTerm` prop, replacing the uncontrolled ref-based approach. The input now stays in sync when `searchTerm` is cleared externally (e.g. via `clearFilters`) while preserving the 300ms debounce on `onSearch`.
+- Replace free-text `<input>` for Location in `EditInventoryItemForm` with a `<select>` dropdown using the shared `LOCATIONS` constant, matching the add forms and preventing case-sensitive mismatches that caused edited items to vanish from location sections
+- Return `sortedItems` as `filterAppliedItems` from `useFilteredInventory` so consumers receive filtered-and-sorted data instead of filtered-only; existing consumers only used `.length` so behavior was correct but the unsorted return was misleading
+- Simplify redundant `itemCount > 0 && items && items.length > 0` condition in `InventorySection` to just `itemCount > 0`, since `itemCount` is already derived from `items.length`
+- Use `useRef` instead of a closure dependency for `initialState` in `useFormData`, making `resetForm` referentially stable even when callers pass a new object literal on every render (e.g. the edit form)
+- Delete flow now uses `ConfirmDialog` in `ItemCard` instead of `window.confirm` in `useInventoryActions`, making the hook testable without mocking globals
+- `ConfirmDialog` now uses `useId()` for its `aria-labelledby` target, preventing duplicate DOM IDs
+- `ConfirmDialog` now calls `.close()` on the native `<dialog>` before unmounting, preventing a stale open state during future exit animations
+- Shopping list partition now excludes archived items, preventing stale Airtable data with `NeedRestock: true` from leaking through
+- Fixed loadSampleData setting items before loading timer resolved, causing a flash of stale data
+- Fixed formatRelativeTime guard to handle both null and undefined timestamps
+- Fixed ConfirmDialog not closing the dialog element before calling onConfirm
+- Fixed useFilteredInventory partitioning to derive main location via parseLocation instead of hardcoded includes
+- LoadingState now returns null when not loading instead of leaving an empty live region in the DOM
+- QuickAddForm QtyOnHand coercion now handles empty string explicitly instead of relying on Number() alone
+
+### Removed
+
+- Remove inline styles and click handler from heading in InventorySection component
+- Removed unused `isCompleted` field that was being defaulted to `false` in `fetchInventoryItems` and `createInventoryItem`, and stripped in `patchInventoryItem`. The field was never read by any component or hook. `isDeleting` (which is actively used) is still stripped before patching.
+- Removed `NeedRestock` checkbox from `AddInventoryItemForm` and `EditInventoryItemForm`. This field is managed programmatically by the shopping list actions and should not be manually toggled by users. New items default to `false`; edits preserve the existing value.
+- Remove unused needRestock filter flag from reducer initial state, clearFilters, buildAirtableParams, and fetchParamsEqual — it had no UI toggle and was only a leftover from early prototyping. The NeedRestock field on inventory items (used by shopping list logic) is unchanged.
+- Remove redundant handleClick wrapper in InventorySection — pass toggleCollapsed directly to onClick handlers
+- Remove stale `needRestock` key from `DEFAULT_FILTERS` in `FilterBarForm` to match the reducer's `initialState.filters` and `clearFilters` case, which no longer include it
+- Remove dead `shoppingListCount` value from `useShoppingList` and `useInventory` return objects — no component consumed it; callers can use `shoppingListItems.length` directly
+- Unused `location` field from reducer `initialState.filters` and `clearFilters` action
+- Removed duplicate useEffect for aborting fetches on unmount in useInventory
+- Removed Status from Add, Edit, and shared form fields — status is controlled by the archive/unarchive button
+- Removed duplicate shoppingListItems computation from useShoppingList — MainContainer uses the filtered version from useFilteredInventory
+
+---
+
+## [0.6.2] - 2026-03-08
+
+### Added
+
+- Add refetch functionality to useInventory hook and enhance tests for data fetching
+- Add tests for persistUpdate functionality in useShoppingList hook
+- Extract `useFilteredInventory` hook for search, filter, sort, and location partitioning logic
+- Extract `useAutoRefresh` hook for server-side refetch, visibility-change refresh, and periodic stale-check logic
+
+### Changed
+
+- Consolidate all local useState and useFilters state (visibleFields, archivedItemsExist, search, sort, filters) into the central inventoryReducer, lifting useInventory to App and passing it as a prop to MainContainer
+- Migrate remaining useReducer-managed values (lastFetchedAt, showQuickAdd, showArchived) and add toggleField, resetFields, and clearFilters actions to inventoryReducer
+- Replace FilterBarForm useState with useRef and implement debounced search handler
+- Rename shopping list handler props (updateItemQuantity → updateTargetQty) across InventorySection, ItemCard, and ShoppingListControl for consistency
+- Extract shared constants and utilities (SEARCHABLE_FIELDS, staleness helpers, comparison helpers) into fieldConfig.js and inventoryUtils.js
+- Update MainContainer and component tests to reflect new prop-driven architecture and renamed handlers
+- Refactor MainContainer to simplify state management and remove unused handlers
+- Refactored `useToggle`, `useFormData`, and `useStaleFetchDisplay` hooks from `useState` to `useReducer` for consistent state management across the codebase.
+- Simplify MainContainer to mostly JSX and hook calls by moving filtering/sorting/partitioning into `useFilteredInventory` and auto-refresh effects into `useAutoRefresh`
+- Encapsulate dispatch in useInventory: add `toggleQuickAdd`, `toggleShowArchived`, and `dismissSaveError` wrapper functions so all state changes go through named action functions
+- Compose `useShoppingList` inside `useInventory` to keep `dispatch` private; shopping list functions are now returned directly from `useInventory`
+- Remove raw `dispatch` from `useInventory` return value; MainContainer no longer imports `useShoppingList` or calls `dispatch` directly
+
+### Removed
+
+- Remove useFilters hook usage and separate visibleFields/archivedItemsExist useState instances from App and MainContainer in favor of the unified reducer
+
+### Fixed
+
+- Restored missing `useCallback` declaration for `handleSubmit` in `EditInventoryItemForm`, which caused a parse error breaking five test suites.
+- Added `window.confirm` mock in `useInventory` delete test to support jsdom environment.
+- Update useInventory test to verify new wrapper functions instead of raw dispatch exposure
+- Add setIsSaving action to inventory reducer for state management
+
+---
+
+## [0.6.1] - 2026-03-08
+
+### Added
+
+- Implement custom hook for inventory management with CRUD operations
+- Add custom hook for managing filters with search and sort functionality
+- Implement custom hook for managing shopping list with add, remove, and update functionalities
+- Add unit tests for custom hooks: useFilters, useInventory, and useShoppingList
+- Add refetch functionality to useInventory hook and update inventoryReducer for LastUpdated tracking
+
+---
+
+## [0.6.0] - 2026-03-08
+
+### Added
+
+- Add inventory reducer with actions and initial state
+- Implement inventory reducer to handle actions and state changes
+
+---
+
 ## [0.5.4] - 2026-03-07
 
 ### Fixed

@@ -1,3 +1,5 @@
+import { formatLocation } from "./fieldConfig";
+
 export const EXPIRING_SOON_MS = 14 * 24 * 60 * 60 * 1000;
 export const LOW_STOCK_THRESHOLD = 5;
 
@@ -61,11 +63,12 @@ export function sortItems(items, sortField, sortDirection) {
 }
 
 export function formatRelativeTime(timestamp) {
-  if (timestamp === null) {
+  if (timestamp == null) {
     return null;
   }
+  const ms = timestamp instanceof Date ? timestamp.getTime() : timestamp;
   const now = Date.now();
-  const diff = now - timestamp;
+  const diff = now - ms;
   if (diff < 60 * 1000) return "Just now";
   if (diff < 60 * 60 * 1000) {
     const mins = Math.round(diff / (60 * 1000));
@@ -78,4 +81,73 @@ export function formatRelativeTime(timestamp) {
     const days = Math.round(diff / (24 * 60 * 60 * 1000));
     return `${days} day${days !== 1 ? "s" : ""} ago`;
   }
+}
+
+// Auto-refresh if data is older than this threshold (5 minutes)
+export const STALE_TIME_MS = 5 * 60 * 1000;
+// How often to check for stale data while the tab is visible (60 seconds)
+export const STALE_CHECK_INTERVAL_MS = 60 * 1000;
+
+/** Returns true if lastFetchedAt is older than the given threshold. */
+export function isDataStale(lastFetchedAt, threshold = STALE_TIME_MS) {
+  if (!lastFetchedAt) return false;
+  return Date.now() - lastFetchedAt.getTime() >= threshold;
+}
+
+const NUMERIC_FIELDS = ["QtyOnHand", "TargetQty", "PurchasePrice", "UnitCost"];
+const DATE_FIELDS = ["ExpiresOn", "DatePurchased", "DateFrozen"];
+
+/**
+ * Shared form-data preparation: formats Location, coerces numeric fields,
+ * nullifies empty dates, strips SubLocation, and stamps LastUpdated.
+ */
+export function prepareItemForSave(formData) {
+  const { SubLocation, ...item } = formData;
+  item.Location = formatLocation(item.Location, SubLocation);
+  for (const field of NUMERIC_FIELDS) {
+    if (field in item) {
+      item[field] = item[field] === "" ? null : Number(item[field]);
+    }
+  }
+  for (const field of DATE_FIELDS) {
+    if (field in item && !item[field]) {
+      item[field] = null;
+    }
+  }
+  item.LastUpdated = new Date().toISOString();
+  return item;
+}
+
+/** Shallow-compare two arrays by length + strict element equality. */
+export function arraysEqual(a, b) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
+}
+
+/** Deep-compare two fetch-param objects ({sortField, sortDirection, filters, searchTerm}). */
+export function fetchParamsEqual(a, b) {
+  if (a === b) return true;
+  if (!a || !b) return false;
+  if (
+    a.sortField !== b.sortField ||
+    a.sortDirection !== b.sortDirection ||
+    a.searchTerm !== b.searchTerm
+  ) {
+    return false;
+  }
+  const fa = a.filters;
+  const fb = b.filters;
+  if (fa === fb) return true;
+  if (!fa || !fb) return false;
+  if (
+    fa.expiringSoon !== fb.expiringSoon ||
+    fa.lowStock !== fb.lowStock ||
+    fa.status !== fb.status
+  ) {
+    return false;
+  }
+  return arraysEqual(fa.categories ?? [], fb.categories ?? []);
 }

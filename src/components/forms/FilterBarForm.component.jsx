@@ -1,158 +1,148 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useInventoryData,
+  useInventoryActions,
+} from "../../context/InventoryContext";
 
-const DEFAULT_FILTERS = {
-  categories: [],
-  expiringSoon: false,
-  lowStock: false,
-  needRestock: false,
-  status: "",
-};
-
-function FilterBarForm({
-  onSearch = () => {},
-  onSort = () => {},
-  onFilter = () => {},
-  sortField,
-  sortDirection,
-  filters = DEFAULT_FILTERS,
-  inventoryItems = [],
-  handleRefresh = () => {},
-}) {
-  const [searchTerm, setSearchTerm] = useState("");
+function FilterBarForm() {
+  const { items, sortConfig, searchTerm, filters } = useInventoryData();
+  const { setSearch, setSort, setFilters, clearFilters, refetch } =
+    useInventoryActions();
+  const { field: sortField, direction: sortDirection } = sortConfig;
+  const [localSearch, setLocalSearch] = useState(searchTerm);
   const debounceTimer = useRef(null);
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(debounceTimer.current);
+  }, []);
+
+  // Sync local input when external searchTerm changes (e.g. reset)
+  useEffect(() => {
+    setLocalSearch(searchTerm);
+  }, [searchTerm]);
 
   // Derive available categories from inventory items
   const availableCategories = useMemo(
     () =>
-      [
-        ...new Set(inventoryItems.map((item) => item.Category).filter(Boolean)),
-      ].sort(),
-    [inventoryItems],
+      [...new Set(items.map((item) => item.Category).filter(Boolean))].sort(),
+    [items],
   );
 
   const handleSortChange = (e) => {
     const value = e.target.value;
-    // Toggle sort direction if the same field is selected again
-    if (value === sortField) {
-      onSort(value, sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      onSort(value, "asc"); // Reset to ascending when changing sort field
-    }
+    // Reset to ascending when changing sort field; direction is controlled by its own dropdown
+    setSort(value, "asc");
   };
 
   const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+    const value = e.target.value;
+    setLocalSearch(value);
+    clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setSearch(value);
+    }, 300);
   };
 
   const handleCategoryToggle = (category) => {
     const updated = filters.categories.includes(category)
       ? filters.categories.filter((c) => c !== category)
       : [...filters.categories, category];
-    onFilter({ ...filters, categories: updated });
-  };
-
-  const handleClearFilters = () => {
-    onFilter(DEFAULT_FILTERS);
+    setFilters({ ...filters, categories: updated });
   };
 
   const handleReset = () => {
-    setSearchTerm("");
-    onSort("", "asc");
-    onSearch("");
-    onFilter(DEFAULT_FILTERS);
+    clearTimeout(debounceTimer.current);
+    setSort("", "asc");
+    clearFilters();
   };
-  // Debounce the onSearch callback by 300ms
-  useEffect(() => {
-    debounceTimer.current = setTimeout(() => {
-      onSearch(searchTerm);
-    }, 300);
-
-    return () => clearTimeout(debounceTimer.current);
-  }, [searchTerm, onSearch]);
 
   return (
-    <form onSubmit={(e) => e.preventDefault()}>
-      <label htmlFor="search">Search:</label>
-      <input
-        value={searchTerm}
-        onChange={handleSearchChange}
-        type="text"
-        id="search"
-        name="search"
-        placeholder="Search inventory..."
-      />
-      <label htmlFor="sort-field">Sort by:</label>
-      <select
-        id="sort-field"
-        name="sort-field"
-        value={sortField}
-        onChange={handleSortChange}
-      >
-        <option value="">None</option>
-        <option value="ItemName">Item Name</option>
-        <option value="Category">Category</option>
-        <option value="QtyOnHand">Qty on Hand</option>
-        <option value="ExpiresOn">Expires On</option>
-        <option value="LastUpdated">Last Updated</option>
-      </select>
-      <label htmlFor="sort-direction">Sort Direction:</label>
-      <select
-        id="sort-direction"
-        name="sort-direction"
-        value={sortDirection}
-        onChange={(e) => onSort(sortField, e.target.value)}
-      >
-        <option value="asc">Asc</option>
-        <option value="desc">Desc</option>
-      </select>
-      <button type="button" onClick={handleReset}>
-        Reset
-      </button>
-      {/* Filter Controls */}
-      <fieldset>
-        <legend>Filter by Category:</legend>
-        {availableCategories.map((cat) => (
-          <label key={cat}>
-            <input
-              type="checkbox"
-              checked={filters.categories.includes(cat)}
-              onChange={() => handleCategoryToggle(cat)}
-            />
-            {cat}
-          </label>
-        ))}
-      </fieldset>
-
-      <label htmlFor="filter-expiring-soon">
+    <>
+      <form onSubmit={(e) => e.preventDefault()}>
+        <label htmlFor="search">Search:</label>
         <input
-          type="checkbox"
-          id="filter-expiring-soon"
-          name="filter-expiring-soon"
-          checked={filters.expiringSoon}
-          onChange={(e) =>
-            onFilter({ ...filters, expiringSoon: e.target.checked })
-          }
+          value={localSearch}
+          onChange={handleSearchChange}
+          type="text"
+          id="search"
+          name="search"
+          placeholder="Search inventory..."
         />
-        Expiring Soon
-      </label>
+        <label htmlFor="sort-field">Sort by:</label>
+        <select
+          id="sort-field"
+          name="sort-field"
+          value={sortField}
+          onChange={handleSortChange}
+        >
+          <option value="">None</option>
+          <option value="ItemName">Item Name</option>
+          <option value="Category">Category</option>
+          <option value="QtyOnHand">Qty on Hand</option>
+          <option value="ExpiresOn">Expires On</option>
+          <option value="LastUpdated">Last Updated</option>
+        </select>
+        <label htmlFor="sort-direction">Sort Direction:</label>
+        <select
+          id="sort-direction"
+          name="sort-direction"
+          value={sortDirection}
+          onChange={(e) => setSort(sortField, e.target.value)}
+        >
+          <option value="asc">Asc</option>
+          <option value="desc">Desc</option>
+        </select>
+        <button type="button" onClick={handleReset}>
+          Reset
+        </button>
+        {/* Filter Controls */}
+        <fieldset>
+          <legend>Filter by Category:</legend>
+          {availableCategories.map((cat) => (
+            <label key={cat}>
+              <input
+                type="checkbox"
+                checked={filters.categories.includes(cat)}
+                onChange={() => handleCategoryToggle(cat)}
+              />
+              {cat}
+            </label>
+          ))}
+        </fieldset>
 
-      <label htmlFor="filter-low-stock">
-        <input
-          type="checkbox"
-          id="filter-low-stock"
-          name="filter-low-stock"
-          checked={filters.lowStock}
-          onChange={(e) => onFilter({ ...filters, lowStock: e.target.checked })}
-        />
-        Low Stock
-      </label>
-      <button type="button" onClick={handleClearFilters}>
-        Clear All Filters
-      </button>
-      <button type="button" onClick={handleRefresh}>
-        Refresh
-      </button>
-    </form>
+        <label htmlFor="filter-expiring-soon">
+          <input
+            type="checkbox"
+            id="filter-expiring-soon"
+            name="filter-expiring-soon"
+            checked={filters.expiringSoon}
+            onChange={(e) =>
+              setFilters({ ...filters, expiringSoon: e.target.checked })
+            }
+          />
+          Expiring Soon
+        </label>
+
+        <label htmlFor="filter-low-stock">
+          <input
+            type="checkbox"
+            id="filter-low-stock"
+            name="filter-low-stock"
+            checked={filters.lowStock}
+            onChange={(e) =>
+              setFilters({ ...filters, lowStock: e.target.checked })
+            }
+          />
+          Low Stock
+        </label>
+        <button type="button" onClick={clearFilters}>
+          Clear All Filters
+        </button>
+        <button type="button" onClick={refetch}>
+          Refresh
+        </button>
+      </form>
+    </>
   );
 }
 

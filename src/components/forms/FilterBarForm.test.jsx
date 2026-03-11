@@ -1,4 +1,4 @@
-﻿import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   act,
   cleanup,
@@ -8,6 +8,7 @@ import {
   within,
 } from "@testing-library/react";
 import App from "../../App";
+import { InventoryProvider } from "../../context/InventoryProvider";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -86,7 +87,11 @@ describe("Search", () => {
   });
 
   it("typing a search term filters items to only matches", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     typeSearch("pearl");
@@ -99,7 +104,11 @@ describe("Search", () => {
   });
 
   it("search matches across all 5 searchable fields", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // ItemName field
@@ -114,11 +123,15 @@ describe("Search", () => {
     typeSearch("Dairy");
     expect(getSectionItemNames("Fridge")).toEqual(["Low Fat Vanilla Yogurt"]);
 
-    // Tags and Notes are null for all sample items â€” covered by the null-safe test
+    // Tags and Notes are null for all sample items - covered by the null-safe test
   });
 
   it("search is case-insensitive", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     typeSearch("PEARL");
@@ -131,21 +144,29 @@ describe("Search", () => {
   });
 
   it("clearing search restores all items", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     typeSearch("pearl");
     expect(screen.getByText(/Showing 1 of 5 items/)).toBeTruthy();
 
     typeSearch("");
-    // No search or filter → "Showing" text disappears
+    // No search or filter ? "Showing" text disappears
     expect(screen.queryByText(/Showing/)).toBeNull();
     expect(getSectionItemNames("Fridge")).toHaveLength(2);
     expect(getSectionItemNames("Pantry")).toHaveLength(2);
   });
 
   it("items with null fields don't crash the search", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // All sample items have null Tags and Notes; search must not crash
@@ -159,7 +180,11 @@ describe("Search", () => {
 // ===========================================================================
 describe("Sort", () => {
   it("sorting by ItemName A-Z orders alphabetically", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Default sort is ItemName asc
@@ -174,7 +199,11 @@ describe("Sort", () => {
   });
 
   it("sorting by ItemName Z-A reverses order", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     fireEvent.change(screen.getByLabelText("Sort Direction:"), {
@@ -192,7 +221,11 @@ describe("Sort", () => {
   });
 
   it("sorting by QtyOnHand orders numerically", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     fireEvent.change(screen.getByLabelText("Sort by:"), {
@@ -212,7 +245,11 @@ describe("Sort", () => {
   });
 
   it("sorting by ExpiresOn puts earliest first, nulls last", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Add an item without ExpiresOn to Fridge
@@ -227,7 +264,7 @@ describe("Sort", () => {
       target: { value: "ExpiresOn" },
     });
 
-    // Fridge: Yogurt 2026-03-21, Apple Sauce 2027-05-13, No Expiry (null → last)
+    // Fridge: Yogurt 2026-03-21, Apple Sauce 2027-05-13, No Expiry (null ? last)
     expect(getSectionItemNames("Fridge")).toEqual([
       "Low Fat Vanilla Yogurt",
       "Apple Sauce",
@@ -236,10 +273,14 @@ describe("Sort", () => {
   });
 
   it("selecting None restores original order", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
-    // Default ItemName asc â€” Fridge: Apple Sauce, Yogurt
+    // Default ItemName asc - Fridge: Apple Sauce, Yogurt
     expect(getSectionItemNames("Fridge")).toEqual([
       "Apple Sauce",
       "Low Fat Vanilla Yogurt",
@@ -263,7 +304,11 @@ describe("Sort", () => {
 // ===========================================================================
 describe("Filter", () => {
   it("filtering by single category shows only matching items", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
@@ -278,7 +323,11 @@ describe("Filter", () => {
   });
 
   it("filtering by multiple categories shows union of matches", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
@@ -291,7 +340,11 @@ describe("Filter", () => {
   });
 
   it("filtering by NeedRestock=true shows only shopping list items", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Sesame Oil has NeedRestock=true and TargetQty(1) > QtyOnHand(0.1)
@@ -305,7 +358,11 @@ describe("Filter", () => {
   });
 
   it("filtering by Low Stock shows only low-stock items", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Add a high-stock item (QtyOnHand >= 5)
@@ -329,17 +386,21 @@ describe("Filter", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-10T00:00:00Z"));
 
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
-    // Category "Fresh" + Expiring Soon → no items satisfy both
+    // Category "Fresh" + Expiring Soon ? no items satisfy both
     fireEvent.click(screen.getByRole("checkbox", { name: /Fresh/ }));
     fireEvent.click(screen.getByRole("checkbox", { name: /Expiring Soon/ }));
     expect(
       screen.getByText(/Showing 0 of 5 items.*2 filters active/),
     ).toBeTruthy();
 
-    // Switch to Category "Dairy" + Expiring Soon → Yogurt matches both
+    // Switch to Category "Dairy" + Expiring Soon ? Yogurt matches both
     fireEvent.click(screen.getByRole("checkbox", { name: /Fresh/ }));
     fireEvent.click(screen.getByRole("checkbox", { name: /Dairy/ }));
     expect(
@@ -351,7 +412,11 @@ describe("Filter", () => {
   });
 
   it("Clear All Filters restores all items", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     fireEvent.click(screen.getByRole("checkbox", { name: /Dry/ }));
@@ -370,7 +435,11 @@ describe("Filter", () => {
 // ===========================================================================
 describe("Archived view", () => {
   it("toggle shows and hides the archived section", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Show
@@ -391,7 +460,11 @@ describe("Archived view", () => {
   });
 
   it("unarchive moves item back to correct section", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     fireEvent.click(
@@ -414,12 +487,16 @@ describe("Archived view", () => {
       "Bacon & Velveeta Scrambler",
     );
 
-    // No more archived items → toggle button disappears
+    // No more archived items ? toggle button disappears
     expect(screen.queryByRole("button", { name: /Archived Items/ })).toBeNull();
   });
 
   it("archived count updates correctly", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Initial: 1 archived item
@@ -452,7 +529,11 @@ describe("Combined search, sort, and filter", () => {
   });
 
   it("search + sort + filter work together correctly", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Filter by Dry + Dairy categories
@@ -479,7 +560,11 @@ describe("Combined search, sort, and filter", () => {
   });
 
   it("clearing one doesn't affect others", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // 1. Sort by QtyOnHand asc
@@ -494,14 +579,14 @@ describe("Combined search, sort, and filter", () => {
     typeSearch("pearl");
     expect(getSectionItemNames("Pantry")).toEqual(["Pearl Couscous"]);
 
-    // 4. Clear search → category filter and sort remain
+    // 4. Clear search ? category filter and sort remain
     typeSearch("");
     expect(
       screen.getByText(/Showing 2 of 5 items.*1 filter active/),
     ).toBeTruthy();
     expect(getSectionItemNames("Pantry")).toEqual(["Pearl Couscous"]);
 
-    // 5. Clear filters → sort remains
+    // 5. Clear filters ? sort remains
     fireEvent.click(screen.getByRole("button", { name: "Clear All Filters" }));
 
     // QtyOnHand asc still in effect
@@ -523,7 +608,11 @@ describe("Combined search, sort, and filter", () => {
 // ===========================================================================
 describe("Refresh", () => {
   it("clicking Refresh reloads inventory data", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     // Inventory sections should be visible
@@ -540,7 +629,11 @@ describe("Refresh", () => {
   });
 
   it("Refresh restores data after user modifies inventory state", () => {
-    render(<App />);
+    render(
+      <InventoryProvider>
+        <App />
+      </InventoryProvider>,
+    );
     act(() => vi.runAllTimers());
 
     const initialFridgeNames = getSectionItemNames("Fridge");
@@ -549,7 +642,7 @@ describe("Refresh", () => {
     quickAddItem({ name: "Test Item", location: "Fridge" });
     expect(getSectionItemNames("Fridge")).toContain("Test Item");
 
-    // Click Refresh — sample data is reloaded, clearing the local addition
+    // Click Refresh � sample data is reloaded, clearing the local addition
     fireEvent.click(screen.getByRole("button", { name: "Refresh" }));
     act(() => vi.runAllTimers());
 

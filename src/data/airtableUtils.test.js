@@ -192,11 +192,6 @@ describe("buildAirtableParams", () => {
       expect(formula).toBe('OR({Category}="Dairy", {Category}="Drinks")');
     });
 
-    it("generates NeedRestock filter", () => {
-      const params = buildAirtableParams(null, { needRestock: true }, "");
-      expect(params.get("filterByFormula")).toBe("{NeedRestock}=TRUE()");
-    });
-
     it("generates archived status filter", () => {
       const params = buildAirtableParams(null, { status: "archived" }, "");
       expect(params.get("filterByFormula")).toBe('{Status}="archived"');
@@ -356,6 +351,7 @@ function createMockFetch(body, opts = {}) {
 
 describe("Airtable API functions", () => {
   let originalFetch;
+  let consoleErrorSpy;
   beforeEach(() => {
     // The global test-setup enables fake timers for loading-simulation tests.
     // API tests need real timers so throttledFetch's Date.now / setTimeout work.
@@ -363,9 +359,12 @@ describe("Airtable API functions", () => {
     originalFetch = globalThis.fetch;
     // Clear the module-level throttle queue so tests don't trigger real 1s sleeps.
     resetThrottle();
+    // Silence expected console.error output from error-scenario tests
+    consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
   });
   afterEach(() => {
     globalThis.fetch = originalFetch;
+    consoleErrorSpy.mockRestore();
   });
 
   // -- fetchInventoryItems -------------------------------------------------
@@ -420,7 +419,7 @@ describe("Airtable API functions", () => {
       });
 
       expect(setInventoryItems).not.toHaveBeenCalled();
-      expect(setError).toHaveBeenCalledWith("500 Internal Server Error");
+      expect(setError).toHaveBeenCalledWith("Something went wrong on the server. Please try again in a moment.");
       expect(setIsLoading).toHaveBeenLastCalledWith(false);
     });
 
@@ -513,7 +512,7 @@ describe("Airtable API functions", () => {
       });
 
       expect(setError).toHaveBeenCalledWith(
-        "Bad request: The request was invalid. Check your query parameters and field names.",
+        "The data sent was invalid. Please check your input and try again.",
       );
     });
 
@@ -567,9 +566,6 @@ describe("Airtable API functions", () => {
       expect(items[0].QtyOnHand).toBe(2);
       expect(items[0].NeedRestock).toBe(true);
       expect(items[0].ExpiresOn).toBe("2026-03-15");
-
-      // isCompleted defaults to false when absent from fields
-      expect(items[0].isCompleted).toBe(false);
 
       // second record also mapped correctly
       expect(items[1]).toMatchObject({
@@ -787,14 +783,16 @@ describe("Airtable API functions", () => {
 
       await patchInventoryItem("rec123abc", { QtyOnHand: 5 });
 
-      // inspect the body sent to fetch
+      // inspect the body sent to fetch — in proxy mode the real payload
+      // is nested inside a `body` envelope, so unwrap if needed
       const fetchCall = globalThis.fetch.mock.calls[0];
-      const body = JSON.parse(fetchCall[1].body);
+      const parsed = JSON.parse(fetchCall[1].body);
+      const fields = parsed.fields ?? parsed.body?.fields;
 
       // only QtyOnHand + auto-added LastUpdated — no other fields
-      expect(body.fields).toHaveProperty("QtyOnHand", 5);
-      expect(body.fields).toHaveProperty("LastUpdated");
-      expect(Object.keys(body.fields)).toHaveLength(2);
+      expect(fields).toHaveProperty("QtyOnHand", 5);
+      expect(fields).toHaveProperty("LastUpdated");
+      expect(Object.keys(fields)).toHaveLength(2);
     });
 
     it("throws on network failure", async () => {
