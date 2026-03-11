@@ -3,6 +3,7 @@ import { useInventoryActions } from "../../context/InventoryContext";
 import useFormData from "../../hooks/useFormData";
 import { prepareItemForSave } from "../../data/inventoryUtils";
 import InventoryFormFields from "./InventoryFormFields.component";
+import { AddFormContainer, AddButton } from "./AddInventoryItemForm.styles";
 
 // Initial form state with all fields set to empty or default values
 const initialFormState = {
@@ -50,15 +51,15 @@ function AddInventoryItemForm() {
     itemNameRef.current?.focus();
   };
   return (
-    <form onSubmit={handleSubmit} aria-label="Add Inventory Item">
+    <AddFormContainer onSubmit={handleSubmit} aria-label="Add Inventory Item">
       <InventoryFormFields
         formData={formData}
         handleChange={handleChange}
         firstFieldRef={itemNameRef}
         showNeedRestock
       />
-      <button type="submit">Add Item</button>
-    </form>
+      <AddButton type="submit">Add Item</AddButton>
+    </AddFormContainer>
   );
 }
 

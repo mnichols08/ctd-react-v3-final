@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  DetailContainer,
+  BreadcrumbNav,
+  ItemHeader,
+  ActionsNav,
+  FieldsSection,
+  StyledLink,
+} from "./ItemDetailPage.styles";
 import {
   useInventoryActions,
   useInventoryData,
@@ -34,32 +42,32 @@ function ItemDetailPage() {
 
   if (isLoading) {
     return (
-      <article>
+      <DetailContainer>
         <p role="status">Loading item details...</p>
-      </article>
+      </DetailContainer>
     );
   }
 
   if (error) {
     return (
-      <article>
+      <DetailContainer>
         <p role="alert">Error: {error}</p>
         <p>
-          <Link to="/">Back to Inventory</Link>
+          <StyledLink to="/">Back to Inventory</StyledLink>
         </p>
-      </article>
+      </DetailContainer>
     );
   }
 
   if (!id || !item) {
     return (
-      <article>
+      <DetailContainer>
         <h2>Item not found</h2>
         <p>The requested item could not be found.</p>
         <p>
-          <Link to="/">Back to Inventory</Link>
+          <StyledLink to="/">Back to Inventory</StyledLink>
         </p>
-      </article>
+      </DetailContainer>
     );
   }
 
@@ -86,27 +94,27 @@ function ItemDetailPage() {
   };
 
   return (
-    <article>
+    <DetailContainer>
       {/* Breadcrumb navigation */}
-      <nav aria-label="Breadcrumb">
+      <BreadcrumbNav aria-label="Breadcrumb">
         <ol>
           <li>
-            <Link to="/">Inventory</Link>
+            <StyledLink to="/">Inventory</StyledLink>
           </li>
           <li aria-current="page">{item.ItemName}</li>
         </ol>
-      </nav>
+      </BreadcrumbNav>
 
       {/* Item header */}
-      <section>
+      <ItemHeader>
         <h2>{item.ItemName}</h2>
         <p>
           {item.Brand} &mdash; {item.Category} / {item.SubCategory}
         </p>
-      </section>
+      </ItemHeader>
 
       {/* Item actions */}
-      <nav aria-label="Item actions">
+      <ActionsNav aria-label="Item actions">
         <menu>
           <li>
             <button type="button" onClick={() => setIsEditing(true)}>
@@ -124,7 +132,7 @@ function ItemDetailPage() {
             </button>
           </li>
         </menu>
-      </nav>
+      </ActionsNav>
 
       {/* Edit dialog */}
       {isEditing && (
@@ -142,18 +150,18 @@ function ItemDetailPage() {
       )}
 
       {/* All fields details */}
-      <section aria-label="All Item Fields">
+      <FieldsSection aria-label="All Item Fields">
         <h3>All Item Fields</h3>
         <dl>
           {ALL_FIELDS.map(({ key, label }) => (
             <div key={key}>
-              <dt>{label || key}</dt>
-              <dd>{item[key] ?? "—"}</dd>
+              <dt style={{ textAlign: "left" }}>{label || key}</dt>
+              <dd style={{ textAlign: "right" }}>{item[key] ?? "—"}</dd>
             </div>
           ))}
         </dl>
-      </section>
-    </article>
+      </FieldsSection>
+    </DetailContainer>
   );
 }
 

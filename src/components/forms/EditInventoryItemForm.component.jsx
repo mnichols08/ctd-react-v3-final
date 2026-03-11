@@ -4,6 +4,12 @@ import useFormData from "../../hooks/useFormData";
 import { parseLocation } from "../../data/fieldConfig";
 import { prepareItemForSave } from "../../data/inventoryUtils";
 import InventoryFormFields from "./InventoryFormFields.component";
+import {
+  EditFormContainer,
+  EditButton,
+  CancelButton,
+  ButtonGroup,
+} from "./EditInventoryItemForm.styles";
 
 function EditInventoryItemForm({ item, onClose }) {
   const { updateItem } = useInventoryActions();
@@ -59,18 +65,25 @@ function EditInventoryItemForm({ item, onClose }) {
   }, []);
 
   return (
-    <form onSubmit={handleSubmit} aria-label="Edit Inventory Item">
-      <InventoryFormFields
-        formData={formData}
-        handleChange={handleChange}
-        firstFieldRef={firstFieldRef}
-        idSuffix={item.id}
-      />
-      <button type="submit">Save</button>
-      <button type="button" onClick={onClose}>
-        Cancel
-      </button>
-    </form>
+    <>
+      <EditFormContainer
+        onSubmit={handleSubmit}
+        aria-label="Edit Inventory Item"
+      >
+        <InventoryFormFields
+          formData={formData}
+          handleChange={handleChange}
+          firstFieldRef={firstFieldRef}
+          idSuffix={item.id}
+        />
+        <ButtonGroup>
+          <EditButton type="submit">Save</EditButton>
+          <CancelButton type="button" onClick={onClose}>
+            Cancel
+          </CancelButton>
+        </ButtonGroup>
+      </EditFormContainer>
+    </>
   );
 }
 

@@ -1,4 +1,11 @@
-import { memo, useEffect, useId, useRef } from "react";
+import { useEffect, useRef, useId, memo } from "react";
+import {
+  DialogContent,
+  DialogMessage,
+  DialogButtonGroup,
+  DialogButton,
+  DialogButtonDanger,
+} from "./ConfirmDialog.styles";
 
 function ConfirmDialog({ message, onConfirm, onCancel, triggerRef }) {
   const dialogRef = useRef(null);
@@ -46,20 +53,22 @@ function ConfirmDialog({ message, onConfirm, onCancel, triggerRef }) {
       }}
       aria-labelledby={titleId}
     >
-      <p id={titleId}>{message}</p>
-      <div>
-        <button autoFocus onClick={handleClose}>
-          Cancel
-        </button>
-        <button
-          onClick={() => {
-            dialogRef.current?.close();
-            onConfirm();
-          }}
-        >
-          Confirm
-        </button>
-      </div>
+      <DialogContent>
+        <DialogMessage id={titleId}>{message}</DialogMessage>
+        <DialogButtonGroup>
+          <DialogButton autoFocus onClick={handleClose}>
+            Cancel
+          </DialogButton>
+          <DialogButtonDanger
+            onClick={() => {
+              dialogRef.current?.close();
+              onConfirm();
+            }}
+          >
+            Confirm
+          </DialogButtonDanger>
+        </DialogButtonGroup>
+      </DialogContent>
     </dialog>
   );
 }

@@ -1,6 +1,41 @@
 import { memo, useMemo } from "react";
+import styled from "styled-components";
 import { NavLink } from "react-router-dom";
 import { useInventoryData } from "../../../context/InventoryContext";
+
+const DesktopNav = styled.nav`
+  display: none;
+  @media (min-width: 769px) {
+    display: block;
+  }
+`;
+
+const Menu = styled.ul`
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
+
+const MenuItem = styled.li``;
+
+const StyledNavLink = styled(NavLink)`
+  font-size: 1rem;
+  color: #222;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition:
+    background 0.2s,
+    color 0.2s;
+  &.active,
+  &:hover {
+    background: #f0f0f0;
+    color: #0077cc;
+  }
+`;
 
 function NavMenu() {
   const { items } = useInventoryData();
@@ -8,90 +43,37 @@ function NavMenu() {
     () => items.some((item) => item.Status === "archived"),
     [items],
   );
-
-  const ariaCurrent = ({ isActive }) => (isActive ? "page" : undefined);
-  const navClass = ({ isActive }) => (isActive ? "active" : null);
-
   return (
-    <nav aria-label="Primary navigation">
-      <menu>
-        <li>
-          <NavLink
-            to="/"
-            className={navClass}
-            aria-current={ariaCurrent}
-          >
-            Dashboard
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/about"
-            className={navClass}
-            aria-current={ariaCurrent}
-          >
-            About
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/settings"
-            className={navClass}
-            aria-current={ariaCurrent}
-          >
-            Settings
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/fridge"
-            className={navClass}
-            aria-current={ariaCurrent}
-          >
-            Fridge
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/freezer"
-            className={navClass}
-            aria-current={ariaCurrent}
-          >
-            Freezer
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/pantry"
-            className={navClass}
-            aria-current={ariaCurrent}
-          >
-            Pantry
-          </NavLink>
-        </li>
-        <li>
-          <NavLink
-            to="/shopping-list"
-            className={navClass}
-            aria-current={ariaCurrent}
-          >
-            Shopping List
-          </NavLink>
-        </li>
-
+    <DesktopNav aria-label="Primary navigation">
+      <Menu>
+        <MenuItem>
+          <StyledNavLink to="/">Dashboard</StyledNavLink>
+        </MenuItem>
+        <MenuItem>
+          <StyledNavLink to="/about">About</StyledNavLink>
+        </MenuItem>
+        <MenuItem>
+          <StyledNavLink to="/settings">Settings</StyledNavLink>
+        </MenuItem>
+        <MenuItem>
+          <StyledNavLink to="/fridge">Fridge</StyledNavLink>
+        </MenuItem>
+        <MenuItem>
+          <StyledNavLink to="/freezer">Freezer</StyledNavLink>
+        </MenuItem>
+        <MenuItem>
+          <StyledNavLink to="/pantry">Pantry</StyledNavLink>
+        </MenuItem>
+        <MenuItem>
+          <StyledNavLink to="/shopping-list">Shopping List</StyledNavLink>
+        </MenuItem>
         {archivedItemsExist && (
-          <li>
-            <NavLink
-              to="/archive"
-              className={navClass}
-              aria-current={ariaCurrent}
-            >
-              Archived Items
-            </NavLink>
-          </li>
+          <MenuItem>
+            <StyledNavLink to="/archive">Archived Items</StyledNavLink>
+          </MenuItem>
         )}
-      </menu>
-    </nav>
+      </Menu>
+    </DesktopNav>
   );
 }
 
