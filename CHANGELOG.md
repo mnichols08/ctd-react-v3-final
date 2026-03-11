@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.0] - 2026-03-10
 
+### Added
+
+- Add comprehensive CSS styles including design tokens, theming, and accessibility utilities
+
 ### Changed
 
 - Enhance accessibility by adding ARIA attributes and changing main elements to articles across multiple components
