@@ -1,14 +1,13 @@
 import { memo, useEffect } from "react";
 import useToggle from "../hooks/useToggle";
+import useTitle from "../hooks/useTitle";
 import FieldSelector from "../components/cards/FieldSelector.component";
 import DarkModeToggle from "../components/forms/DarkModeToggle.component";
 
 function SettingsPage() {
   const [showFieldSelector, toggleFieldSelector, , closeFieldSelector] =
     useToggle(false);
-  useEffect(() => {
-    document.title = "Settings Page - Kitchen Inventory";
-  }, [])
+  useTitle("Settings");
   return (
     <article>
       <h2>Settings</h2>

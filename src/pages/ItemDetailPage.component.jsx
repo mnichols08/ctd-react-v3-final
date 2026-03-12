@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import useTitle from "../hooks/useTitle";
 import {
   DetailContainer,
   BreadcrumbNav,
@@ -29,16 +30,7 @@ function ItemDetailPage() {
   // Find the item based on the ID from the URL
   const item = items.find((entry) => String(entry.id) === String(id));
   // Helper function to format field values for display
-
-  useEffect(() => {
-    if (isEditing && item?.ItemName) {
-      document.title = `Editing: ${item.ItemName} - Kitchen Inventory`;
-    } else if (item?.ItemName) {
-      document.title = `${item.ItemName} - Kitchen Inventory`;
-    } else {
-      document.title = "Item Details - Kitchen Inventory";
-    }
-  }, [item, isEditing]);
+  useTitle(item?.ItemName ? `${item.ItemName}` : "Item Not Found");
 
   if (isLoading) {
     return (

@@ -1,4 +1,6 @@
-import { useEffect, memo } from "react";
+import { memo } from "react";
+import useTitle from "../hooks/useTitle";
+import generatePageTitle from "../utils/generatePageTitle";
 import {
   useInventoryData,
   useInventoryUI,
@@ -49,9 +51,7 @@ function IndexPage() {
     lastFetchedAt,
     isLoading,
   });
-  useEffect(() => {
-    document.title = "Dashboard - Kitchen Inventory";
-  }, []);
+  useTitle("Dashboard");
   return (
     <DashboardArticle>
       <DashboardTitle id="dashboard-title">Dashboard</DashboardTitle>

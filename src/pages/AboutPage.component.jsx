@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import useTitle from "../hooks/useTitle";
 import {
   AboutContainer,
   Hero,
@@ -27,7 +29,6 @@ import {
   FooterDot,
   FooterLink,
 } from "./AboutPage.styles";
-import { useEffect, useState } from "react";
 
 const features = [
   "Inventory management — add, edit, archive, delete",
@@ -109,8 +110,10 @@ function AboutPage() {
         day: "numeric",
       })
     : "Loading...";
+
+    useTitle("About");
+  // Set last pushed at to update last updated field
   useEffect(() => {
-    document.title = "About - Kitchen Inventory";
     fetch("https://api.github.com/repos/mnichols08/ctd-react-v3-final")
       .then((res) => res.json())
       .then((data) => setLastUpdated(data.pushed_at));

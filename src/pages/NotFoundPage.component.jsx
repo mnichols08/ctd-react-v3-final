@@ -1,5 +1,6 @@
 import { memo, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import useTitle from "../hooks/useTitle";
 import {
   NotFoundContainer,
   NotFoundHeading,
@@ -24,9 +25,7 @@ function NotFoundPage() {
       ],
   );
 
-  useEffect(() => {
-    document.title = "404 Not Found - Kitchen Inventory";
-  }, []);
+  useTitle("404 Not Found");
 
   return (
     <NotFoundContainer role="status" aria-live="polite">

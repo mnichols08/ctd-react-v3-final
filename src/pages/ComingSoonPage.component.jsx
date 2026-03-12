@@ -1,6 +1,7 @@
-import { memo, useEffect } from "react";
+import { memo } from "react";
 import { useLocation, Link } from "react-router-dom";
-import generatePageTitle from "../utils/generatePageTitle";
+import useTitle from "../hooks/useTitle";
+import { stripPageTitle } from "../utils/generatePageTitle";
 import {
   ComingSoonContainer,
   SoonIcon,
@@ -9,15 +10,13 @@ import {
 
 function ComingSoonPage() {
   const { pathname } = useLocation();
-  useEffect(() => {
-    document.title = `${generatePageTitle(pathname)} - Kitchen Inventory`;
-  }, [pathname]);
+  useTitle(pathname);
   return (
     <ComingSoonContainer>
       <SoonIcon aria-hidden="true" role="img">
         🚧
       </SoonIcon>
-      <h2>{generatePageTitle(pathname)}</h2>
+      <h2>{stripPageTitle(pathname)}</h2>
       <p>Coming Soon…</p>
       <BackLink as={Link} to="/">
         ← Back to Inventory
