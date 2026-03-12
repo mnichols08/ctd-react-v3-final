@@ -32,8 +32,12 @@ export const hasAirtableConfig = () =>
     import.meta.env.VITE_AIRTABLE_BASE_ID &&
     import.meta.env.VITE_AIRTABLE_TABLE_NAME,
   );
-export const isLocalStorageFallbackMode = () =>
-  !isSampleDataMode() && !hasAirtableConfig();
+// Only require Airtable config in direct mode (not proxy)
+export const isLocalStorageFallbackMode = () => {
+  if (isSampleDataMode()) return false;
+  if (USE_PROXY) return false;
+  return !hasAirtableConfig();
+};
 if (!USE_PROXY && !hasAirtableConfig()) {
   console.warn(
     "Airtable environment variables are not fully configured. Please set VITE_AIRTABLE_PAT, VITE_AIRTABLE_BASE_ID, and VITE_AIRTABLE_TABLE_NAME for local development. See .env.example for details. Falling back to local storage.",
