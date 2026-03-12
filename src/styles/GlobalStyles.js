@@ -255,11 +255,24 @@ const GlobalStyles = createGlobalStyle`
     text-underline-offset: 0.2em;
     transition: color var(--duration-fast) var(--ease-default);
   }
+  [data-theme="dark"] a:not([class]),
+  :root:not([data-theme="light"]) a:not([class]) {
+    color: var(--color-secondary);
+    text-shadow: 0 1px 2px var(--color-surface);
+  }
   a:not([class]):hover {
     color: var(--color-primary-hover);
   }
+  [data-theme="dark"] a:not([class]):hover,
+  :root:not([data-theme="light"]) a:not([class]):hover {
+    color: var(--color-primary);
+  }
   a:visited {
     color: var(--color-primary-hover);
+  }
+  [data-theme="dark"] a:visited,
+  :root:not([data-theme="light"]) a:visited {
+    color: var(--color-primary);
   }
   img, picture, video, canvas, svg {
     display: block;
@@ -295,9 +308,12 @@ const GlobalStyles = createGlobalStyle`
     text-decoration: none;
     transform: translateY(-120%);
     transition: transform var(--duration-base) var(--ease-out);
+    box-shadow: 0 2px 8px 0 var(--color-border-strong);
   }
   .skip-link:focus {
     transform: translateY(0);
+    outline: 2px solid var(--color-warning);
+    outline-offset: 2px;
   }
   .container {
     width: 100%;
@@ -371,7 +387,7 @@ const GlobalStyles = createGlobalStyle`
     justify-content: flex-start;
   }
   dialog::backdrop {
-    background: rgba(0,0,0,0.45);
+    background: var(--color-backdrop, rgba(0,0,0,0.45));
     backdrop-filter: blur(2px);
   }
   dialog[open] {

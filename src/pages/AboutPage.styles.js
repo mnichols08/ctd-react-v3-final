@@ -23,8 +23,13 @@ export const Hero = styled.header`
   text-align: center;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-lg);
   @media (max-width: 600px) {
     padding: var(--space-6) var(--space-2) var(--space-4);
+  }
+  [data-theme="dark"] & {
+    background: var(--color-surface);
+    color: var(--color-text);
   }
 `;
 
@@ -38,6 +43,9 @@ export const HeroTitle = styled.h1`
 export const HeroAccent = styled.span`
   color: var(--color-secondary);
   font-style: italic;
+  [data-theme="dark"] & {
+    color: var(--color-warning);
+  }
 `;
 
 export const HeroMeta = styled.div`
@@ -56,6 +64,11 @@ export const MetaBadge = styled.span`
   padding: 0.25em 0.75em;
   font-weight: var(--font-semibold);
   letter-spacing: 0.04em;
+  [data-theme="dark"] & {
+    background: var(--color-secondary);
+    color: var(--color-surface);
+    text-shadow: 0 1px 2px var(--color-neutral-900);
+  }
 `;
 
 export const Section = styled.section`
@@ -101,17 +114,21 @@ export const FeatureItem = styled.li`
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   color: var(--color-text);
+  line-height: 1.6;
 `;
 
 export const FeatureDot = styled.span`
-  width: 0.75em;
-  height: 0.75em;
+  width: 0.85em;
+  height: 0.85em;
   border-radius: 50%;
   background: var(--color-secondary);
   display: inline-block;
   flex-shrink: 0;
+  [data-theme="dark"] & {
+    background: var(--color-warning);
+  }
 `;
 
 export const StackGrid = styled.div`
@@ -187,9 +204,14 @@ export const AckLink = styled.a`
   color: var(--color-primary);
   font-weight: var(--font-semibold);
   text-decoration: underline;
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
+  text-underline-offset: 2px;
   &:hover {
     color: var(--color-primary-hover);
+  }
+  [data-theme="dark"] & {
+    color: var(--color-warning);
+    text-shadow: 0 1px 2px var(--color-surface);
   }
 `;
 
@@ -215,5 +237,9 @@ export const FooterLink = styled.a`
   text-underline-offset: 2px;
   &:hover {
     color: var(--color-primary);
+  }
+  [data-theme="dark"] & {
+    color: var(--color-warning);
+    text-shadow: 0 1px 2px var(--color-surface);
   }
 `;
