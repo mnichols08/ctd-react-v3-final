@@ -30,6 +30,9 @@ import {
   FooterLink,
 } from "./AboutPage.styles";
 
+/* eslint-disable-next-line no-undef */
+const version = `v${__APP_VERSION__}`; // Injected at build time from package.json
+
 const features = [
   "Inventory management — add, edit, archive, delete",
   "Location tracking across pantry, fridge & freezer",
@@ -111,7 +114,7 @@ function AboutPage() {
       })
     : "Loading...";
 
-    useTitle("About");
+  useTitle("About");
   // Set last pushed at to update last updated field
   useEffect(() => {
     fetch("https://api.github.com/repos/mnichols08/ctd-react-v3-final")
@@ -121,7 +124,7 @@ function AboutPage() {
   return (
     <AboutContainer>
       <Hero>
-        <p>Code The Dream · Lark Cohort · Final Exam</p>
+        <p>Code The Dream · Lark Cohort · Final Exam - {version}</p>
         <HeroTitle>
           Kitchen <br />
           <HeroAccent>Inventory</HeroAccent>
