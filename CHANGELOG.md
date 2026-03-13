@@ -23,18 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.9.2] - 2026-03-12
 
-### Added
-
-- Add resetThrottle function to clear request timestamps for testing
-- Add mock responses for Airtable API tests
-- Add tests for Airtable API functions including fetch, create, patch, and delete
-- Add fetch state, error handling, and data mapping tests
-- Add create item success, failure, and form persistence tests
-- Add update tests for success, failure revert, and PATCH body verification
-- Add delete tests for success, failure preservation, and 404 handling
-- Add loading/error UI tests for spinner, error message, and retry behavior
-- Add distinct error-type tests: 404, 422, 429 for fetch; 429 for create; network error and 429 for patch and delete
-
 ### Changed
 
 - Enhance Airtable API tests with mocked Date.now for accurate timing in throttledFetch
