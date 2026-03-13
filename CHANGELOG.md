@@ -21,9 +21,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 --- -->
 
+## [0.9.2] - 2026-03-12
+
+### Added
+
+- Add resetThrottle function to clear request timestamps for testing
+- Add mock responses for Airtable API tests
+- Add tests for Airtable API functions including fetch, create, patch, and delete
+- Add fetch state, error handling, and data mapping tests
+- Add create item success, failure, and form persistence tests
+- Add update tests for success, failure revert, and PATCH body verification
+- Add delete tests for success, failure preservation, and 404 handling
+- Add loading/error UI tests for spinner, error message, and retry behavior
+- Add distinct error-type tests: 404, 422, 429 for fetch; 429 for create; network error and 429 for patch and delete
+
+### Changed
+
+- Enhance Airtable API tests with mocked Date.now for accurate timing in throttledFetch
+- Refactor handleAddItem to clear previous save errors and return success status for item addition
+- Refactor form submission in AddInventoryItemForm and QuickAddForm to handle async operations and improve item creation logic
+- Clear previous error state before saving in createInventoryItem
+- Update changedFields to include TargetQty in MainContainer
+- Refactor fetchInventoryItems to support server-side filtering and remove unused client-side filter logic
+- Refactor initial load effect and add server-side filtering for inventory items
+
+### Fixed
+
+- Fix condition for loading sample data in MainContainer
+- Fix formatting in comments for clarity in FilterBarForm tests
+- Fix cleanup function in useEffect for MainContainer and ensure VITE_SAMPLE_DATA is checked as a string
+- Reset error state before fetching inventory items to prevent stale errors
+- Encode Airtable table name in BASE_URL for proper URL formatting
+
+### Removed
+
+- Remove active filter count calculation from FilterBarForm, causing linting error.
+- Add useEffect to MemoChild for accurate render count tracking
+- Remove unused import of getActiveFilterCount from FilterBarForm component
+
+---
+
 ## [0.9.1] - 2026-03-10
 
 ### Added
+
 - Styled Components for all forms, dialogs, cards, navigation, and utility pages
 - Global CSS variables and theme support (light/dark mode) in GlobalStyles.js
 - Responsive layouts for all components (320px-480px mobile, landscape, tablet, desktop)
@@ -32,6 +73,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Animated ComingSoonPage and modernized AboutPage
 
 ### Changed
+
 - Refactored all forms (Add, Edit, QuickAdd, FilterBar) to use styled components and mobile-friendly layouts
 - Refactored all dialogs (EditDialog, ConfirmDialog) for theme, accessibility, and mobile usability
 - Refactored ShoppingListControl, PaginationControls, QuickStatsBar, Footer, ErrorState, EmptyState, LoadingState, NotFoundPage, and InventorySection for theme and mobile
@@ -39,9 +81,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved accessibility and touch targets throughout
 
 ### Removed
+
 - All test references from AboutPage
 
 ### Fixed
+
 - Dialog/modal background and text color for dark mode
 - Dialog/modal scrollability and usability on mobile
 - ItemDetailPage details grid readability and stacking

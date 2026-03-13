@@ -1,4 +1,6 @@
 import "@testing-library/jest-dom/vitest";
+// Mock Vite global for tests
+globalThis.__APP_VERSION__ = "test";
 import { afterEach, beforeEach, vi } from "vitest";
 
 // ---------------------------------------------------------------------------

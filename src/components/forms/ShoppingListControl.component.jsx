@@ -74,7 +74,7 @@ function ShoppingListControl({ item, variant }) {
               tabIndex={0}
               onKeyDown={handleStepperKeyDown}
             >
-              Remove
+              🗑️
             </RemoveButton>
           ) : (
             <StepperButton
